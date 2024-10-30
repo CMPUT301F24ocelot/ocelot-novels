@@ -45,4 +45,10 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.5.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-firestore")
+    // https://mvnrepository.com/artifact/com.google.zxing/javase
+    implementation("com.google.zxing:javase:3.5.3")
+    // https://mvnrepository.com/artifact/com.google.zxing/core
+    implementation("com.google.zxing:core:3.5.3")
+
+
 }
