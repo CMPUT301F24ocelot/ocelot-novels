@@ -1,0 +1,112 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F0F0F0"
+    android:padding="16dp"
+    tools:context=".OrganizerProfile">
+
+    <!-- Profile Title -->
+    <TextView
+        android:id="@+id/organizer_profile_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Profile"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="16dp"
+        android:textColor="#000000" />
+
+    <!-- Profile Image -->
+    <ImageView
+        android:id="@+id/organizer_profile_image"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="16dp"
+        android:background="@android:drawable/editbox_background"
+        android:backgroundTint="#FCEEF6"
+        android:scaleType="centerInside" />
+
+    <!-- Facility Name Input -->
+    <EditText
+        android:id="@+id/organizer_facility_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Facility Name"
+        android:layout_marginTop="16dp"
+        android:enabled="false"
+        android:background="@android:drawable/editbox_background"
+        android:backgroundTint="#FCEEF6"
+        android:textColor="#7B6C6C"
+        android:padding="12dp" />
+
+    <!-- Email Input -->
+    <EditText
+        android:id="@+id/organizer_email"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Email"
+        android:layout_marginTop="16dp"
+        android:enabled="false"
+        android:background="@android:drawable/editbox_background"
+        android:backgroundTint="#FCEEF6"
+        android:textColor="#7B6C6C"
+        android:padding="12dp" />
+
+    <!-- Phone Input -->
+    <EditText
+        android:id="@+id/organizer_phone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Phone"
+        android:layout_marginTop="16dp"
+        android:enabled="false"
+        android:background="@android:drawable/editbox_background"
+        android:backgroundTint="#FCEEF6"
+        android:textColor="#7B6C6C"
+        android:padding="12dp" />
+
+    <!-- Location Input -->
+    <EditText
+        android:id="@+id/organizer_location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Location"
+        android:layout_marginTop="16dp"
+        android:enabled="false"
+        android:background="@android:drawable/editbox_background"
+        android:backgroundTint="#FCEEF6"
+        android:textColor="#7B6C6C"
+        android:padding="12dp" />
+
+    <!-- Description Input -->
+    <EditText
+        android:id="@+id/organizer_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Description"
+        android:layout_marginTop="16dp"
+        android:enabled="false"
+        android:background="@android:drawable/editbox_background"
+        android:backgroundTint="#FCEEF6"
+        android:textColor="#7B6C6C"
+        android:padding="12dp" />
+
+    <!-- Save Button -->
+    <Button
+        android:id="@+id/organizer_save_button"
+        android:layout_width="120dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="24dp"
+        android:text="Save"
+        android:textSize="16sp"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="?attr/colorPrimary"
+        android:background="@android:drawable/editbox_background" />
+
+</LinearLayout>

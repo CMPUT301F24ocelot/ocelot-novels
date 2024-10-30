@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "809333175554",
+    "project_id": "ocelotnovels",
+    "storage_bucket": "ocelotnovels.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:809333175554:android:99c0808571380fd0613e1b",
+        "android_client_info": {
+          "package_name": "com.example.ocelotnovels"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBwZXF_Vz9SH1aG-8mxzwUdQBJoWcN4kx8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
