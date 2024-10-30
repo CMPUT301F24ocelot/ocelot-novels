@@ -49,6 +49,9 @@ dependencies {
     implementation("com.google.zxing:javase:3.5.3")
     // https://mvnrepository.com/artifact/com.google.zxing/core
     implementation("com.google.zxing:core:3.5.3")
+    implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
+    implementation("com.google.android.gms:play-services-base:18.5.0")
+    implementation("com.google.android.gms:play-services-tflite-java:16.2.0-beta02")
 
 
 }
