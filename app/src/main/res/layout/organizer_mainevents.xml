@@ -7,18 +7,24 @@
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
-        android:layout_width="409dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#F4E6FB"
         android:minHeight="?attr/actionBarSize"
-        android:theme="?attr/actionBarTheme"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:title="Events"
-        app:titleMargin="5dp"
-        app:titleMarginStart="180dp"
-        app:titleTextAppearance="@style/TextAppearance.AppCompat.Medium" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- Centered Title TextView -->
+        <TextView
+            android:id="@+id/toolbar_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Events"
+            android:textSize="20sp"
+            android:textColor="#000" />
+    </androidx.appcompat.widget.Toolbar>
 
     <TextView
         android:id="@+id/welcome_text"
@@ -26,7 +32,7 @@
         android:layout_height="61dp"
         android:layout_marginTop="24dp"
         android:layout_marginEnd="80dp"
-        android:text="Hello Gareth!"
+        android:text="Hello User!"
         android:textSize="34sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -38,7 +44,7 @@
         android:layout_height="59dp"
         android:layout_marginEnd="80dp"
         android:text="Your Events"
-        android:textSize="34sp"
+        android:textSize="26sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/welcome_text" />
