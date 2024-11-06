@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         registerUIListener();
     }
     private void initVars(){
-        scanQrBtn = findViewById(R.id.user_scan_qr);
+        scanQrBtn = findViewById(R.id.scanQrBtn);
         //scannedValueTv =findViewById(R.id.scannedValueTv);
         GmsBarcodeScannerOptions options = initializeGoogleScanner();
         scanner = GmsBarcodeScanning.getClient(this,options);
