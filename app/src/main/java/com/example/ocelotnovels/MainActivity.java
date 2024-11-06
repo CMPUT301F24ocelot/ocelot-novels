@@ -1,5 +1,6 @@
 package com.example.ocelotnovels;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -20,6 +21,8 @@ import com.google.android.gms.common.moduleinstall.ModuleInstallResponse;
 import com.google.android.gms.tasks.OnCanceledListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanner;
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions;
@@ -30,6 +33,10 @@ public class MainActivity extends AppCompatActivity {
     private Button scanQrBtn;
     private TextView scannedValueTv;
     private GmsBarcodeScanner scanner;
+    private FirebaseAuth mAuth;
+    TextView textView;
+    FirebaseUser user;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,6 +51,20 @@ public class MainActivity extends AppCompatActivity {
         installGoogleScanner();
 
         registerUIListener();
+
+        mAuth = FirebaseAuth.getInstance();
+//        textView = findViewById(R.id.test);
+        user = mAuth.getCurrentUser();
+
+        if (user == null) {
+            // Redirect to SignUpActivity if not signed in
+            Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
+            startActivity(intent);
+            finish();
+        } else {
+            View userSignedInView = findViewById(R.id.user_sign_up_button);
+            userSignedInView.setVisibility(View.GONE);
+        }
     }
     private void initVars(){
         scanQrBtn = findViewById(R.id.user_scan_qr);
