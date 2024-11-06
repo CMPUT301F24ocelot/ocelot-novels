@@ -15,22 +15,26 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.ocelotnovels.model.Entrant;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+//import com.google.firebase.auth.AuthResult;
+//import com.google.firebase.auth.FirebaseAuth;
+//import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.Map;
 
 public class SignUpActivity extends AppCompatActivity {
 
-    private EditText emailEditText, passwordEditText, nameEditText;
+    private EditText emailEditText, passwordEditText, nameEditText,phoneEditText;
     private Button signUpButton;
 
-    private FirebaseAuth mAuth;
+    //private FirebaseAuth mAuth;
     private FirebaseFirestore db;
 
-    @Override
+    /*@Override
     public void onStart() {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
@@ -40,19 +44,21 @@ public class SignUpActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         }
-    }
+    }*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.user_signup_activity);
 
-        mAuth = FirebaseAuth.getInstance();
-
+        //mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
         emailEditText = findViewById(R.id.editTextEmail);
         passwordEditText = findViewById(R.id.editTextPassword);
         nameEditText = findViewById(R.id.editTextName);
+        phoneEditText = findViewById(R.id.editPhoneNum);
         signUpButton = findViewById(R.id.buttonSignUp);
+
 
         signUpButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -60,12 +66,24 @@ public class SignUpActivity extends AppCompatActivity {
                 String email = emailEditText.getText().toString().trim();
                 String password = passwordEditText.getText().toString().trim();
                 String name = nameEditText.getText().toString().trim();
-
+                String phone = phoneEditText.getText().toString().trim();
                 if (email.isEmpty() || password.isEmpty() || name.isEmpty()) {
                     Toast.makeText(SignUpActivity.this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
                     return;
                 }
+                String[] nameParts=name.split(" ",2);
+                String firstName= nameParts[0];
+                String lastName= nameParts.length >1 ? nameParts[1]:"";
 
+                Entrant entrant;
+                if (!phone.isEmpty()){
+                    entrant = new Entrant(firstName,lastName,email,phone);
+                }else{
+                    entrant = new Entrant(firstName,lastName,email);
+                }
+
+                addEntrantToFirestore(entrant);
+                /*
                 mAuth.createUserWithEmailAndPassword(email, password)
                         .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                             @Override
@@ -85,8 +103,30 @@ public class SignUpActivity extends AppCompatActivity {
                                             Toast.LENGTH_SHORT).show();
                                 }
                             }
-                        });
+                        });*/
             }
         });
     }
+
+    /**
+     * Adds the Entrant data to Firestore.
+     *
+     * @param entrant the Entrant object to be added to Firestore
+     */
+    private void addEntrantToFirestore(Entrant entrant){
+        Map<String,Object> entrantData = entrant.toMap();
+        db.collection("entrants")
+                .add(entrantData)
+                .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentReference> task) {
+                        if (task.isSuccessful()){
+                            Toast.makeText(SignUpActivity.this,"Sign-up successful",Toast.LENGTH_SHORT).show();
+                        }else {
+                            Toast.makeText(SignUpActivity.this, "Sign-up failed: " + task.getException(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+    }
+
 }
