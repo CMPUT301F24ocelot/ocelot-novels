@@ -14,7 +14,7 @@ import com.google.firebase.firestore.DocumentReference;
 import java.util.HashMap;
 import java.util.Map;
 
-public class OrganizerProfile extends AppCompatActivity {
+public class FacilityProfileActivity extends AppCompatActivity {
 
     private EditText facilityName, facilityEmail, facilityPhone, facilityLocation, facilityDescription;
     private ImageView facilityProfileImage;
@@ -46,11 +46,7 @@ public class OrganizerProfile extends AppCompatActivity {
     }
 
     private void loadFacilityData() {
-        // Here, you would retrieve the user's data from Firebase or SharedPreferences and set it to each EditText.
-        // Since this part is about saving, you can later implement retrieval using FirebaseUtils.
-
-        // Placeholder for loading existing data; replace with Firebase retrieval if needed.
-        facilityName.setText("Facility");
+       facilityName.setText("Facility");
         facilityEmail.setText("email");
         facilityPhone.setText("Phone no.");
         facilityLocation.setText("Location");
@@ -77,7 +73,7 @@ public class OrganizerProfile extends AppCompatActivity {
         DocumentReference docRef = facilityFirebaseUtils.getDocument();
         docRef.set(facilityProfileData)
                 .addOnSuccessListener(aVoid -> {
-                    // Notify the user that the data was saved successfully
+                    // Notify the user that the data was saved
                     Toast.makeText(this, "Facility profile saved successfully", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {

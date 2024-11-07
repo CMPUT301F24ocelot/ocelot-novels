@@ -14,26 +14,20 @@
         android:background="#FFFFFF"
         android:elevation="4dp">
 
-        <!-- Notification Icon with Badge -->
         <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true">
-
-
             <TextView
                 android:layout_width="16dp"
                 android:layout_height="16dp"
                 android:layout_gravity="top|end"
                 android:background="@drawable/hamburger"
-                android:text="2"
-                android:textColor="#FFFFFF"
                 android:textSize="10sp"
                 android:gravity="center" />
         </FrameLayout>
 
-        <!-- Title -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -42,13 +36,11 @@
             android:textSize="18sp"
             android:textColor="#000000" />
 
-        <!-- Profile Icon -->
         <ImageView
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-
             android:src="@drawable/profile" />
     </RelativeLayout>
 
@@ -63,7 +55,6 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Welcome Text -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -81,160 +72,147 @@
                 android:textColor="#000000"
                 android:layout_marginBottom="16dp" />
 
-            <!-- White Card for Profile Image -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
                 app:cardCornerRadius="16dp"
                 android:layout_marginBottom="24dp"
                 app:cardBackgroundColor="#FFFFFF"
-                app:cardElevation="2dp">
-            </androidx.cardview.widget.CardView>
+                app:cardElevation="2dp" />
 
-            <!-- Event Form -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Event Title:"
+                android:textColor="#000000"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/event_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:drawable/editbox_background"
+                android:backgroundTint="#FCEEF6"
+                android:padding="12dp"
+                android:hint="Enter Event Title"
+                android:textColor="#666666"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Description:"
+                android:textColor="#000000"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/event_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:drawable/editbox_background"
+                android:backgroundTint="#FCEEF6"
+                android:padding="12dp"
+                android:hint="Enter Event Description"
+                android:textColor="#666666"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Location:"
+                android:textColor="#000000"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/event_location"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:drawable/editbox_background"
+                android:backgroundTint="#FCEEF6"
+                android:padding="12dp"
+                android:hint="Enter Location"
+                android:textColor="#666666"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Due Date:"
+                android:textColor="#000000"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/event_due_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:drawable/editbox_background"
+                android:backgroundTint="#FCEEF6"
+                android:padding="12dp"
+                android:hint="Enter Due Date"
+                android:textColor="#666666"
+                android:layout_marginBottom="16dp" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Geolocation:"
+                    android:textColor="#000000"
+                    android:layout_centerVertical="true" />
+                <Switch
+                    android:id="@+id/geolocation_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:thumbTint="#6750A4"
+                    android:trackTint="#E6DEFA" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Limit Waitlist:"
+                    android:textColor="#000000"
+                    android:layout_centerVertical="true" />
+                <Switch
+                    android:id="@+id/limit_waitlist_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:thumbTint="#6750A4"
+                    android:trackTint="#E6DEFA" />
+            </RelativeLayout>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <!-- Event Title -->
-                <TextView
-                    android:layout_width="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+                <Button
+                    android:id="@+id/create_button"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Event Title:"
-                    android:textColor="#000000"
-                    android:layout_marginBottom="8dp" />
-
-                <EditText
-                    android:layout_width="match_parent"
+                    android:layout_weight="1"
+                    android:text="Create"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="#6750A4"
+                    android:layout_marginEnd="8dp" />
+                <Button
+                    android:id="@+id/cancel_button"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:background="@android:drawable/editbox_background"
-                    android:backgroundTint="#FCEEF6"
-                    android:padding="12dp"
-                    android:text="Ocelot King"
-                    android:textColor="#666666"
-                    android:layout_marginBottom="16dp" />
-
-                <!-- Description -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Description:"
-                    android:textColor="#000000"
-                    android:layout_marginBottom="8dp" />
-
-                <EditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@android:drawable/editbox_background"
-                    android:backgroundTint="#FCEEF6"
-                    android:padding="12dp"
-                    android:text="Event Details"
-                    android:textColor="#666666"
-                    android:layout_marginBottom="16dp" />
-
-                <!-- Location -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Location:"
-                    android:textColor="#000000"
-                    android:layout_marginBottom="8dp" />
-
-                <EditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@android:drawable/editbox_background"
-                    android:backgroundTint="#FCEEF6"
-                    android:padding="12dp"
-                    android:hint="Whyte Ave"
-                    android:textColor="#666666"
-                    android:layout_marginBottom="16dp" />
-
-                <!-- Due Date -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Due Date:"
-                    android:textColor="#000000"
-                    android:layout_marginBottom="8dp" />
-
-                <EditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@android:drawable/editbox_background"
-                    android:backgroundTint="#FCEEF6"
-                    android:padding="12dp"
-                    android:hint="22nd nov"
-                    android:textColor="#666666"
-                    android:layout_marginBottom="16dp" />
-
-                <!-- Switches -->
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Geolocation:"
-                        android:textColor="#000000"
-                        android:layout_centerVertical="true" />
-
-                    <Switch
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:thumbTint="#6750A4"
-                        android:trackTint="#E6DEFA" />
-                </RelativeLayout>
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="24dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Limit Waitlist:"
-                        android:textColor="#000000"
-                        android:layout_centerVertical="true" />
-
-                    <Switch
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:thumbTint="#6750A4"
-                        android:trackTint="#E6DEFA" />
-                </RelativeLayout>
-
-                <!-- Buttons -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="16dp">
-
-                    <Button
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Create"
-                        android:textColor="#FFFFFF"
-                        android:backgroundTint="#6750A4"
-                        android:layout_marginEnd="8dp" />
-
-                    <Button
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Cancel"
-                        android:textColor="#FFFFFF"
-                        android:backgroundTint="#6750A4"
-                        android:layout_marginStart="8dp" />
-                </LinearLayout>
+                    android:layout_weight="1"
+                    android:text="Cancel"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="#6750A4"
+                    android:layout_marginStart="8dp" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>
