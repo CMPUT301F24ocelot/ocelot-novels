@@ -83,20 +83,6 @@ public class CreateEventActivity extends AppCompatActivity {
         eventData.put("geolocationEnabled", isGeolocationEnabled);
         eventData.put("limitWaitlistEnabled", isLimitWaitlistEnabled);
 
-        // save data to firestore with eventId as uuid
-        db.collection("events")
-                .document(eventId)  // Store with UUID as document ID
-                .set(eventData)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            Toast.makeText(CreateEventActivity.this, "Event created successfully!", Toast.LENGTH_SHORT).show();
-                            finish();
-                        } else {
-                            Toast.makeText(CreateEventActivity.this, "Failed to create event. Please try again.", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
+
     }
 }

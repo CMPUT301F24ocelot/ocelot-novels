@@ -69,16 +69,6 @@ public class FacilityProfileActivity extends AppCompatActivity {
         facilityProfileData.put("facilityLocation", location);
         facilityProfileData.put("facilityDescription", description);
 
-        // Get the DocumentReference from FirebaseUtils and save the data
-        DocumentReference docRef = facilityFirebaseUtils.getDocument();
-        docRef.set(facilityProfileData)
-                .addOnSuccessListener(aVoid -> {
-                    // Notify the user that the data was saved
-                    Toast.makeText(this, "Facility profile saved successfully", Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> {
-                    // Notify the user in case of a failure
-                    Toast.makeText(this, "Failed to save facility profile", Toast.LENGTH_SHORT).show();
-                });
+
     }
 }
