@@ -22,7 +22,10 @@ public abstract class User {
      * @param email     the user's email
      */
     public User(String firstName, String lastName, String email) {
-        this(firstName, lastName, email, null);
+        setFirstName(firstName);
+        setLastName(lastName);
+        setEmail(email);
+        this.phoneNumber=null;
     }
 
     /**
@@ -33,10 +36,10 @@ public abstract class User {
      * @param phoneNumber the user's phone number (optional)
      */
     public User(String firstName, String lastName, String email, String phoneNumber) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.phoneNumber = phoneNumber;
+        setFirstName(firstName);
+        setLastName(lastName);
+        setEmail(email);
+        setPhoneNumber(phoneNumber);
     }
 
     /**
@@ -48,15 +51,22 @@ public abstract class User {
     }
 
     /**
-     * Sets the user's first name.
+     * Sets the user's first name. Throws an exception if the first name is null, empty,
+     * or exceeds 100 characters.
+     *
      * @param firstName the first name to set
+     * @throws IllegalArgumentException if the first name is invalid
      */
     public void setFirstName(String firstName) {
+        if (firstName == null || firstName.trim().isEmpty() || firstName.length() > 100) {
+            throw new IllegalArgumentException("Invalid First name!");
+        }
         this.firstName = firstName;
     }
 
     /**
      * Gets the user's last name.
+     *
      * @return the last name
      */
     public String getLastName() {
@@ -64,15 +74,22 @@ public abstract class User {
     }
 
     /**
-     * Sets the user's last name.
+     * Sets the user's last name. Throws an exception if the last name is null, empty,
+     * or exceeds 100 characters.
+     *
      * @param lastName the last name to set
+     * @throws IllegalArgumentException if the last name is invalid
      */
     public void setLastName(String lastName) {
+        if (lastName == null || lastName.trim().isEmpty() || lastName.length() > 100) {
+            throw new IllegalArgumentException("Invalid Last name!");
+        }
         this.lastName = lastName;
     }
 
     /**
      * Gets the user's email.
+     *
      * @return the email
      */
     public String getEmail() {
@@ -80,15 +97,22 @@ public abstract class User {
     }
 
     /**
-     * Sets the user's email.
+     * Sets the user's email. Throws an exception if the email is null or does not
+     * match a valid email format.
+     *
      * @param email the email to set
+     * @throws IllegalArgumentException if the email is invalid
      */
     public void setEmail(String email) {
+        if (email == null || !isValidEmail(email)) {
+            throw new IllegalArgumentException("Invalid email address!");
+        }
         this.email = email;
     }
 
     /**
      * Gets the user's phone number.
+     *
      * @return the phone number, or null if not set
      */
     public String getPhoneNumber() {
@@ -96,12 +120,42 @@ public abstract class User {
     }
 
     /**
-     * Sets the user's phone number.
+     * Sets the user's phone number. Throws an exception if the phone number is not null
+     * but does not match a valid phone number format (10 digits).
+     *
      * @param phoneNumber the phone number to set
+     * @throws IllegalArgumentException if the phone number is invalid
      */
     public void setPhoneNumber(String phoneNumber) {
+        if (phoneNumber != null && !isValidPhoneNumber(phoneNumber)) {
+            throw new IllegalArgumentException("Invalid phone number format!");
+        }
         this.phoneNumber = phoneNumber;
     }
+
+    /**
+     * Validates the email format using a regular expression.
+     *
+     * @param email the email to validate
+     * @return true if the email matches the format, false otherwise
+     */
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
+        return email.matches(emailRegex);
+    }
+
+    /**
+     * Validates the phone number format. A valid phone number must contain exactly
+     * 10 digits.
+     *
+     * @param phoneNumber the phone number to validate
+     * @return true if the phone number matches the format, false otherwise
+     */
+    private boolean isValidPhoneNumber(String phoneNumber) {
+        String phoneRegex = "\\d{10}";
+        return phoneNumber.matches(phoneRegex);
+    }
+
 
     /**
      * Returns a string representation of the user, including only non-null attributes.
@@ -109,7 +163,7 @@ public abstract class User {
      */
     @Override
     public String toString() {
-        return "User{" +
+        return this.getClass().getSimpleName() + "{" +
                 "firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 (phoneNumber != null ? ", phoneNumber='" + phoneNumber + '\'' : "") +
@@ -157,4 +211,6 @@ public abstract class User {
     public int hashCode() {
         return Objects.hash(firstName, lastName, email);
     }
+
+
 }
