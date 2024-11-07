@@ -21,6 +21,9 @@ import com.google.android.gms.tasks.Task;
 //import com.google.firebase.auth.AuthResult;
 //import com.google.firebase.auth.FirebaseAuth;
 //import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -31,10 +34,10 @@ public class SignUpActivity extends AppCompatActivity {
     private EditText emailEditText, passwordEditText, nameEditText,phoneEditText;
     private Button signUpButton;
 
-    //private FirebaseAuth mAuth;
+    private FirebaseAuth mAuth;
     private FirebaseFirestore db;
 
-    /*@Override
+    @Override
     public void onStart() {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
@@ -44,7 +47,7 @@ public class SignUpActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         }
-    }*/
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,7 +86,7 @@ public class SignUpActivity extends AppCompatActivity {
                 }
 
                 addEntrantToFirestore(entrant);
-                /*
+
                 mAuth.createUserWithEmailAndPassword(email, password)
                         .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                             @Override
@@ -103,7 +106,7 @@ public class SignUpActivity extends AppCompatActivity {
                                             Toast.LENGTH_SHORT).show();
                                 }
                             }
-                        });*/
+                        });
             }
         });
     }
