@@ -63,6 +63,7 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.firebase.auth)
+    implementation(libs.firebase.storage)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -88,4 +89,5 @@ dependencies {
     // Firebase Firestore and related libraries
     implementation("com.google.protobuf:protobuf-javalite") // Ensure this is compatible with Firebase
 
+    implementation("com.journeyapps:zxing-android-embedded:4.1.0")
 }

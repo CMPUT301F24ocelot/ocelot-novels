@@ -2,14 +2,21 @@ package com.example.ocelotnovels.view.organizer;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.ocelotnovels.MainActivity;
+import com.example.ocelotnovels.CancelledEntrantsActivity;
+import com.example.ocelotnovels.ConfirmedEntrantsActivity;
+import com.example.ocelotnovels.InvitedEntrantsActivity;
 import com.example.ocelotnovels.MapsActivity;
 import com.example.ocelotnovels.R;
+import com.example.ocelotnovels.SelectedEntrantsActivity;
+import com.example.ocelotnovels.WaitingListActivity;
 import com.example.ocelotnovels.model.Event;
 import com.example.ocelotnovels.CreateEventActivity;
 import com.example.ocelotnovels.FacilityProfileActivity;
@@ -66,11 +73,13 @@ public class OrganizerMainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        //  Button Click
-        Button entranListButton = findViewById(R.id.entrant_list);
-        facilityProfileButton.setOnClickListener(v -> {
-            Intent intent = new Intent(OrganizerMainActivity.this, FacilityProfileActivity.class);
-            startActivity(intent);
+        // Entrant List Button Click
+        Button entrantListButton = findViewById(R.id.entrant_list);
+        entrantListButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showEntrantListDropdown(v);
+            }
         });
 
         // Back Button Click
@@ -98,5 +107,44 @@ public class OrganizerMainActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> {
                     // Handle any errors
                 });
+    }
+
+    private void showEntrantListDropdown(View view) {
+        PopupMenu popupMenu = new PopupMenu(this, view);
+
+        // Dynamically add menu items
+        popupMenu.getMenu().add("Waiting List");
+        popupMenu.getMenu().add("Selected Entrants");
+        popupMenu.getMenu().add("Invited Entrants");
+        popupMenu.getMenu().add("Cancelled Entrants");
+        popupMenu.getMenu().add("Confirmed Entrants");
+
+        // Handle click events for each item in the dropdown menu
+        popupMenu.setOnMenuItemClickListener(item -> {
+            String title = item.getTitle().toString();
+            switch (title) {
+                case "Waiting List":
+                    startActivity(new Intent(OrganizerMainActivity.this, WaitingListActivity.class));
+                    break;
+                case "Selected Entrants":
+                    startActivity(new Intent(OrganizerMainActivity.this, SelectedEntrantsActivity.class));
+                    break;
+                case "Invited Entrants":
+                    startActivity(new Intent(OrganizerMainActivity.this, InvitedEntrantsActivity.class));
+                    break;
+                case "Cancelled Entrants":
+                    startActivity(new Intent(OrganizerMainActivity.this, CancelledEntrantsActivity.class));
+                    break;
+                case "Confirmed Entrants":
+                    startActivity(new Intent(OrganizerMainActivity.this, ConfirmedEntrantsActivity.class));
+                    break;
+                default:
+                    return false;
+            }
+            return true;
+        });
+
+        // Show the dropdown menu
+        popupMenu.show();
     }
 }
