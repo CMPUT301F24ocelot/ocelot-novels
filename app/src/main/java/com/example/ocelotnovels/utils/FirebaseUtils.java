@@ -1,15 +1,25 @@
 package com.example.ocelotnovels.utils;
 
 
+import static android.content.ContentValues.TAG;
+
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
+import android.widget.Toast;
 
 
+import androidx.annotation.NonNull;
+
+import com.example.ocelotnovels.SignUpActivity;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -35,39 +45,29 @@ public class FirebaseUtils {
             editor.putString("DeviceId",deviceId);
             editor.apply();
         }
+
         return deviceId;
     }
 
-    public DocumentReference getDocument(){
+    public DocumentReference getUserDocument(){
         return this.db.collection("users").document(deviceId);
     }
 
-    // Organizer-Specific Methods
+    public void pushUserDocument(Context context, Map<String,Object> userData){
 
-    // Get events created by this organizer
-    public Task<QuerySnapshot> getOrganizerEvents() {
-        return this.db.collection("events")
-                .whereEqualTo("organizerId", deviceId)
-                .get();
+        db.collection("users").document(deviceId).set(userData)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "DocumentSnapshot successfully written!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error writing document", e);
+                    }
+                });
     }
 
-    // Add a new event
-    public Task<DocumentReference> addEvent(Event event) {
-        return this.db.collection("events").add(event);
-    }
-
-    // Update an existing event
-    public Task<Void> updateEvent(String eventId, Map<String, Object> updates) {
-        return this.db.collection("events").document(eventId).update(updates);
-    }
-
-    // Delete an event
-    public Task<Void> deleteEvent(String eventId) {
-        return this.db.collection("events").document(eventId).delete();
-    }
-
-    public static String getUserDisplayName() {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        return (user != null) ? user.getDisplayName() : "User";
-    }
 }
