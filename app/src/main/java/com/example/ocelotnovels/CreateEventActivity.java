@@ -39,6 +39,14 @@ public class CreateEventActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private ImageView qrCodeImageView;
 
+
+    /**
+     * Initializes the activity, setting up the layout, views, and Firestore instance.
+     * Sets up listeners for the Create and Cancel buttons.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously being shut down,
+     *                           this Bundle contains the data it most recently supplied in onSaveInstanceState().
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

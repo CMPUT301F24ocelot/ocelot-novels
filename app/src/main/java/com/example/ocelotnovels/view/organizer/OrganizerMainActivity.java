@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
+import com.example.ocelotnovels.MainActivity;
 import com.example.ocelotnovels.CancelledEntrantsActivity;
 import com.example.ocelotnovels.ConfirmedEntrantsActivity;
 import com.example.ocelotnovels.InvitedEntrantsActivity;
@@ -80,6 +80,14 @@ public class OrganizerMainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 showEntrantListDropdown(v);
             }
+        });
+
+        // Back Button Click
+        Button backButton = findViewById(R.id.back_button);
+        backButton.setOnClickListener(v -> {
+            Intent intent = new Intent(OrganizerMainActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish(); // Optional: Call finish to close OrganizerMainActivity
         });
     }
 

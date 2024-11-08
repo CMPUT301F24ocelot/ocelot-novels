@@ -1,101 +1,110 @@
 <?xml version="1.0" encoding="utf-8"?>
-    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:background="#F4E6FB"
+        android:minHeight="?attr/actionBarSize"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="#F4E6FB"
-            android:minHeight="?attr/actionBarSize"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <!-- Centered Title TextView -->
-            <TextView
-                android:id="@+id/toolbar_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="Events"
-                android:textSize="20sp"
-                android:textColor="#000" />
-        </androidx.appcompat.widget.Toolbar>
-
+        <!-- Centered Title TextView -->
         <TextView
-            android:id="@+id/welcome_text"
-            android:layout_width="260dp"
-            android:layout_height="61dp"
-            android:layout_marginTop="24dp"
-            android:layout_marginEnd="80dp"
-            android:text="Hello User!"
-            android:textSize="34sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/toolbar" />
-
-        <TextView
-            android:id="@+id/your_events"
-            android:layout_width="259dp"
-            android:layout_height="59dp"
-            android:layout_marginEnd="80dp"
-            android:text="Your Events"
-            android:textSize="26sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/welcome_text" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/OrganizerRecyclerView"
-            android:layout_width="349dp"
-            android:layout_height="441dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/your_events" />
-
-        <!-- Facility Profile Button Positioned Above the Bottom Three Buttons -->
-        <Button
-            android:id="@+id/facility_profile_button"
+            android:id="@+id/toolbar_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Facility Profile"
-            app:layout_constraintBottom_toTopOf="@+id/add_events_button"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/OrganizerRecyclerView" />
+            android:layout_gravity="center"
+            android:text="Events"
+            android:textSize="20sp"
+            android:textColor="#000" />
+    </androidx.appcompat.widget.Toolbar>
 
-        <Button
-            android:id="@+id/add_events_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Add Event"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/entrant_list"
-            app:layout_constraintTop_toBottomOf="@+id/facility_profile_button"
-            app:layout_constraintStart_toStartOf="parent" />
+    <TextView
+        android:id="@+id/welcome_text"
+        android:layout_width="260dp"
+        android:layout_height="61dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="80dp"
+        android:text="Hello User!"
+        android:textSize="34sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
-        <Button
-            android:id="@+id/entrant_list"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Entrant list"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/entrant_map"
-            app:layout_constraintStart_toEndOf="@+id/add_events_button"
-            app:layout_constraintTop_toBottomOf="@+id/facility_profile_button" />
+    <TextView
+        android:id="@+id/your_events"
+        android:layout_width="259dp"
+        android:layout_height="59dp"
+        android:layout_marginEnd="80dp"
+        android:text="Your Events"
+        android:textSize="26sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/welcome_text" />
 
-        <Button
-            android:id="@+id/entrant_map"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Entrant Map"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/entrant_list"
-            app:layout_constraintTop_toBottomOf="@+id/facility_profile_button" />
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/OrganizerRecyclerView"
+        android:layout_width="349dp"
+        android:layout_height="441dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/your_events" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    <!-- New Back Button to the Left of Facility Profile Button -->
+    <Button
+        android:id="@+id/back_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Back"
+        app:layout_constraintEnd_toStartOf="@+id/facility_profile_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/OrganizerRecyclerView" />
+
+    <!-- Facility Profile Button Positioned to the Right of the Back Button -->
+    <Button
+        android:id="@+id/facility_profile_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Facility Profile"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/back_button"
+        app:layout_constraintTop_toBottomOf="@+id/OrganizerRecyclerView" />
+
+    <Button
+        android:id="@+id/add_events_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Event"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/entrant_list"
+        app:layout_constraintTop_toBottomOf="@+id/facility_profile_button"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/entrant_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Entrant list"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/entrant_map"
+        app:layout_constraintStart_toEndOf="@+id/add_events_button"
+        app:layout_constraintTop_toBottomOf="@+id/facility_profile_button" />
+
+    <Button
+        android:id="@+id/entrant_map"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Entrant Map"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/entrant_list"
+        app:layout_constraintTop_toBottomOf="@+id/facility_profile_button" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
