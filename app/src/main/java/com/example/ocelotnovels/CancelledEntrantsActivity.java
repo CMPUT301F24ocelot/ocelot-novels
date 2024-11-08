@@ -20,7 +20,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InvitedEntrantsActivity extends AppCompatActivity {
+public class CancelledEntrantsActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private EntrantsAdapter adapter;
@@ -30,21 +30,21 @@ public class InvitedEntrantsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_invited_entrants);
+        setContentView(R.layout.activity_cancelled_entrants);
 
-        recyclerView = findViewById(R.id.recyclerView_invited_entrants);
+        recyclerView = findViewById(R.id.recyclerView_cancelled_entrants);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         entrantList = new ArrayList<>();
         adapter = new EntrantsAdapter(entrantList);
         recyclerView.setAdapter(adapter);
 
         db = FirebaseFirestore.getInstance();
-        loadInvitedEntrants();
+        loadCancelledEntrants();
     }
 
-    private void loadInvitedEntrants() {
+    private void loadCancelledEntrants() {
         db.collection("events").document("nwsEG9KZHYrTTAN9azIH") // Replace with your actual event ID
-                .collection("invitedEntrants")
+                .collection("CancelledParticipants")
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
@@ -54,8 +54,8 @@ public class InvitedEntrantsActivity extends AppCompatActivity {
                         }
                         adapter.notifyDataSetChanged();
                     } else {
-                        Log.w("InvitedEntrants", "Error getting documents.", task.getException());
-                        Toast.makeText(this, "Error loading invited entrants.", Toast.LENGTH_SHORT).show();
+                        Log.w("CancelledEntrants", "Error getting documents.", task.getException());
+                        Toast.makeText(this, "Error loading cancelled entrants.", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -91,7 +91,7 @@ public class InvitedEntrantsActivity extends AppCompatActivity {
 
             ViewHolder(View itemView) {
                 super(itemView);
-                nameTextView = itemView.findViewById(R.id.tv_username); // Ensure this ID matches your entrant item layout
+                nameTextView = itemView.findViewById(R.id.tv_username); // Make sure this ID matches your layout
             }
         }
     }
