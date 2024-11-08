@@ -85,8 +85,8 @@ public class MainActivity extends AppCompatActivity {
         deviceId = firebaseUtils.getDeviceId(this);
     }
     private GmsBarcodeScannerOptions initializeGoogleScanner(){
-       return new GmsBarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).enableAutoZoom()
-               .build();
+        return new GmsBarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).enableAutoZoom()
+                .build();
     }
     private void installGoogleScanner(){
         ModuleInstallClient moduleInstall = ModuleInstall.getClient(this);
