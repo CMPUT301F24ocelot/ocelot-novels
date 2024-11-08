@@ -45,6 +45,11 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".WaitingListActivity" />
+        <activity android:name=".SelectedEntrantsActivity" />
+        <activity android:name=".InvitedEntrantsActivity" />
+        <activity android:name=".CancelledEntrantsActivity" />
+        <activity android:name=".ConfirmedEntrantsActivity" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
