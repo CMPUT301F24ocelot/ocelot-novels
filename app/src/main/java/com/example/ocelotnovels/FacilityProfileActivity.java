@@ -1,6 +1,8 @@
 package com.example.ocelotnovels;
 
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Patterns;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Button;
@@ -8,26 +10,25 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.ocelotnovels.utils.FirebaseUtils;
-import com.google.firebase.firestore.DocumentReference;
+import com.example.ocelotnovels.model.Facility;
+import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.UUID;
 
 public class FacilityProfileActivity extends AppCompatActivity {
 
-    private EditText facilityName, facilityEmail, facilityPhone, facilityLocation, facilityDescription;
+    private EditText facilityName, facilityEmail, facilityPhone, facilityLocation, facilityDescription, ownerId;
     private ImageView facilityProfileImage;
     private Button facilitySaveButton;
-    private FirebaseUtils facilityFirebaseUtils;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.organizer_profile_activity);
 
-        // Initialize FirebaseUtils
-        facilityFirebaseUtils = new FirebaseUtils(this);
+        // Initialize Firestore
+        db = FirebaseFirestore.getInstance();
 
         // Initialize views
         facilityName = findViewById(R.id.organizer_facility_name);
@@ -38,7 +39,7 @@ public class FacilityProfileActivity extends AppCompatActivity {
         facilityProfileImage = findViewById(R.id.organizer_profile_image);
         facilitySaveButton = findViewById(R.id.organizer_save_button);
 
-        // Load user data into views (if any)
+        // Load any existing data for the facility, if available
         loadFacilityData();
 
         // Set up save button functionality
@@ -46,29 +47,20 @@ public class FacilityProfileActivity extends AppCompatActivity {
     }
 
     private void loadFacilityData() {
-       facilityName.setText("Facility");
-        facilityEmail.setText("email");
-        facilityPhone.setText("Phone no.");
-        facilityLocation.setText("Location");
-        facilityDescription.setText("Description");
+        // Placeholder data, replace with actual data retrieval
+        facilityName.setText("Default Facility Name");
+        facilityEmail.setText("email@example.com");
+        facilityPhone.setText("1234567890");
+        facilityLocation.setText("Default Location");
+        facilityDescription.setText("Default description");
     }
 
     private void saveFacilityProfile() {
-        // Retrieve data from the input fields
+        // Retrieve and validate data from input fields
         String name = facilityName.getText().toString().trim();
         String email = facilityEmail.getText().toString().trim();
         String phone = facilityPhone.getText().toString().trim();
         String location = facilityLocation.getText().toString().trim();
         String description = facilityDescription.getText().toString().trim();
-
-        // Create a Map to store the data
-        Map<String, Object> facilityProfileData = new HashMap<>();
-        facilityProfileData.put("facilityName", name);
-        facilityProfileData.put("facilityEmail", email);
-        facilityProfileData.put("facilityPhone", phone);
-        facilityProfileData.put("facilityLocation", location);
-        facilityProfileData.put("facilityDescription", description);
-
-
-    }
-}
+        String facilityId = UUID.randomUUID().toString();
+    }}
