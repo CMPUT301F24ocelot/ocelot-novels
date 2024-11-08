@@ -1,26 +1,39 @@
 package com.example.ocelotnovels.view.Entrant;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
 import com.example.ocelotnovels.R;
+import com.example.ocelotnovels.SignUpActivity;
 import com.example.ocelotnovels.utils.FirebaseUtils;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class EventDetailsFragment extends DialogFragment {
 
     private static final String ARG_EVENT_ID = "eventId";
     private String eventId;
     private FirebaseUtils firebaseUtils;
+    private DocumentReference userDocument;
+    private DocumentReference eventDocument;
 
     private TextView eventTitle, eventDescription, eventStatus, eventDeadline;
 
@@ -97,8 +110,100 @@ public class EventDetailsFragment extends DialogFragment {
                 });
     }
 
+    private final ActivityResultLauncher<Intent> signUpLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    // Sign-up was successful, check user and join event
+                    joinEvent();
+                } else {
+                    Toast.makeText(getContext(), "Sign-up required to join the event", Toast.LENGTH_SHORT).show();
+                }
+            }
+    );
+
     private void joinEvent() {
-        // Implement joining the event functionality here
-        Toast.makeText(getContext(), "Joining event: " + eventId, Toast.LENGTH_SHORT).show();
+        userDocument = firebaseUtils.getUserDocument();
+        eventDocument = firebaseUtils.getDb().collection("events").document(eventId);
+
+        userDocument.get()
+                .addOnSuccessListener(userDoc -> {
+                    if (userDoc.exists() && userDoc.contains("email")) {
+                        // User exists, proceed to check event capacity
+                        String deviceId = firebaseUtils.getDeviceId(getContext());
+                        checkEventCapacityAndJoin(eventId, deviceId);
+                    } else {
+                        Toast.makeText(getContext(), "User not found in database. Please sign up.", Toast.LENGTH_SHORT).show();
+
+                        Intent intent = new Intent(getContext(), SignUpActivity.class);
+                        signUpLauncher.launch(intent);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Error checking user in database", Toast.LENGTH_SHORT).show();
+                    Log.e("EventDetailsFragment", "Failed to check user", e);
+                });
     }
+
+    private void checkEventCapacityAndJoin(String eventId, String deviceId) {
+        eventDocument.get()
+                .addOnSuccessListener(eventDoc -> {
+                    if (eventDoc.exists()) {
+                        int eventCapacity = eventDoc.getLong("eventCapacity").intValue();
+                        List<String> waitingList = (List<String>) eventDoc.get("waitingList");
+
+                        if (waitingList == null) {
+                            waitingList = new ArrayList<>();
+                        }
+
+                        // Check if there's enough capacity
+                        if (waitingList.size() < eventCapacity) {
+                            // Capacity is available, proceed to add user to event
+                            addEventToUser(eventId, deviceId);
+                        } else {
+                            // Capacity full
+                            Toast.makeText(getContext(), "Event is already at full capacity", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(getContext(), "Event not found", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Failed to check event capacity", Toast.LENGTH_SHORT).show();
+                    Log.e("EventDetailsFragment", "Error fetching event document", e);
+                });
+    }
+
+
+    private void addEventToUser(String eventId, String deviceId) {
+        // Step 2: Add the eventId to the user's eventsJoined array
+        userDocument.update("eventsJoined", FieldValue.arrayUnion(eventId))
+                .addOnSuccessListener(aVoid -> {
+                    // Successfully added the event to the user's joined list
+                    addUserToEventWaitingList(eventId, deviceId);
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Failed to join event", Toast.LENGTH_SHORT).show();
+                    Log.e("EventDetailsFragment", "Error updating user document", e);
+                });
+    }
+
+    private void addUserToEventWaitingList(String eventId, String deviceId) {
+        eventDocument.update("waitingList", FieldValue.arrayUnion(deviceId))
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(getContext(), "Successfully joined the event", Toast.LENGTH_SHORT).show();
+
+                    // Redirect to WaitingListActivity after joining
+                    Intent intent = new Intent(getContext(), WaitingListActivity.class);
+                    intent.putExtra("eventId", eventId);
+                    startActivity(intent);
+                    requireActivity().finish();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Failed to add to event waiting list", Toast.LENGTH_SHORT).show();
+                    Log.e("EventDetailsFragment", "Error updating event document", e);
+                });
+    }
+
+
 }
