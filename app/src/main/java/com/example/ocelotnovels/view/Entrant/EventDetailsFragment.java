@@ -17,11 +17,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
+import com.example.ocelotnovels.MainActivity;
 import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.SignUpActivity;
 import com.example.ocelotnovels.utils.FirebaseUtils;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -118,7 +121,7 @@ public class EventDetailsFragment extends DialogFragment {
                 });
     }
 
-
+    /*
     private final ActivityResultLauncher<Intent> signUpLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -130,8 +133,9 @@ public class EventDetailsFragment extends DialogFragment {
                     //Toast.makeText(requireContext(), "Sign-up required to join the event", Toast.LENGTH_SHORT).show();
                 }
             }
-    );
+    );*/
 
+    /*
     private void joinEvent() {
 
         userDocument = FirebaseFirestore.getInstance().collection("users").document(deviceId);
@@ -158,64 +162,151 @@ public class EventDetailsFragment extends DialogFragment {
                     //Toast.makeText(requireContext(), "Error checking user in database", Toast.LENGTH_SHORT).show();
                     Log.e("EventDetailsFragment", "Failed to check user", e);
                 });
+    }*/
+
+    private void joinEvent() {
+        // Get references
+        userDocument = FirebaseFirestore.getInstance().collection("users").document(deviceId);
+        eventDocument = FirebaseFirestore.getInstance().collection("events").document(eventId);
+
+        // Check if fragment is attached to avoid null context
+        if (!isAdded()) {
+            Log.e("EventDetailsFragment", "Fragment not attached to context");
+            return;
+        }
+
+        userDocument.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists() && documentSnapshot.contains("email")) {
+                String userEmail = documentSnapshot.getString("email");
+                if (userEmail != null && !userEmail.isEmpty()) {
+                    // User has email, proceed with joining event
+                    checkEventCapacityAndJoin(eventId, deviceId);
+                } else {
+                    handleNoUser();
+                }
+            } else {
+                handleNoUser();
+            }
+        }).addOnFailureListener(e -> {
+            if (getActivity() != null) {
+                Toast.makeText(getActivity(),
+                        "Error checking user details: " + e.getMessage(),
+                        Toast.LENGTH_SHORT).show();
+            }
+            Log.e("EventDetailsFragment", "Error checking user details", e);
+        });
+    }
+
+    private void handleNoUser() {
+        if (getActivity() != null) {
+            Toast.makeText(getActivity(),
+                    "Please sign up first",
+                    Toast.LENGTH_SHORT).show();
+
+            // Navigate back to MainActivity
+            Intent intent = new Intent(getActivity(), MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            getActivity().finish();
+        }
     }
 
     private void checkEventCapacityAndJoin(String eventId, String deviceId) {
+        if (!isAdded()) return;
+
         eventDocument.get()
                 .addOnSuccessListener(eventDoc -> {
                     if (eventDoc.exists()) {
-                        int eventCapacity = eventDoc.getLong("eventCapacity").intValue();
-                        List<String> waitingList = (List<String>) eventDoc.get("waitingList");
-
-                        if (waitingList == null) {
-                            waitingList = new ArrayList<>();
+                        Long capacityLong = eventDoc.getLong("eventCapacity");
+                        if (capacityLong == null) {
+                            if (getActivity() != null) {
+                                Toast.makeText(getActivity(),
+                                        "Error: Event capacity not set",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                            return;
                         }
 
-                        // Check if there's enough capacity
+                        int eventCapacity = capacityLong.intValue();
+                        List<String> waitingList = (List<String>) eventDoc.get("waitingList");
+                        waitingList = waitingList != null ? waitingList : new ArrayList<>();
+
+                        if (waitingList.contains(deviceId)) {
+                            if (getActivity() != null) {
+                                Toast.makeText(getActivity(),
+                                        "You have already joined this event",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                            return;
+                        }
+
                         if (waitingList.size() < eventCapacity) {
-                            // Capacity is available, proceed to add user to event
                             addEventToUser(eventId, deviceId);
                         } else {
-                            // Capacity full
-                            //Toast.makeText(requireContext(), "Event is already at full capacity", Toast.LENGTH_SHORT).show();
+                            if (getActivity() != null) {
+                                Toast.makeText(getActivity(),
+                                        "Event is at full capacity",
+                                        Toast.LENGTH_SHORT).show();
+                            }
                         }
                     } else {
-                        //Toast.makeText(requireContext(), "Event not found", Toast.LENGTH_SHORT).show();
+                        if (getActivity() != null) {
+                            Toast.makeText(getActivity(),
+                                    "Event not found",
+                                    Toast.LENGTH_SHORT).show();
+                        }
                     }
                 })
                 .addOnFailureListener(e -> {
-                    //Toast.makeText(requireContext(), "Failed to check event capacity", Toast.LENGTH_SHORT).show();
-                    Log.e("EventDetailsFragment", "Error fetching event document", e);
+                    if (getActivity() != null) {
+                        Toast.makeText(getActivity(),
+                                "Error checking event capacity: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                    Log.e("EventDetailsFragment", "Error checking event capacity", e);
                 });
     }
 
-
     private void addEventToUser(String eventId, String deviceId) {
-        // Step 2: Add the eventId to the user's eventsJoined array
+        if (!isAdded()) return;
+
         userDocument.update("eventsJoined", FieldValue.arrayUnion(eventId))
                 .addOnSuccessListener(aVoid -> {
-                    // Successfully added the event to the user's joined list
                     addUserToEventWaitingList(eventId, deviceId);
                 })
                 .addOnFailureListener(e -> {
-                    //Toast.makeText(requireContext(), "Failed to join event", Toast.LENGTH_SHORT).show();
+                    if (getActivity() != null) {
+                        Toast.makeText(getActivity(),
+                                "Failed to join event: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
                     Log.e("EventDetailsFragment", "Error updating user document", e);
                 });
     }
 
     private void addUserToEventWaitingList(String eventId, String deviceId) {
+        if (!isAdded()) return;
+
         eventDocument.update("waitingList", FieldValue.arrayUnion(deviceId))
                 .addOnSuccessListener(aVoid -> {
-                    //Toast.makeText(requireContext(), "Successfully joined the event", Toast.LENGTH_SHORT).show();
+                    if (getActivity() != null) {
+                        Toast.makeText(getActivity(),
+                                "Successfully joined the event",
+                                Toast.LENGTH_SHORT).show();
 
-                    // Redirect to WaitingListActivity after joining
-                    Intent intent = new Intent(requireContext(), WaitingListActivity.class);
-                    intent.putExtra("eventId", eventId);
-                    startActivity(intent);
-                    requireActivity().finish();
+                        // Navigate to WaitingListActivity
+                        Intent intent = new Intent(getActivity(), WaitingListActivity.class);
+                        intent.putExtra("eventId", eventId);
+                        startActivity(intent);
+                        getActivity().finish();
+                    }
                 })
                 .addOnFailureListener(e -> {
-                    //Toast.makeText(requireContext(), "Failed to add to event waiting list", Toast.LENGTH_SHORT).show();
+                    if (getActivity() != null) {
+                        Toast.makeText(getActivity(),
+                                "Failed to add to waiting list: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
                     Log.e("EventDetailsFragment", "Error updating event document", e);
                 });
     }

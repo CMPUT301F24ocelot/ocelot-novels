@@ -39,7 +39,7 @@ public class EventArrayAdapter extends RecyclerView.Adapter<EventArrayAdapter.Vi
         String formattedDate = dateFormat.format(event.getEventDate());
         holder.eventDate.setText(formattedDate);  // Set the formatted date string
 
-        holder.eventDescription.setText(event.getEventDescription());
+//        holder.eventDescription.setText(event.getEventDescription());
 
         // Set up the button click for leaving the waiting list
         holder.leaveButton.setOnClickListener(v -> {
