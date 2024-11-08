@@ -14,6 +14,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.ocelotnovels.utils.FirebaseUtils;
 import com.google.android.gms.common.moduleinstall.ModuleInstall;
 import com.google.android.gms.common.moduleinstall.ModuleInstallClient;
 import com.google.android.gms.common.moduleinstall.ModuleInstallRequest;
@@ -29,9 +30,10 @@ import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions;
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning;
 
 public class MainActivity extends AppCompatActivity {
+    private FirebaseUtils firebaseUtils;
     private Boolean isScannerInstalled = false;
     private Button scanQrBtn;
-    private TextView scannedValueTv;
+    public String deviceId;
     private GmsBarcodeScanner scanner;
     private FirebaseAuth mAuth;
     private FirebaseUser user;
@@ -40,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //EdgeToEdge.enable(this);
+
         setContentView(R.layout.activity_main);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -52,11 +54,9 @@ public class MainActivity extends AppCompatActivity {
 
         registerUIListener();
 
-        mAuth = FirebaseAuth.getInstance();
-//        textView = findViewById(R.id.test);
-        user = mAuth.getCurrentUser();
-        signUpButton = findViewById(R.id.user_sign_up_button);
 
+
+        /*
         if (user == null) {
             // Redirect to SignUpActivity if not signed in
 //            Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
@@ -73,13 +73,15 @@ public class MainActivity extends AppCompatActivity {
         } else {
             View userSignedInView = findViewById(R.id.user_sign_up_button);
             userSignedInView.setVisibility(View.GONE);
-        }
+        }*/
     }
     private void initVars(){
         scanQrBtn = findViewById(R.id.user_scan_qr);
         //scannedValueTv =findViewById(R.id.scannedValueTv);
         GmsBarcodeScannerOptions options = initializeGoogleScanner();
         scanner = GmsBarcodeScanning.getClient(this,options);
+        firebaseUtils = new FirebaseUtils(this);
+        deviceId = firebaseUtils.getDeviceId(this);
     }
     private GmsBarcodeScannerOptions initializeGoogleScanner(){
        return new GmsBarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).enableAutoZoom()
@@ -121,17 +123,30 @@ public class MainActivity extends AppCompatActivity {
         scanner.startScan().addOnSuccessListener(new OnSuccessListener<Barcode>() {
             @Override
             public void onSuccess(Barcode barcode) {
+                // Extract the raw value from the scanned QR code
+                String qrContent = barcode.getRawValue();
 
+                if (qrContent != null && !qrContent.isEmpty()) {
+                    // Assuming that the event ID is the entire content of the QR code
+                    String eventId = qrContent;
+
+                    // Display the extracted event ID
+                    Toast.makeText(MainActivity.this, "Event ID: " + eventId, Toast.LENGTH_SHORT).show();
+
+                    // Perform any further actions with the event ID here, like storing it or using it for a database query
+                } else {
+                    Toast.makeText(MainActivity.this, "Invalid QR Code content", Toast.LENGTH_SHORT).show();
+                }
             }
         }).addOnCanceledListener(new OnCanceledListener() {
             @Override
             public void onCanceled() {
-
+                Toast.makeText(MainActivity.this, "Scan canceled", Toast.LENGTH_SHORT).show();
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-
+                Toast.makeText(MainActivity.this, "Scan failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
 
