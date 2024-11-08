@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OrganizerMainActivity extends AppCompatActivity {
-
     public RecyclerView organizerRecyclerView;
     public OrganizerEventAdapter eventAdapter;
     public List<String> eventNames;
@@ -68,7 +67,7 @@ public class OrganizerMainActivity extends AppCompatActivity {
         /*
         Button waitingListButton = findViewById(R.id.entrant_list);
         entrantMapButton.setOnClickListener(v -> {
-            Intent intent = new Intent(OrganizerMainActivity.this, MapOfEntrantsActivity.class);
+            Intent intent = new Intent(OrganizerMainActivity.this, WaitingListActivity.class);
             startActivity(intent);
         });
         */
