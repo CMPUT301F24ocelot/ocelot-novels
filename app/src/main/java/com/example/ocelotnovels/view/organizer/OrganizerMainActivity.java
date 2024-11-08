@@ -6,6 +6,8 @@ import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.ocelotnovels.MapsActivity;
 import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.model.Event;
 import com.example.ocelotnovels.CreateEventActivity;
@@ -48,8 +50,23 @@ public class OrganizerMainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        // Button to navigate to Entrant Map
+        Button entrantMapButton = findViewById(R.id.entrant_map);
+        entrantMapButton.setOnClickListener(v -> {
+            Intent intent = new Intent(OrganizerMainActivity.this, MapsActivity.class);
+            startActivity(intent);
+        });
+
+
         // Facility Profile Button Click
         Button facilityProfileButton = findViewById(R.id.facility_profile_button);
+        facilityProfileButton.setOnClickListener(v -> {
+            Intent intent = new Intent(OrganizerMainActivity.this, FacilityProfileActivity.class);
+            startActivity(intent);
+        });
+
+        //  Button Click
+        Button entranListButton = findViewById(R.id.entrant_list);
         facilityProfileButton.setOnClickListener(v -> {
             Intent intent = new Intent(OrganizerMainActivity.this, FacilityProfileActivity.class);
             startActivity(intent);
