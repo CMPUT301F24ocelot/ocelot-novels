@@ -73,4 +73,32 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/user_toolbar" />
 
+    <!-- Organizer Button at the bottom right -->
+    <Button
+        android:id="@+id/user_organizer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Organizer"
+        android:textSize="20dp"
+        android:paddingHorizontal="26dp"
+        android:paddingVertical="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintMarginEnd="16dp"
+        app:layout_constraintMarginBottom="16dp" />
+
+    <!-- Admin Button at the bottom left -->
+    <Button
+        android:id="@+id/user_admin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Admin"
+        android:textSize="20dp"
+        android:paddingHorizontal="26dp"
+        android:paddingVertical="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintMarginStart="16dp"
+        app:layout_constraintMarginBottom="16dp" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
