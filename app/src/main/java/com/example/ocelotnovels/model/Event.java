@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class Event {
-<<<<<<< HEAD
-=======
     String eventName;
     Date eventDate;
     Date signUpStartDate;
@@ -104,6 +102,4 @@ public class Event {
     public boolean inWaitList(Entrant entrant){
         return waitList.contains(entrant);
     }
->>>>>>> 561d75af228f70793c69d00124c4b14510691a76
-
 }
