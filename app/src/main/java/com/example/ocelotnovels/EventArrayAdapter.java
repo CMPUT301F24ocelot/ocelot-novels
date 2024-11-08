@@ -22,6 +22,13 @@ public class EventArrayAdapter extends RecyclerView.Adapter<EventArrayAdapter.Vi
         this.eventList = eventList;
     }
 
+    /**
+     * Called when RecyclerView needs a new {@link ViewHolder} of the given type to represent an item.
+     *
+     * @param parent The ViewGroup into which the new View will be added after it is bound to an adapter position.
+     * @param viewType The view type of the new View.
+     * @return A new ViewHolder that holds a View for each event item.
+     */
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -39,7 +46,7 @@ public class EventArrayAdapter extends RecyclerView.Adapter<EventArrayAdapter.Vi
         String formattedDate = dateFormat.format(event.getEventDate());
         holder.eventDate.setText(formattedDate);  // Set the formatted date string
 
-//        holder.eventDescription.setText(event.getEventDescription());
+       //holder.eventDescription.setText(event.getEventDescription());
 
         // Set up the button click for leaving the waiting list
         holder.leaveButton.setOnClickListener(v -> {
