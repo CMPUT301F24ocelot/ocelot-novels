@@ -16,8 +16,8 @@ import java.util.List;
 
 public class OrganizerEventAdapter extends RecyclerView.Adapter<OrganizerEventAdapter.EventViewHolder> {
 
-    private List<String> eventNames;
-    private Context context;
+    public List<String> eventNames;
+    public Context context;
 
     public OrganizerEventAdapter(List<String> eventNames, Context context) {
         this.eventNames = eventNames;

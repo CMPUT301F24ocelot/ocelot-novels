@@ -24,10 +24,10 @@ import java.util.List;
 
 public class OrganizerMainActivity extends AppCompatActivity {
 
-    private RecyclerView organizerRecyclerView;
-    private OrganizerEventAdapter eventAdapter;
-    private List<String> eventNames;
-    private FirebaseFirestore db;
+    public RecyclerView organizerRecyclerView;
+    public OrganizerEventAdapter eventAdapter;
+    public List<String> eventNames;
+    public FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +73,18 @@ public class OrganizerMainActivity extends AppCompatActivity {
 
     }
 
-    private void loadEventsFromFirestore() {
+    // Constructor for dependency injection (for testing)
+    public OrganizerMainActivity(FirebaseFirestore firestore) {
+        this.db = firestore;
+        this.eventNames = new ArrayList<>();
+    }
+
+    // Default constructor
+    public OrganizerMainActivity() {
+        this(FirebaseFirestore.getInstance());  // Use the real Firestore by default
+    }
+
+    public void loadEventsFromFirestore() {
         db.collection("events")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
