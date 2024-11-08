@@ -19,7 +19,7 @@ import java.util.UUID;
 
 public class FacilityProfileActivity extends AppCompatActivity {
 
-    private EditText facilityName, facilityEmail, facilityPhone, facilityLocation, facilityDescription, ownerId;
+    private EditText facilityName, facilityEmail, facilityPhone, facilityLocation, facilityDescription;
     private ImageView facilityProfileImage;
     private Button facilitySaveButton;
     private FirebaseFirestore db;
@@ -41,11 +41,9 @@ public class FacilityProfileActivity extends AppCompatActivity {
         facilityProfileImage = findViewById(R.id.organizer_profile_image);
         facilitySaveButton = findViewById(R.id.organizer_save_button);
 
-
         // Set up save button functionality
         facilitySaveButton.setOnClickListener(v -> saveFacilityProfile());
     }
-
 
     private void saveFacilityProfile() {
         // Retrieve and validate data from input fields
@@ -54,6 +52,9 @@ public class FacilityProfileActivity extends AppCompatActivity {
         String phone = facilityPhone.getText().toString().trim();
         String location = facilityLocation.getText().toString().trim();
         String description = facilityDescription.getText().toString().trim();
+
+        // Assuming ownerId is derived from the current user's ID (you may replace this with actual ownerId)
+        String ownerId = "sampleOwnerId";  // Replace this with the actual owner ID logic
         String facilityId = UUID.randomUUID().toString();
 
         if (TextUtils.isEmpty(name) || name.length() > 100) {
@@ -83,7 +84,6 @@ public class FacilityProfileActivity extends AppCompatActivity {
 
         // Create a Facility instance
         Facility facility = new Facility(ownerId, name, email, phone, location, description);
-        facility.setFacilityId(facilityId);
 
         // Convert Facility object to a Map for Firestore
         Map<String, Object> facilityData = new HashMap<>();
@@ -95,14 +95,14 @@ public class FacilityProfileActivity extends AppCompatActivity {
         facilityData.put("facilityLocation", facility.getFacilityLocation());
         facilityData.put("facilityDescription", facility.getFacilityDescription());
 
+        // Save to Firestore under "facilities" collection
         db.collection("facilities").document(facility.getFacilityId())
                 .set(facilityData)
                 .addOnSuccessListener(aVoid -> showToast("Facility profile saved successfully."))
-                .addOnFailureListener(e -> showToast("Failed to save facility profile: "));
+                .addOnFailureListener(e -> showToast("Failed to save facility profile. "));
     }
 
     private void showToast(String message) {
         Toast.makeText(FacilityProfileActivity.this, message, Toast.LENGTH_SHORT).show();
     }
 }
-

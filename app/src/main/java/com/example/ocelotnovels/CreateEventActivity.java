@@ -2,18 +2,13 @@ package com.example.ocelotnovels;
 
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
@@ -70,19 +65,29 @@ public class CreateEventActivity extends AppCompatActivity {
             return;
         }
 
-        // generates a unique id for each event
+        // Generates a unique id for each event
         String eventId = UUID.randomUUID().toString();
 
-        // create a hashmap to store the event data
+        // Create a map to store the event data
         Map<String, Object> eventData = new HashMap<>();
         eventData.put("eventId", eventId);
         eventData.put("title", eventTitle);
         eventData.put("description", eventDescription);
         eventData.put("location", eventLocation);
-        eventData.put("dueDate", dueDate);
+        eventData.put("date", dueDate);
         eventData.put("geolocationEnabled", isGeolocationEnabled);
         eventData.put("limitWaitlistEnabled", isLimitWaitlistEnabled);
 
 
+
+        // Save event to Firestore
+        db.collection("events").document(eventId)
+                .set(eventData)
+                .addOnSuccessListener(aVoid -> showToast("Event created successfully."))
+                .addOnFailureListener(e -> showToast("Failed to create event."));
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(CreateEventActivity.this, message, Toast.LENGTH_SHORT).show();
     }
 }
