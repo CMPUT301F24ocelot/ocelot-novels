@@ -2,6 +2,7 @@ package com.example.ocelotnovels;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -83,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
         scanner = GmsBarcodeScanning.getClient(this,options);
         firebaseUtils = new FirebaseUtils(this);
         deviceId = firebaseUtils.getDeviceId(this);
+        Log.i("Main Activity:deviceId",deviceId);
     }
     private GmsBarcodeScannerOptions initializeGoogleScanner(){
         return new GmsBarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).enableAutoZoom()
@@ -134,8 +136,8 @@ public class MainActivity extends AppCompatActivity {
                     // Display the extracted event ID
                     Toast.makeText(MainActivity.this, "Event ID: " + eventId, Toast.LENGTH_SHORT).show();
 
-//                    toEventDetails(eventId);
-                    MainActivity.this.runOnUiThread(() -> toEventDetails(eventId));
+                    toEventDetails(eventId,deviceId);
+                    //MainActivity.this.runOnUiThread(() -> toEventDetails(eventId,deviceId));
 
                     // Perform any further actions with the event ID here, like storing it or using it for a database query
                 } else {
@@ -156,16 +158,11 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void toEventDetails(String eventId) {
-        // Check if the activity is not in a finishing state
-        if (!isFinishing() && !isDestroyed()) {
-            // Proceed with fragment transaction if the activity is in a valid state
-            EventDetailsFragment fragment = EventDetailsFragment.newInstance(eventId);
-            fragment.show(getSupportFragmentManager(), "eventDetails");
-        } else {
-            // Handle the case where the activity is finishing or destroyed
-            Toast.makeText(MainActivity.this, "Activity is not in a valid state", Toast.LENGTH_SHORT).show();
-        }
+    private void toEventDetails(String eventId,String deviceId) {
+        EventDetailsFragment fragment = EventDetailsFragment.newInstance(eventId,deviceId);
+        getSupportFragmentManager().beginTransaction()
+                .add(fragment, "eventDetails")
+                .commitAllowingStateLoss();
     }
 
 }
