@@ -284,6 +284,7 @@ public class Event {
         this.waitList = waitList;
     }
 
+
     /** @return List of selected participants. */
     public ArrayList<String> getSelectedParticipants() {
         return selectedParticipants;
