@@ -30,7 +30,7 @@ import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions;
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning;
 
 public class MainActivity extends AppCompatActivity {
-    private FirebaseUtils firebaseUtils;
+    public FirebaseUtils firebaseUtils;
     private Boolean isScannerInstalled = false;
     private Button scanQrBtn;
     public String deviceId;
