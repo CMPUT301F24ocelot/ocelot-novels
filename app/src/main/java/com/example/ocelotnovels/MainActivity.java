@@ -2,6 +2,7 @@ package com.example.ocelotnovels;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -25,6 +26,8 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanner;
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions;
@@ -39,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseUser user;
     private Button signUpButton;
+    private String getUserEmail;
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,27 +60,44 @@ public class MainActivity extends AppCompatActivity {
 
         registerUIListener();
 
+        signUpButton = findViewById(R.id.user_sign_up_button);
 
 
-        /*
-        if (user == null) {
-            // Redirect to SignUpActivity if not signed in
-//            Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
-//            startActivity(intent);
-//            finish();
-            signUpButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
-                    startActivity(intent);
-                    finish();
+        db.collection("users").document(deviceId).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                signUpButton = findViewById(R.id.user_sign_up_button);
+
+                // Check if document exists and contains an "email" field
+                if (documentSnapshot.exists() && documentSnapshot.contains("email")) {
+                    getUserEmail = documentSnapshot.getString("email");
+
+                    // Hide sign-up button if user is already signed up
+                    signUpButton.setVisibility(View.GONE);
+                } else {
+                    // Set up onClickListener only if user is not signed up
+                    signUpButton.setVisibility(View.VISIBLE);
+                    signUpButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
+                            startActivity(intent);
+                            finish();
+                        }
+                    });
                 }
-            });
-        } else {
-            View userSignedInView = findViewById(R.id.user_sign_up_button);
-            userSignedInView.setVisibility(View.GONE);
-        }*/
-    }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(MainActivity.this, "Error fetching user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
+        }
+
+
     private void initVars(){
         scanQrBtn = findViewById(R.id.user_scan_qr);
         //scannedValueTv =findViewById(R.id.scannedValueTv);
@@ -83,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
         scanner = GmsBarcodeScanning.getClient(this,options);
         firebaseUtils = new FirebaseUtils(this);
         deviceId = firebaseUtils.getDeviceId(this);
+        Log.i("Main Activity:deviceId",deviceId);
     }
     private GmsBarcodeScannerOptions initializeGoogleScanner(){
         return new GmsBarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).enableAutoZoom()
@@ -134,8 +157,8 @@ public class MainActivity extends AppCompatActivity {
                     // Display the extracted event ID
                     Toast.makeText(MainActivity.this, "Event ID: " + eventId, Toast.LENGTH_SHORT).show();
 
-//                    toEventDetails(eventId);
-                    MainActivity.this.runOnUiThread(() -> toEventDetails(eventId));
+                    toEventDetails(eventId,deviceId);
+                    //MainActivity.this.runOnUiThread(() -> toEventDetails(eventId,deviceId));
 
                     // Perform any further actions with the event ID here, like storing it or using it for a database query
                 } else {
@@ -156,12 +179,11 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void toEventDetails(String eventId) {
-        EventDetailsFragment fragment = EventDetailsFragment.newInstance(eventId);
+    private void toEventDetails(String eventId,String deviceId) {
+        EventDetailsFragment fragment = EventDetailsFragment.newInstance(eventId,deviceId);
         getSupportFragmentManager().beginTransaction()
                 .add(fragment, "eventDetails")
                 .commitAllowingStateLoss();
     }
-
 
 }
