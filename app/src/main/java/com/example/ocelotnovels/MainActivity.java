@@ -157,15 +157,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void toEventDetails(String eventId) {
-        // Check if the activity is not in a finishing state
-        if (!isFinishing() && !isDestroyed()) {
-            // Proceed with fragment transaction if the activity is in a valid state
-            EventDetailsFragment fragment = EventDetailsFragment.newInstance(eventId);
-            fragment.show(getSupportFragmentManager(), "eventDetails");
-        } else {
-            // Handle the case where the activity is finishing or destroyed
-            Toast.makeText(MainActivity.this, "Activity is not in a valid state", Toast.LENGTH_SHORT).show();
-        }
+        EventDetailsFragment fragment = EventDetailsFragment.newInstance(eventId);
+        getSupportFragmentManager().beginTransaction()
+                .add(fragment, "eventDetails")
+                .commitAllowingStateLoss();
     }
+
 
 }
