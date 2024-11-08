@@ -15,6 +15,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.ocelotnovels.utils.FirebaseUtils;
+import com.example.ocelotnovels.view.Entrant.EventDetailsFragment;
 import com.google.android.gms.common.moduleinstall.ModuleInstall;
 import com.google.android.gms.common.moduleinstall.ModuleInstallClient;
 import com.google.android.gms.common.moduleinstall.ModuleInstallRequest;
@@ -133,6 +134,9 @@ public class MainActivity extends AppCompatActivity {
                     // Display the extracted event ID
                     Toast.makeText(MainActivity.this, "Event ID: " + eventId, Toast.LENGTH_SHORT).show();
 
+//                    toEventDetails(eventId);
+                    MainActivity.this.runOnUiThread(() -> toEventDetails(eventId));
+
                     // Perform any further actions with the event ID here, like storing it or using it for a database query
                 } else {
                     Toast.makeText(MainActivity.this, "Invalid QR Code content", Toast.LENGTH_SHORT).show();
@@ -151,4 +155,17 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+
+    private void toEventDetails(String eventId) {
+        // Check if the activity is not in a finishing state
+        if (!isFinishing() && !isDestroyed()) {
+            // Proceed with fragment transaction if the activity is in a valid state
+            EventDetailsFragment fragment = EventDetailsFragment.newInstance(eventId);
+            fragment.show(getSupportFragmentManager(), "eventDetails");
+        } else {
+            // Handle the case where the activity is finishing or destroyed
+            Toast.makeText(MainActivity.this, "Activity is not in a valid state", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 }
