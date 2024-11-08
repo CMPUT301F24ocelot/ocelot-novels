@@ -10,6 +10,7 @@ public class Event {
     Date signUpEndDate;
     int waitListOpenSpots = -1;
     ArrayList<String> waitList ;
+    String eventDescription;
     /**
      * Constructs an event for the organizers to be able to put out for people
      * @param eventName this is the name that the event is given by the organizer
@@ -24,6 +25,8 @@ public class Event {
         this.signUpStartDate = signUpStartDate;
         this.signUpEndDate = signUpEndDate;
         this.waitList = waitlist;
+        this.eventDescription = eventDescription;
+
     }
 
     /**
@@ -43,6 +46,7 @@ public class Event {
         this.signUpEndDate = signUpEndDate;
         this.waitList= waitlist;
         this.waitListOpenSpots = waitListMax;
+        this.eventDescription = eventDescription;
     }
 
     /**
@@ -99,6 +103,14 @@ public class Event {
      */
     public void setEventName(String eventName) {
         this.eventName = eventName;
+    }
+
+    public String getEventDescription() {
+        return eventDescription;
+    }
+
+    public void setEventDescription(String eventDescription) {
+        this.eventDescription = eventDescription;
     }
 
     /**
