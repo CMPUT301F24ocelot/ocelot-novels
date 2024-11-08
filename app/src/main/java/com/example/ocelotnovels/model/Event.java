@@ -7,32 +7,6 @@ import java.util.Date;
  * Represents an event with various details and participant lists.
  */
 public class Event {
-<<<<<<< HEAD
-    String eventName;
-    Date eventDate;
-    Date signUpStartDate;
-    Date signUpEndDate;
-    int waitListOpenSpots = -1;
-    ArrayList<String> waitList ;
-    String eventDescription;
-    /**
-     * Constructs an event for the organizers to be able to put out for people
-     * @param eventName this is the name that the event is given by the organizer
-     * @param eventDate this is when the event will actually take place
-     * @param signUpStartDate this is when entrants can start signing up
-     * @param signUpEndDate this is when entrants will no longer be able to sign up for the wait list
-     * @param waitlist  this is the list of deviceId (Entrants) that want to join the event
-     */
-    public Event(String eventName, Date eventDate,Date signUpStartDate, Date signUpEndDate,ArrayList<String> waitlist){
-        this.eventName = eventName;
-        this.eventDate = eventDate;
-        this.signUpStartDate = signUpStartDate;
-        this.signUpEndDate = signUpEndDate;
-        this.waitList = waitlist;
-        this.eventDescription = eventDescription;
-
-    }
-=======
     /** The name of the event. */
     private String eventName;
 
@@ -68,7 +42,6 @@ public class Event {
 
     /** The location of the event. */
     private String eventLocation;
->>>>>>> origin/main
 
     /**
      * Constructs a new Event with all specified details.
@@ -90,13 +63,6 @@ public class Event {
         this.eventName = eventName;
         this.eventDescription = eventDescription;
         this.eventDate = eventDate;
-<<<<<<< HEAD
-        this.signUpStartDate = signUpStartDate;
-        this.signUpEndDate = signUpEndDate;
-        this.waitList= waitlist;
-        this.waitListOpenSpots = waitListMax;
-        this.eventDescription = eventDescription;
-=======
         this.registrationOpen = registrationOpen;
         this.registrationClose = registrationClose;
         this.eventCapacity = eventCapacity;
@@ -136,7 +102,6 @@ public class Event {
         this.waitList = waitList != null ? waitList : new ArrayList<>();
         this.selectedParticipants = selectedParticipants != null ? selectedParticipants : new ArrayList<>();
         this.cancelledParticipants = cancelledParticipants != null ? cancelledParticipants : new ArrayList<>();
->>>>>>> origin/main
     }
 
     /**
@@ -193,27 +158,9 @@ public class Event {
         this.eventName = eventName;
     }
 
-<<<<<<< HEAD
-    public String getEventDescription() {
-        return eventDescription;
-    }
-
-    public void setEventDescription(String eventDescription) {
-        this.eventDescription = eventDescription;
-    }
-
-    /**
-     * Retrieves the date when sign-ups for the event begin.
-     *
-     * @return the sign-up start date
-     */
-    public Date getSignUpStartDate() {
-        return signUpStartDate;
-=======
     /** @return A description of the event. */
     public String getEventDescription() {
         return eventDescription;
->>>>>>> origin/main
     }
 
     /**

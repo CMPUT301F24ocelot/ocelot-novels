@@ -4,7 +4,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-[import android.widget.Toast;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -28,10 +30,11 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseUtils firebaseUtils;
     private Boolean isScannerInstalled = false;
     private Button scanQrBtn;
-    private Button organizerBtn;
+    private Button organizerBtn;  // Additional button for Organizer Main Activity
     private GmsBarcodeScanner scanner;
     private FirebaseAuth mAuth;
     private FirebaseUser user;
+    public String deviceId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,35 +51,46 @@ public class MainActivity extends AppCompatActivity {
 
     private void initVars(){
         scanQrBtn = findViewById(R.id.user_scan_qr);
-        organizerBtn = findViewById(R.id.user_organizer);
+        organizerBtn = findViewById(R.id.user_organizer);  // Organizer button initialization
 
         GmsBarcodeScannerOptions options = initializeGoogleScanner();
         scanner = GmsBarcodeScanning.getClient(this, options);
         firebaseUtils = new FirebaseUtils(this);
+        deviceId = firebaseUtils.getDeviceId(this);
     }
 
     private GmsBarcodeScannerOptions initializeGoogleScanner(){
-        return new GmsBarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).enableAutoZoom()
-                .build();
+        return new GmsBarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).enableAutoZoom().build();
     }
 
     private void installGoogleScanner(){
         ModuleInstallClient moduleInstall = ModuleInstall.getClient(this);
         ModuleInstallRequest moduleInstallRequest = ModuleInstallRequest.newBuilder().addApi(GmsBarcodeScanning.getClient(this)).build();
         moduleInstall.installModules(moduleInstallRequest)
-                .addOnSuccessListener(moduleInstallResponse -> isScannerInstalled = true)
-                .addOnFailureListener(e -> {
-                    isScannerInstalled = false;
-                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                .addOnSuccessListener(new OnSuccessListener<ModuleInstallResponse>() {
+                    @Override
+                    public void onSuccess(ModuleInstallResponse moduleInstallResponse) {
+                        isScannerInstalled = true;
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        isScannerInstalled = false;
+                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
                 });
     }
 
     private void registerUIListener() {
-        scanQrBtn.setOnClickListener(v -> {
-            if (isScannerInstalled) {
-                startScanning();
-            } else {
-                Toast.makeText(getApplicationContext(), "Scanner not Installed, Please try again!", Toast.LENGTH_SHORT).show();
+        scanQrBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isScannerInstalled) {
+                    startScanning();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Scanner not Installed, Please try again!", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -88,16 +102,31 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startScanning(){
-        scanner.startScan().addOnSuccessListener(barcode -> {
-            String qrContent = barcode.getRawValue();
-            if (qrContent != null && !qrContent.isEmpty()) {
-                String eventId = qrContent;
-                Toast.makeText(MainActivity.this, "Event ID: " + eventId, Toast.LENGTH_SHORT).show();
-                runOnUiThread(() -> toEventDetails(eventId));
-            } else {
-                Toast.makeText(MainActivity.this, "Invalid QR Code content", Toast.LENGTH_SHORT).show();
+        scanner.startScan().addOnSuccessListener(new OnSuccessListener<Barcode>() {
+            @Override
+            public void onSuccess(Barcode barcode) {
+                // Extract the raw value from the scanned QR code
+                String qrContent = barcode.getRawValue();
+
+                if (qrContent != null && !qrContent.isEmpty()) {
+                    // Assuming that the event ID is the entire content of the QR code
+                    String eventId = qrContent;
+
+                    // Display the extracted event ID
+                    Toast.makeText(MainActivity.this, "Event ID: " + eventId, Toast.LENGTH_SHORT).show();
+
+                    MainActivity.this.runOnUiThread(() -> toEventDetails(eventId));
+
+                    // Perform any further actions with the event ID here, like storing it or using it for a database query
+                } else {
+                    Toast.makeText(MainActivity.this, "Invalid QR Code content", Toast.LENGTH_SHORT).show();
+                }
             }
-        }).addOnFailureListener(e -> Toast.makeText(MainActivity.this, "Scan failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+        }).addOnCanceledListener(() ->
+                Toast.makeText(MainActivity.this, "Scan canceled", Toast.LENGTH_SHORT).show()
+        ).addOnFailureListener(e ->
+                Toast.makeText(MainActivity.this, "Scan failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+        );
     }
 
     private void toEventDetails(String eventId) {
