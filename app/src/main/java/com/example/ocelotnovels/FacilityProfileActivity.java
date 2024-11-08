@@ -1,5 +1,6 @@
 package com.example.ocelotnovels;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Patterns;
@@ -11,6 +12,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.ocelotnovels.model.Facility;
+import com.example.ocelotnovels.view.organizer.OrganizerMainActivity;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
@@ -21,13 +23,13 @@ public class FacilityProfileActivity extends AppCompatActivity {
 
     private EditText facilityName, facilityEmail, facilityPhone, facilityLocation, facilityDescription;
     private ImageView facilityProfileImage;
-    private Button facilitySaveButton;
+    private Button facilitySaveButton, facilityCancelButton;
     private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.organizer_profile_activity);
+        setContentView(R.layout.facility_profile_activity);
 
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
@@ -40,9 +42,19 @@ public class FacilityProfileActivity extends AppCompatActivity {
         facilityDescription = findViewById(R.id.organizer_description);
         facilityProfileImage = findViewById(R.id.organizer_profile_image);
         facilitySaveButton = findViewById(R.id.organizer_save_button);
+        facilityCancelButton = findViewById(R.id.organizer_cancel_button);
 
         // Set up save button functionality
         facilitySaveButton.setOnClickListener(v -> saveFacilityProfile());
+
+        facilityCancelButton.setOnClickListener(v -> navigateBack());
+    }
+
+    private void navigateBack() {
+        Intent intent = new Intent(FacilityProfileActivity.this, OrganizerMainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        finish();
     }
 
     private void saveFacilityProfile() {
@@ -98,8 +110,11 @@ public class FacilityProfileActivity extends AppCompatActivity {
         // Save to Firestore under "facilities" collection
         db.collection("facilities").document(facility.getFacilityId())
                 .set(facilityData)
-                .addOnSuccessListener(aVoid -> showToast("Facility profile saved successfully."))
-                .addOnFailureListener(e -> showToast("Failed to save facility profile. "));
+                .addOnSuccessListener(aVoid -> {
+                    showToast("Facility profile saved successfully.");
+                    navigateBack(); // After saving, navigate back
+                })
+                .addOnFailureListener(e -> showToast("Failed to save facility profile."));
     }
 
     private void showToast(String message) {
