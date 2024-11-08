@@ -134,7 +134,8 @@ public class MainActivity extends AppCompatActivity {
                     // Display the extracted event ID
                     Toast.makeText(MainActivity.this, "Event ID: " + eventId, Toast.LENGTH_SHORT).show();
 
-                    toEventDetails(eventId);
+//                    toEventDetails(eventId);
+                    MainActivity.this.runOnUiThread(() -> toEventDetails(eventId));
 
                     // Perform any further actions with the event ID here, like storing it or using it for a database query
                 } else {
@@ -155,7 +156,16 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void toEventDetails(String eventId){
-        EventDetailsFragment fragment = EventDetailsFragment.newInstance(eventId);
-        fragment.show(getSupportFragmentManager(), "eventDetails");
-}}
+    private void toEventDetails(String eventId) {
+        // Check if the activity is not in a finishing state
+        if (!isFinishing() && !isDestroyed()) {
+            // Proceed with fragment transaction if the activity is in a valid state
+            EventDetailsFragment fragment = EventDetailsFragment.newInstance(eventId);
+            fragment.show(getSupportFragmentManager(), "eventDetails");
+        } else {
+            // Handle the case where the activity is finishing or destroyed
+            Toast.makeText(MainActivity.this, "Activity is not in a valid state", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+}
