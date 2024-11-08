@@ -16,6 +16,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.ocelotnovels.model.Entrant;
+import com.example.ocelotnovels.utils.FirebaseUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 //import com.google.firebase.auth.AuthResult;
@@ -33,7 +34,7 @@ public class SignUpActivity extends AppCompatActivity {
 
     private EditText emailEditText, passwordEditText, nameEditText,phoneEditText;
     private Button signUpButton;
-
+    private FirebaseUtils firebaseUtils;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
 
@@ -54,6 +55,7 @@ public class SignUpActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.user_signup_activity);
 
+        firebaseUtils = new FirebaseUtils(this);
         //mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
         emailEditText = findViewById(R.id.editTextEmail);
@@ -118,18 +120,8 @@ public class SignUpActivity extends AppCompatActivity {
      */
     private void addEntrantToFirestore(Entrant entrant){
         Map<String,Object> entrantData = entrant.toMap();
-        db.collection("entrants")
-                .add(entrantData)
-                .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentReference> task) {
-                        if (task.isSuccessful()){
-                            Toast.makeText(SignUpActivity.this,"Sign-up successful",Toast.LENGTH_SHORT).show();
-                        }else {
-                            Toast.makeText(SignUpActivity.this, "Sign-up failed: " + task.getException(), Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
+        firebaseUtils.pushUserDocument(this,entrantData);
+
     }
 
 }
