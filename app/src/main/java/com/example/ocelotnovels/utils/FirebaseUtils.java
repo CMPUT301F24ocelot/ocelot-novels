@@ -34,7 +34,7 @@ public class FirebaseUtils {
         }
     }
 
-    protected String getDeviceId(Context context){
+    public String getDeviceId(Context context){
         SharedPreferences sharedPreferences;
         sharedPreferences = context.getApplicationContext().getSharedPreferences("user_settings",Context.MODE_PRIVATE);
         String deviceId = sharedPreferences.getString("DeviceId",null);

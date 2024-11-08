@@ -5,7 +5,7 @@ package com.example.ocelotnovels.model;
  * Extends the User class and provides a way to compare entrants by email.
  */
 public class Entrant extends User implements Comparable<Entrant> {
-
+    private String role;
     /**
      * Constructs an Entrant with the specified first name, last name, and email.
      * @param firstName the entrant's first name
@@ -14,6 +14,7 @@ public class Entrant extends User implements Comparable<Entrant> {
      */
     public Entrant(String firstName, String lastName, String email) {
         super(firstName, lastName, email);
+        this.role="Entrant";
     }
 
     /**
@@ -25,6 +26,7 @@ public class Entrant extends User implements Comparable<Entrant> {
      */
     public Entrant(String firstName, String lastName, String email, String phoneNumber) {
         super(firstName, lastName, email, phoneNumber);
+        this.role="Entrant";
     }
 
     /**
@@ -36,5 +38,13 @@ public class Entrant extends User implements Comparable<Entrant> {
     @Override
     public int compareTo(Entrant other) {
         return this.getEmail().compareTo(other.getEmail());
+    }
+
+    /**
+     * Used to check the role.
+     * @return role returns Entrant as the role
+     */
+    public String getRole() {
+        return role;
     }
 }
