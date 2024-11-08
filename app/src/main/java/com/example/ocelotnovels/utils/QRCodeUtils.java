@@ -1,5 +1,7 @@
 package com.example.ocelotnovels.utils;
 
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.ImageDecoder;
 import android.os.Build;
 
@@ -38,6 +40,19 @@ public class QRCodeUtils {
 
     }
 
+    public static Bitmap generateQrCode(String content, int width, int height) throws WriterException {
+        BitMatrix bitMatrix = new MultiFormatWriter().encode(content, BarcodeFormat.QR_CODE, width, height);
+        int bitMatrixWidth = bitMatrix.getWidth();
+        int bitMatrixHeight = bitMatrix.getHeight();
+        Bitmap bitmap = Bitmap.createBitmap(bitMatrixWidth, bitMatrixHeight, Bitmap.Config.RGB_565);
+
+        for (int x = 0; x < bitMatrixWidth; x++) {
+            for (int y = 0; y < bitMatrixHeight; y++) {
+                bitmap.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
+            }
+        }
+        return bitmap;
+    }
 
 
 

@@ -98,6 +98,16 @@
                 android:textColor="#666666"
                 android:layout_marginBottom="16dp" />
 
+            <!-- QR Code Preview -->
+            <ImageView
+                android:id="@+id/qr_code_image"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="16dp"
+                android:contentDescription="QR Code"
+                android:visibility="gone" /> <!-- Set visibility to gone initially -->
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
