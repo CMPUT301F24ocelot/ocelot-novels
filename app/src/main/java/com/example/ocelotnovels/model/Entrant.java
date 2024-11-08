@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  * Represents an entrant with a first name, last name, email, and an optional phone number.
  */
-public class Entrant {
+public class Entrant implements Comparable{
     private String firstName;
     private String lastName;
     private String email;
@@ -144,5 +144,24 @@ public class Entrant {
             entrantMap.put("phoneNumber", phoneNumber);
         }
         return entrantMap;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        if(o.getClass() == this.getClass()){
+            if(firstName == ((Entrant) o).getFirstName() && lastName == ((Entrant) o).getLastName() && email == ((Entrant) o).getEmail()){
+                return 0;
+            }
+        }
+        return 1;
+    }
+
+    @Override
+    public boolean equals(Object o){
+        if(o.getClass() == this.getClass()){
+            return(firstName == ((Entrant) o).getFirstName() && lastName == ((Entrant) o).getLastName() && email == ((Entrant) o).getEmail());
+        }else{
+            throw new IllegalArgumentException();
+        }
     }
 }
