@@ -1,8 +1,10 @@
 package com.example.ocelotnovels.view.organizer;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -10,9 +12,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.ocelotnovels.MapsActivity;
 import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.model.Event;
 import com.example.ocelotnovels.utils.FirebaseUtils;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
@@ -20,58 +24,71 @@ import java.util.List;
 
 public class OrganizerMainActivity extends AppCompatActivity {
 
-    private FirebaseUtils firebaseUtils;
-    private RecyclerView recyclerView;
+    private RecyclerView organizerRecyclerView;
     private OrganizerEventAdapter eventAdapter;
-    private List<Event> eventList;
-    private TextView welcomeText;
+    private List<String> eventNames;
+    private FirebaseFirestore db;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.organizer_mainevents);
 
-        // Initialize FirebaseUtils
-        firebaseUtils = new FirebaseUtils(this);
+        // Initialize Firestore
+        db = FirebaseFirestore.getInstance();
 
-        // Initialize RecyclerView
-        recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        eventList = new ArrayList<>();
-        eventAdapter = new OrganizerEventAdapter(eventList);
-        recyclerView.setAdapter(eventAdapter);
+        // Setup RecyclerView
+        organizerRecyclerView = findViewById(R.id.OrganizerRecyclerView);
+        organizerRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        eventNames = new ArrayList<>();
+        eventAdapter = new OrganizerEventAdapter(eventNames, this);
+        organizerRecyclerView.setAdapter(eventAdapter);
 
-        // Fetch organizer events
-        fetchOrganizerEvents();
+        // Load events from Firestore
+        loadEventsFromFirestore();
 
-        welcomeText = findViewById(R.id.welcome_text);
-        String userName = FirebaseUtils.getUserDisplayName();
-        welcomeText.setText("Hello " + userName + "!");
+        // Set greeting text
+        TextView welcomeText = findViewById(R.id.welcome_text);
+        welcomeText.setText("Hello Gareth!");  // Replace with dynamic username if needed
+
+        // Button to navigate to Entrant Map
+        Button entrantMapButton = findViewById(R.id.entrant_map);
+        entrantMapButton.setOnClickListener(v -> {
+            Intent intent = new Intent(OrganizerMainActivity.this, MapsActivity.class);
+            startActivity(intent);
+        });
+
+        /*
+        Button waitingListButton = findViewById(R.id.entrant_list);
+        entrantMapButton.setOnClickListener(v -> {
+            Intent intent = new Intent(OrganizerMainActivity.this, MapOfEntrantsActivity.class);
+            startActivity(intent);
+        });
+
+        Button addEventButton = findViewById(R.id.add_events_button);
+        entrantMapButton.setOnClickListener(v -> {
+            Intent intent = new Intent(OrganizerMainActivity.this, CreateEventActivity.class);
+            startActivity(intent);
+        }); */
+
     }
 
-    private void fetchOrganizerEvents() {
-        firebaseUtils.getOrganizerEvents()
+    private void loadEventsFromFirestore() {
+        db.collection("events")
+                .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
+                    eventNames.clear();
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        Event event = document.toObject(Event.class);
-                        Log.d("OrganizerMainActivity", "Event: " + event.getTitle());
-                        // Handle displaying events in the RecyclerView
+                        String eventName = document.getString("eventName");
+                        if (eventName != null) {
+                            eventNames.add(eventName);
+                        }
                     }
+                    eventAdapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("OrganizerMainActivity", "Error fetching events", e);
+                    // Handle any errors
                 });
     }
 
-    // Example method to add a new event
-    private void addNewEvent() {
-        Event newEvent = new Event("Event Title", "2025-01-01", "Location", 20, deviceId);
-        firebaseUtils.addEvent(newEvent)
-                .addOnSuccessListener(documentReference -> {
-                    Log.d("OrganizerMainActivity", "Event added with ID: " + documentReference.getId());
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("OrganizerMainActivity", "Error adding event", e);
-                });
-    }
 }

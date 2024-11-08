@@ -1,5 +1,6 @@
 package com.example.ocelotnovels.view.organizer;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,35 +16,35 @@ import java.util.List;
 
 public class OrganizerEventAdapter extends RecyclerView.Adapter<OrganizerEventAdapter.EventViewHolder> {
 
-    private List<Event> eventList;
+    private List<String> eventNames;
+    private Context context;
 
-    public OrganizerEventAdapter(List<Event> eventList) {
-        this.eventList = eventList;
+    public OrganizerEventAdapter(List<String> eventNames, Context context) {
+        this.eventNames = eventNames;
+        this.context = context;
     }
 
     @NonNull
     @Override
     public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.organizer_event_item, parent, false);
+        View view = LayoutInflater.from(context).inflate(R.layout.organizer_event_item, parent, false);
         return new EventViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
-        Event event = eventList.get(position);
-        holder.eventNameTextView.setText(event.getTitle());
+        holder.eventNameTextView.setText(eventNames.get(position));
     }
 
     @Override
     public int getItemCount() {
-        return eventList.size();
+        return eventNames.size();
     }
 
     public static class EventViewHolder extends RecyclerView.ViewHolder {
         TextView eventNameTextView;
 
-        public EventViewHolder(@NonNull View itemView) {
+        public EventViewHolder(View itemView) {
             super(itemView);
             eventNameTextView = itemView.findViewById(R.id.eventNameTextView);
         }
