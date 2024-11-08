@@ -1,5 +1,7 @@
 package com.example.ocelotnovels.view.organizer;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,8 +14,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.ocelotnovels.CancelledEntrantsActivity;
+import com.example.ocelotnovels.ConfirmedEntrantsActivity;
+import com.example.ocelotnovels.InvitedEntrantsActivity;
 import com.example.ocelotnovels.MapsActivity;
 import com.example.ocelotnovels.R;
+import com.example.ocelotnovels.SelectedEntrantsActivity;
+import com.example.ocelotnovels.WaitingListActivity;
 import com.example.ocelotnovels.model.Event;
 import com.example.ocelotnovels.utils.FirebaseUtils;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -49,7 +56,7 @@ public class OrganizerMainActivity extends AppCompatActivity {
 
         // Set greeting text
         TextView welcomeText = findViewById(R.id.welcome_text);
-        welcomeText.setText("Hello Gareth!");  // Replace with dynamic username if needed
+        welcomeText.setText("Lists");  // Replace with dynamic username if needed
 
         // Button to navigate to Entrant Map
         Button entrantMapButton = findViewById(R.id.entrant_map);
@@ -64,13 +71,50 @@ public class OrganizerMainActivity extends AppCompatActivity {
             Intent intent = new Intent(OrganizerMainActivity.this, MapOfEntrantsActivity.class);
             startActivity(intent);
         });
+        */
 
+        Button entrantListButton = findViewById(R.id.entrant_list);
+        entrantListButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showEntrantOptionsDialog();
+            }
+        });
+
+        /*
         Button addEventButton = findViewById(R.id.add_events_button);
         entrantMapButton.setOnClickListener(v -> {
             Intent intent = new Intent(OrganizerMainActivity.this, CreateEventActivity.class);
             startActivity(intent);
         }); */
-
+    }
+    private void showEntrantOptionsDialog() {
+        final CharSequence[] items = {"Waitlist of Entrants", "Selected Entrants", "Invited Entrants", "Cancelled Entrants", "Confirmed Entrants"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Manage Entrants");
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int item) {
+                switch (item) {
+                    case 0:
+                        startActivity(new Intent(OrganizerMainActivity.this, WaitingListActivity.class));
+                        break;
+                    case 1:
+                        startActivity(new Intent(OrganizerMainActivity.this, SelectedEntrantsActivity.class));
+                        break;
+                    case 2:
+                        startActivity(new Intent(OrganizerMainActivity.this, InvitedEntrantsActivity.class));
+                        break;
+                    case 3:
+                        startActivity(new Intent(OrganizerMainActivity.this, CancelledEntrantsActivity.class));
+                        break;
+                    case 4:
+                        startActivity(new Intent(OrganizerMainActivity.this, ConfirmedEntrantsActivity.class));
+                        break;
+                }
+            }
+        });
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 
     // Constructor for dependency injection (for testing)
