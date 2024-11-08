@@ -3,46 +3,105 @@ package com.example.ocelotnovels.model;
 import java.util.ArrayList;
 import java.util.Date;
 
+/**
+ * Represents an event with various details and participant lists.
+ */
 public class Event {
-    String eventName;
-    Date eventDate;
-    Date signUpStartDate;
-    Date signUpEndDate;
-    int waitListOpenSpots = -1;
-    ArrayList<String> waitList ;
-    /**
-     * Constructs an event for the organizers to be able to put out for people
-     * @param eventName this is the name that the event is given by the organizer
-     * @param eventDate this is when the event will actually take place
-     * @param signUpStartDate this is when entrants can start signing up
-     * @param signUpEndDate this is when entrants will no longer be able to sign up for the wait list
-     * @param waitlist  this is the list of deviceId (Entrants) that want to join the event
-     */
-    public Event(String eventName, Date eventDate,Date signUpStartDate, Date signUpEndDate,ArrayList<String> waitlist){
-        this.eventName = eventName;
-        this.eventDate = eventDate;
-        this.signUpStartDate = signUpStartDate;
-        this.signUpEndDate = signUpEndDate;
-        this.waitList = waitlist;
-    }
+    /** The name of the event. */
+    private String eventName;
+
+    /** A description of the event. */
+    private String eventDescription;
+
+    /** The date and time of the event. */
+    private Date eventDate;
+
+    /** The date and time when registration opens. */
+    private Date registrationOpen;
+
+    /** The date and time when registration closes. */
+    private Date registrationClose;
+
+    /** The maximum capacity of participants for the event. */
+    private int eventCapacity = -1;
+
+    /** The URL of the event poster image. */
+    private String eventPosterUrl;
+
+    /** The ID of the organizer of the event. */
+    private String organizerId;
+
+    /** List of users on the waitlist for the event. */
+    private ArrayList<String> waitList;
+
+    /** List of selected participants for the event. */
+    private ArrayList<String> selectedParticipants;
+
+    /** List of users who have canceled their participation. */
+    private ArrayList<String> cancelledParticipants;
+
+    /** The location of the event. */
+    private String eventLocation;
 
     /**
-     * Constructs an event for the organizers to be able to put out for people that includes a max size for the wait list
-     * @param eventName this is the name that the event is given by the organizer
-     * @param eventDate this is when the event will actually take place
-     * @param signUpStartDate this is when entrants can start signing up
-     * @param signUpEndDate this is when entrants will no longer be able to sign up for the wait list
-     * @param waitlist  this is the list of deviceIds (Entrants) that want to join the event
-     * @param waitListMax this is important if the organizer wants to limit the number of people that can join the waitlist
-     *                    waitListMax defaults to -1 if there is no max given so you can test that way
+     * Constructs a new Event with all specified details.
+     *
+     * @param eventName             The name of the event.
+     * @param eventDescription      A description of the event.
+     * @param eventDate             The date and time of the event.
+     * @param registrationOpen      The date and time when registration opens.
+     * @param registrationClose     The date and time when registration closes.
+     * @param eventCapacity         The maximum capacity of participants for the event, defaults to -1.
+     * @param eventPosterUrl        The URL of the event poster image.
+     * @param organizerId           The ID of the organizer of the event.
+     * @param eventLocation         The location of the event.
+     * @param waitList              List of users on the waitlist for the event.
+     * @param selectedParticipants  List of selected participants for the event.
+     * @param cancelledParticipants List of users who have canceled their participation.
      */
-    public Event(String eventName, Date eventDate,Date signUpStartDate, Date signUpEndDate,ArrayList<String> waitlist, int waitListMax){
+    public Event(String eventName, String eventDescription, Date eventDate, Date registrationOpen, Date registrationClose, int eventCapacity, String eventPosterUrl, String organizerId, String eventLocation, ArrayList<String> waitList, ArrayList<String> selectedParticipants, ArrayList<String> cancelledParticipants) {
         this.eventName = eventName;
+        this.eventDescription = eventDescription;
         this.eventDate = eventDate;
-        this.signUpStartDate = signUpStartDate;
-        this.signUpEndDate = signUpEndDate;
-        this.waitList= waitlist;
-        this.waitListOpenSpots = waitListMax;
+        this.registrationOpen = registrationOpen;
+        this.registrationClose = registrationClose;
+        this.eventCapacity = eventCapacity;
+        this.eventPosterUrl = eventPosterUrl;
+        this.organizerId = organizerId;
+        this.eventLocation = eventLocation;
+        this.waitList = waitList != null ? waitList : new ArrayList<>();
+        this.selectedParticipants = selectedParticipants != null ? selectedParticipants : new ArrayList<>();
+        this.cancelledParticipants = cancelledParticipants != null ? cancelledParticipants : new ArrayList<>();
+    }
+
+
+    /**
+     * Constructs a new Event with all specified details except eventCapacity.
+     *
+     * @param eventName             The name of the event.
+     * @param eventDescription      A description of the event.
+     * @param eventDate             The date and time of the event.
+     * @param registrationOpen      The date and time when registration opens.
+     * @param registrationClose     The date and time when registration closes.
+     * @param eventPosterUrl        The URL of the event poster image.
+     * @param organizerId           The ID of the organizer of the event.
+     * @param eventLocation         The location of the event.
+     * @param waitList              List of users on the waitlist for the event.
+     * @param selectedParticipants  List of selected participants for the event.
+     * @param cancelledParticipants List of users who have canceled their participation.
+     */
+    public Event(String eventName, String eventDescription, Date eventDate, Date registrationOpen, Date registrationClose,  String eventPosterUrl, String organizerId, String eventLocation, ArrayList<String> waitList, ArrayList<String> selectedParticipants, ArrayList<String> cancelledParticipants) {
+        this.eventName = eventName;
+        this.eventDescription = eventDescription;
+        this.eventDate = eventDate;
+        this.registrationOpen = registrationOpen;
+        this.registrationClose = registrationClose;
+        this.eventPosterUrl = eventPosterUrl;
+        this.organizerId = organizerId;
+        this.eventLocation = eventLocation;
+        this.waitList = waitList != null ? waitList : new ArrayList<>();
+        this.selectedParticipants = selectedParticipants != null ? selectedParticipants : new ArrayList<>();
+        this.cancelledParticipants = cancelledParticipants != null ? cancelledParticipants : new ArrayList<>();
     }
 
     /**
@@ -53,10 +112,10 @@ public class Event {
      *         false if the waitlist is full or the user is already on the waitlist
      */
     public boolean addEntrantToWaitList(String user) {
-        if(waitListOpenSpots != 0){
+        if(eventCapacity != 0){
             if(!waitList.contains(user)){
                 waitList.add(user);
-                waitListOpenSpots --;
+                eventCapacity --;
                 return true;
             }
         }
@@ -75,19 +134,17 @@ public class Event {
     public boolean removeEntrantFromWaitList(String user) {
         if (!waitList.isEmpty() && waitList.contains(user)) {
             waitList.remove(user);
-            if (waitListOpenSpots != -1) {
-                waitListOpenSpots++;
+            if (eventCapacity >= 0) {
+                eventCapacity++;
             }
             return true;
         }
         return false;
     }
 
-    /**
-     * Retrieves the name of the event.
-     *
-     * @return the event name
-     */
+    // Getter and Setter methods
+
+    /** @return The name of the event. */
     public String getEventName() {
         return eventName;
     }
@@ -95,101 +152,188 @@ public class Event {
     /**
      * Sets the name of the event.
      *
-     * @param eventName the new name for the event
+     * @param eventName The new event name.
      */
     public void setEventName(String eventName) {
         this.eventName = eventName;
     }
 
-    /**
-     * Retrieves the date when sign-ups for the event begin.
-     *
-     * @return the sign-up start date
-     */
-    public Date getSignUpStartDate() {
-        return signUpStartDate;
+    /** @return A description of the event. */
+    public String getEventDescription() {
+        return eventDescription;
     }
 
     /**
-     * Sets the date when sign-ups for the event begin.
+     * Sets the description of the event.
      *
-     * @param signUpStartDate the new sign-up start date
+     * @param eventDescription The new event description.
      */
-    public void setSignUpStartDate(Date signUpStartDate) {
-        this.signUpStartDate = signUpStartDate;
+    public void setEventDescription(String eventDescription) {
+        this.eventDescription = eventDescription;
     }
 
-    /**
-     * Retrieves the date of the event.
-     *
-     * @return the event date
-     */
+    /** @return The date and time of the event. */
     public Date getEventDate() {
         return eventDate;
     }
 
     /**
-     * Sets the date of the event.
+     * Sets the date and time of the event.
      *
-     * @param eventDate the new date for the event
+     * @param eventDate The new event date and time.
      */
     public void setEventDate(Date eventDate) {
         this.eventDate = eventDate;
     }
 
-    /**
-     * Retrieves the date when sign-ups for the event end.
-     *
-     * @return the sign-up end date
-     */
-    public Date getSignUpEndDate() {
-        return signUpEndDate;
+    /** @return The date and time when registration opens. */
+    public Date getRegistrationOpen() {
+        return registrationOpen;
     }
 
     /**
-     * Sets the date when sign-ups for the event end.
+     * Sets the date and time when registration opens.
      *
-     * @param signUpEndDate the new sign-up end date
+     * @param registrationOpen The new registration open date and time.
      */
-    public void setSignUpEndDate(Date signUpEndDate) {
-        this.signUpEndDate = signUpEndDate;
+    public void setRegistrationOpen(Date registrationOpen) {
+        this.registrationOpen = registrationOpen;
+    }
+
+    /** @return The date and time when registration closes. */
+    public Date getRegistrationClose() {
+        return registrationClose;
     }
 
     /**
-     * Retrieves the number of open spots remaining on the waitlist.
+     * Sets the date and time when registration closes.
      *
-     * @return the number of open spots on the waitlist, or -1 if no limit is set
+     * @param registrationClose The new registration close date and time.
      */
-    public int getWaitListOpenSpots() {
-        return waitListOpenSpots;
+    public void setRegistrationClose(Date registrationClose) {
+        this.registrationClose = registrationClose;
+    }
+
+    /** @return The maximum capacity of participants for the event. */
+    public int getEventCapacity() {
+        return eventCapacity;
     }
 
     /**
-     * Checks if a specific entrant is on the event's waitlist.
+     * Sets the maximum capacity of participants for the event.
      *
-     * @param entrant the entrant to check, represented by their device ID
-     * @return {@code true} if the entrant is on the waitlist, {@code false} otherwise
+     * @param eventCapacity The new event capacity.
      */
-    public boolean inWaitList(String entrant) {
-        return waitList.contains(entrant);
+    public void setEventCapacity(int eventCapacity) {
+        this.eventCapacity = eventCapacity;
+    }
+
+    /** @return The URL of the event poster image. */
+    public String getEventPosterUrl() {
+        return eventPosterUrl;
     }
 
     /**
-     * Retrieves the list of entrants on the waitlist.
+     * Sets the URL of the event poster image.
      *
-     * @return the waitlist, represented as an {@link ArrayList} of device IDs
+     * @param eventPosterUrl The new event poster URL.
      */
+    public void setEventPosterUrl(String eventPosterUrl) {
+        this.eventPosterUrl = eventPosterUrl;
+    }
+
+    /** @return The ID of the organizer of the event. */
+    public String getOrganizerId() {
+        return organizerId;
+    }
+
+    /**
+     * Sets the ID of the organizer of the event.
+     *
+     * @param organizerId The new organizer ID.
+     */
+    public void setOrganizerId(String organizerId) {
+        this.organizerId = organizerId;
+    }
+
+    /** @return The location of the event. */
+    public String getEventLocation() {
+        return eventLocation;
+    }
+
+    /**
+     * Sets the location of the event.
+     *
+     * @param eventLocation The new event location.
+     */
+    public void setEventLocation(String eventLocation) {
+        this.eventLocation = eventLocation;
+    }
+
+    /** @return List of users on the waitlist. */
     public ArrayList<String> getWaitList() {
         return waitList;
     }
 
     /**
-     * Sets a new list of entrants as the event's waitlist.
+     * Sets the waitlist of users.
      *
-     * @param waitList the new waitlist, represented as an {@link ArrayList} of device IDs
+     * @param waitList The new waitlist.
      */
     public void setWaitList(ArrayList<String> waitList) {
         this.waitList = waitList;
+    }
+
+    /** @return List of selected participants. */
+    public ArrayList<String> getSelectedParticipants() {
+        return selectedParticipants;
+    }
+
+    /**
+     * Sets the list of selected participants.
+     *
+     * @param selectedParticipants The new list of selected participants.
+     */
+    public void setSelectedParticipants(ArrayList<String> selectedParticipants) {
+        this.selectedParticipants = selectedParticipants;
+    }
+
+    /** @return List of canceled participants. */
+    public ArrayList<String> getCancelledParticipants() {
+        return cancelledParticipants;
+    }
+
+    /**
+     * Sets the list of canceled participants.
+     *
+     * @param cancelledParticipants The new list of canceled participants.
+     */
+    public void setCancelledParticipants(ArrayList<String> cancelledParticipants) {
+        this.cancelledParticipants = cancelledParticipants;
+    }
+
+    /**
+     * Adds a user to the selected participants list if they are not already on it.
+     *
+     * @param user The user to add to the selected participants list.
+     * @return True if the user was added; false otherwise.
+     */
+    public boolean addSelectedParticipant(String user) {
+        if (!selectedParticipants.contains(user)) {
+            selectedParticipants.add(user);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Removes a user from the selected participants list.
+     *
+     * @param user The user to remove from the selected participants list.
+     * @return True if the user was removed; false otherwise.
+     */
+    public boolean removeSelectedParticipant(String user) {
+        return selectedParticipants.remove(user);
     }
 
 }

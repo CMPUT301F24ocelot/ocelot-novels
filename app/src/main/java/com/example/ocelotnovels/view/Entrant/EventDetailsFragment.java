@@ -98,6 +98,7 @@ public class EventDetailsFragment extends DialogFragment {
     }
 
     private void joinEvent() {
+
         // Implement joining the event functionality here
         Toast.makeText(getContext(), "Joining event: " + eventId, Toast.LENGTH_SHORT).show();
     }
