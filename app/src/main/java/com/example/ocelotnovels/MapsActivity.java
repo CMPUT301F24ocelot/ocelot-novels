@@ -5,7 +5,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -15,6 +14,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -29,14 +29,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
 
-        // Load the map fragment dynamically
-        SupportMapFragment mapFragment = new SupportMapFragment();
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.map, mapFragment)
-                .commit();
-
-        // Set up the map
-        mapFragment.getMapAsync(this);
+        // Load the map fragment from XML layout
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
+        } else {
+            Log.e("MapsActivity", "Error: Map fragment not found");
+        }
     }
 
     @Override
@@ -54,14 +54,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful() && task.getResult() != null) {
                         for (QueryDocumentSnapshot document : task.getResult()) {
-                            // Retrieve each event's location and name
-                            Double lat = document.getDouble("eventLocation.latitude");
-                            Double lng = document.getDouble("eventLocation.longitude");
+                            // Retrieve GeoPoint location
+                            GeoPoint geoPoint = document.getGeoPoint("eventLocation");
                             String eventName = document.getString("eventName");
 
-                            // Check if both latitude and longitude are available
-                            if (lat != null && lng != null) {
-                                LatLng eventLocation = new LatLng(lat, lng);
+                            // Check if location is available
+                            if (geoPoint != null) {
+                                LatLng eventLocation = new LatLng(geoPoint.getLatitude(), geoPoint.getLongitude());
 
                                 // Add a marker on the map for each event location
                                 mMap.addMarker(new MarkerOptions()
@@ -71,7 +70,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             }
                         }
                     } else {
-                        // Handle the case where event data is not available
                         Log.w("Firestore", "Failed to retrieve event locations");
                     }
                 });

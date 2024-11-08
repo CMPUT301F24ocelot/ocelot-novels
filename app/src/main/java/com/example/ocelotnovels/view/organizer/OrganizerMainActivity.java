@@ -6,11 +6,12 @@ import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.ocelotnovels.MapsActivity;
 import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.model.Event;
 import com.example.ocelotnovels.CreateEventActivity;
 import com.example.ocelotnovels.FacilityProfileActivity;
-import com.example.ocelotnovels.MainActivity; // Import MainActivity
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -49,6 +50,14 @@ public class OrganizerMainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        // Button to navigate to Entrant Map
+        Button entrantMapButton = findViewById(R.id.entrant_map);
+        entrantMapButton.setOnClickListener(v -> {
+            Intent intent = new Intent(OrganizerMainActivity.this, MapsActivity.class);
+            startActivity(intent);
+        });
+
+
         // Facility Profile Button Click
         Button facilityProfileButton = findViewById(R.id.facility_profile_button);
         facilityProfileButton.setOnClickListener(v -> {
@@ -56,12 +65,11 @@ public class OrganizerMainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // Back Button Click
-        Button backButton = findViewById(R.id.back_button);
-        backButton.setOnClickListener(v -> {
-            Intent intent = new Intent(OrganizerMainActivity.this, MainActivity.class);
+        //  Button Click
+        Button entranListButton = findViewById(R.id.entrant_list);
+        facilityProfileButton.setOnClickListener(v -> {
+            Intent intent = new Intent(OrganizerMainActivity.this, FacilityProfileActivity.class);
             startActivity(intent);
-            finish(); // Optional: Call finish to close OrganizerMainActivity
         });
     }
 
