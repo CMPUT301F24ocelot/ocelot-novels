@@ -1,29 +1,19 @@
 package com.example.ocelotnovels.model;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * Represents an entrant with a first name, last name, email, and an optional phone number.
+ * Represents an entrant user in the system with basic information and comparison functionality.
+ * Extends the User class and provides a way to compare entrants by email.
  */
-public class Entrant implements Comparable{
-    private String firstName;
-    private String lastName;
-    private String email;
-    private String phoneNumber; // Optional
+public class Entrant extends User implements Comparable<Entrant> {
 
     /**
-     * Constructs an Entrant with a specified first name, last name and an email.
-     * Since no phone number is provided, it is set to null by default.
+     * Constructs an Entrant with the specified first name, last name, and email.
      * @param firstName the entrant's first name
      * @param lastName  the entrant's last name
      * @param email     the entrant's email
      */
-    public Entrant(String firstName,String lastName,String email){
-        this.firstName = firstName;
-        this.lastName= lastName;
-        this.email= email;
-        this.phoneNumber=null; // Null by default
+    public Entrant(String firstName, String lastName, String email) {
+        super(firstName, lastName, email);
     }
 
     /**
@@ -33,135 +23,18 @@ public class Entrant implements Comparable{
      * @param email       the entrant's email
      * @param phoneNumber the entrant's phone number
      */
-    public Entrant(String firstName,String lastName,String email, String phoneNumber){
-        this.firstName=firstName;
-        this.lastName=lastName;
-        this.email=email;
-        this.phoneNumber=phoneNumber;
+    public Entrant(String firstName, String lastName, String email, String phoneNumber) {
+        super(firstName, lastName, email, phoneNumber);
     }
 
     /**
-     * Gets the entrant's first name.
-     *
-     * @return the first name
-     */
-    public String getFirstName() {
-        return firstName;
-    }
-
-    /**
-     * Sets the entrant's first name.
-     *
-     * @param firstName the first name to set
-     */
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    /**
-     * Gets the entrant's last name.
-     *
-     * @return the last name
-     */
-    public String getLastName() {
-        return lastName;
-    }
-
-    /**
-     * Sets the entrant's last name.
-     *
-     * @param lastName the last name to set
-     */
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    /**
-     * Gets the entrant's email.
-     *
-     * @return the email
-     */
-    public String getEmail() {
-        return email;
-    }
-
-    /**
-     * Sets the entrant's email.
-     *
-     * @param email the email to set
-     */
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    /**
-     * Gets the entrant's phone number.
-     *
-     * @return the phone number, or null if not set
-     */
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    /**
-     * Sets the entrant's phone number.
-     *
-     * @param phoneNumber the phone number to set
-     */
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    /**
-     * Returns a string representation of the entrant.
-     * The phone number is only included if it is not null.
-     *
-     * @return a string representation of the entrant
+     * Compares this Entrant with another Entrant based on their email.
+     * @param other the Entrant to compare with
+     * @return a negative integer, zero, or a positive integer as this Entrant's email is
+     *         lexicographically less than, equal to, or greater than the specified Entrant's email
      */
     @Override
-    public String toString() {
-        return "Entrant{" +
-                "firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                (phoneNumber != null ? ", phoneNumber='" + phoneNumber + '\'' : "") +
-                ", email='" + email + '\'' +
-                '}';
-    }
-
-    /**
-     * Converts the entrant to a map representation, suitable for saving to a database.
-     * The phone number is only included in the map if it is not null.
-     *
-     * @return a map containing the entrant's details
-     */
-    public Map<String, Object> toMap() {
-        Map<String, Object> entrantMap = new HashMap<>();
-        entrantMap.put("firstName", firstName);
-        entrantMap.put("lastName", lastName);
-        entrantMap.put("email", email);
-
-        if (phoneNumber != null) {
-            entrantMap.put("phoneNumber", phoneNumber);
-        }
-        return entrantMap;
-    }
-
-    @Override
-    public int compareTo(Object o) {
-        if(o.getClass() == this.getClass()){
-            if(firstName == ((Entrant) o).getFirstName() && lastName == ((Entrant) o).getLastName() && email == ((Entrant) o).getEmail()){
-                return 0;
-            }
-        }
-        return 1;
-    }
-
-    @Override
-    public boolean equals(Object o){
-        if(o.getClass() == this.getClass()){
-            return(firstName == ((Entrant) o).getFirstName() && lastName == ((Entrant) o).getLastName() && email == ((Entrant) o).getEmail());
-        }else{
-            throw new IllegalArgumentException();
-        }
+    public int compareTo(Entrant other) {
+        return this.getEmail().compareTo(other.getEmail());
     }
 }
