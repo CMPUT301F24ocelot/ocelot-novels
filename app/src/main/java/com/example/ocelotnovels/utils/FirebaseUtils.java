@@ -34,6 +34,10 @@ public class FirebaseUtils {
         }
     }
 
+    public FirebaseFirestore getDb() {
+        return db;
+    }
+
     public String getDeviceId(Context context){
         SharedPreferences sharedPreferences;
         sharedPreferences = context.getApplicationContext().getSharedPreferences("user_settings",Context.MODE_PRIVATE);
