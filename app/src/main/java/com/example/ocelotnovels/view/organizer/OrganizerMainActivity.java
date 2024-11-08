@@ -56,7 +56,7 @@ public class OrganizerMainActivity extends AppCompatActivity {
 
         // Set greeting text
         TextView welcomeText = findViewById(R.id.welcome_text);
-        welcomeText.setText("Hello Gareth!");  // Replace with dynamic username if needed
+        welcomeText.setText("Lists");  // Replace with dynamic username if needed
 
         // Button to navigate to Entrant Map
         Button entrantMapButton = findViewById(R.id.entrant_map);
