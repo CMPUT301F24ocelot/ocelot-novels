@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.model.Event;
+import com.example.ocelotnovels.utils.FirebaseUtils;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
@@ -18,6 +19,8 @@ public class WaitingListActivity extends AppCompatActivity {
     private RecyclerView waitingListRecyclerView;
     private WaitingListAdapter waitingListAdapter;
     private List<Event> eventList;
+    private FirebaseUtils firebaseUtils;
+    private String deviceId;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -30,15 +33,16 @@ public class WaitingListActivity extends AppCompatActivity {
         waitingListRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         waitingListAdapter = new WaitingListAdapter(this, eventList);
         waitingListRecyclerView.setAdapter(waitingListAdapter);
-
+        firebaseUtils = new FirebaseUtils(this);
+        deviceId = firebaseUtils.getDeviceId(this);
         fetchUserWaitingListEvents();
     }
 
     private void fetchUserWaitingListEvents() {
-        String userDeviceId = getUserDeviceId();  // Method to get current user's device ID
+          // Method to get current user's device ID
 
         db.collection("events")
-                .whereArrayContains("waitList", userDeviceId)
+                .whereArrayContains("waitList", deviceId)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     eventList.clear();
@@ -53,8 +57,5 @@ public class WaitingListActivity extends AppCompatActivity {
                 });
     }
 
-    private String getUserDeviceId() {
-        // Get the user's device ID, which could be stored in SharedPreferences or FirebaseAuth
-        return "user_device_id";  // Placeholder for actual deviceId retrieval
-    }
+
 }

@@ -64,14 +64,30 @@
         android:id="@+id/user_scan_qr"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Scan QR"
-        android:textSize="20dp"
+        android:layout_marginStart="48dp"
         android:paddingHorizontal="26dp"
         android:paddingVertical="10dp"
+        android:text="Scan QR"
+        android:textSize="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/user_toolbar"
+        app:layout_constraintVertical_bias="0.499" />
+
+    <Button
+        android:id="@+id/user_event_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="26dp"
+        android:paddingVertical="10dp"
+        android:text="Events"
+        android:textSize="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/user_toolbar" />
+        app:layout_constraintHorizontal_bias="0.589"
+        app:layout_constraintStart_toEndOf="@+id/user_scan_qr"
+        app:layout_constraintTop_toBottomOf="@+id/user_toolbar"
+        app:layout_constraintVertical_bias="0.499" />
 
     <Button
         android:id="@+id/user_sign_up_button"
