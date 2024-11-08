@@ -1,12 +1,11 @@
 package com.example.ocelotnovels;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,56 +15,70 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.ocelotnovels.model.Entrant;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-
 import java.util.ArrayList;
 import java.util.List;
 
-public class InvitedEntrantsActivity extends AppCompatActivity {
+public class ConfirmedEntrantsActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
+    private FirebaseFirestore firestore;
+    private List<Entrant> entrantsList;
     private EntrantsAdapter adapter;
-    private List<Entrant> entrantList;
-    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_invited_entrants);
+        setContentView(R.layout.activity_confirmed_entrants);
 
-        recyclerView = findViewById(R.id.recyclerView_invited_entrants);
+        // Setup the toolbar
+        setSupportActionBar(findViewById(R.id.toolbar_confirmed_entrants));
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+        // Initialize RecyclerView
+        recyclerView = findViewById(R.id.recyclerView_confirmed_entrants);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        entrantList = new ArrayList<>();
-        adapter = new EntrantsAdapter(entrantList);
+        entrantsList = new ArrayList<>();
+        adapter = new EntrantsAdapter(entrantsList);
         recyclerView.setAdapter(adapter);
+        firestore = FirebaseFirestore.getInstance();
 
-        db = FirebaseFirestore.getInstance();
-        loadInvitedEntrants();
+        loadConfirmedEntrants();
     }
 
-    private void loadInvitedEntrants() {
-        db.collection("events").document("nwsEG9KZHYrTTAN9azIH") // Replace with your actual event ID
-                .collection("InvitedEntrants")
+    private void loadConfirmedEntrants() {
+        // Fetch confirmed entrants from Firestore
+        firestore.collection("events").document("nwsEG9KZHYrTTAN9azIH").collection("ConfirmedEntrants")
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
+                        entrantsList.clear();
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             Entrant entrant = document.toObject(Entrant.class);
-                            entrantList.add(entrant);
+                            entrantsList.add(entrant);
                         }
                         adapter.notifyDataSetChanged();
                     } else {
-                        Log.w("InvitedEntrants", "Error getting documents.", task.getException());
-                        Toast.makeText(this, "Error loading invited entrants.", Toast.LENGTH_SHORT).show();
+                        // Handle possible errors
                     }
                 });
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish();  // Close this activity on back arrow click
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     private class EntrantsAdapter extends RecyclerView.Adapter<EntrantsAdapter.ViewHolder> {
 
-        private List<Entrant> entrantList;
+        private List<Entrant> entrantsList;
 
-        EntrantsAdapter(List<Entrant> entrantList) {
-            this.entrantList = entrantList;
+        EntrantsAdapter(List<Entrant> entrantsList) {
+            this.entrantsList = entrantsList;
         }
 
         @NonNull
@@ -77,13 +90,14 @@ public class InvitedEntrantsActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            Entrant entrant = entrantList.get(position);
+            Entrant entrant = entrantsList.get(position);
             holder.nameTextView.setText(String.format("%s %s", entrant.getFirstName(), entrant.getLastName()));
+            // Additional fields can be set here if your Entrant model includes more data
         }
 
         @Override
         public int getItemCount() {
-            return entrantList.size();
+            return entrantsList.size();
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {
@@ -91,7 +105,7 @@ public class InvitedEntrantsActivity extends AppCompatActivity {
 
             ViewHolder(View itemView) {
                 super(itemView);
-                nameTextView = itemView.findViewById(R.id.tv_username); // Ensure this ID matches your entrant item layout
+                nameTextView = itemView.findViewById(R.id.tv_username);
             }
         }
     }
