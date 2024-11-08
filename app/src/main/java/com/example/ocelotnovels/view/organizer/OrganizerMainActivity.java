@@ -10,6 +10,7 @@ import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.model.Event;
 import com.example.ocelotnovels.CreateEventActivity;
 import com.example.ocelotnovels.FacilityProfileActivity;
+import com.example.ocelotnovels.MainActivity; // Import MainActivity
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -53,6 +54,14 @@ public class OrganizerMainActivity extends AppCompatActivity {
         facilityProfileButton.setOnClickListener(v -> {
             Intent intent = new Intent(OrganizerMainActivity.this, FacilityProfileActivity.class);
             startActivity(intent);
+        });
+
+        // Back Button Click
+        Button backButton = findViewById(R.id.back_button);
+        backButton.setOnClickListener(v -> {
+            Intent intent = new Intent(OrganizerMainActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish(); // Optional: Call finish to close OrganizerMainActivity
         });
     }
 
