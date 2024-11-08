@@ -42,7 +42,7 @@ public class FacilityProfileActivity extends AppCompatActivity {
         facilitySaveButton = findViewById(R.id.organizer_save_button);
 
 
-        // Set up save button funct[ionality
+        // Set up save button functionality
         facilitySaveButton.setOnClickListener(v -> saveFacilityProfile());
     }
 
