@@ -34,13 +34,13 @@ public class MainActivity extends AppCompatActivity {
     private TextView scannedValueTv;
     private GmsBarcodeScanner scanner;
     private FirebaseAuth mAuth;
-    TextView textView;
-    FirebaseUser user;
+    private FirebaseUser user;
+    private Button signUpButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+        //EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -55,12 +55,21 @@ public class MainActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 //        textView = findViewById(R.id.test);
         user = mAuth.getCurrentUser();
+        signUpButton = findViewById(R.id.user_sign_up_button);
 
         if (user == null) {
             // Redirect to SignUpActivity if not signed in
-            Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
-            startActivity(intent);
-            finish();
+//            Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
+//            startActivity(intent);
+//            finish();
+            signUpButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
+            });
         } else {
             View userSignedInView = findViewById(R.id.user_sign_up_button);
             userSignedInView.setVisibility(View.GONE);
