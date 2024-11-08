@@ -36,7 +36,7 @@ public class WaitingListAdapter extends RecyclerView.Adapter<WaitingListAdapter.
         Event event = eventList.get(position);
         holder.eventName.setText(event.getEventName());
         holder.eventDate.setText(event.getEventDate().toString());
-        holder.eventDescription.setText("Spots available: " + event.getWaitListOpenSpots());
+        holder.eventDescription.setText("Spots available: " + event.getEventCapacity());
 
         holder.deleteButton.setOnClickListener(v -> {
             // Logic to leave the waiting list for the event
