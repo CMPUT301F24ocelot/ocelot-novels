@@ -23,6 +23,10 @@
         <activity
             android:name=".SignUpActivity"
             android:exported="false" />
+        <activity android:name=".view.organizer.OrganizerMainActivity"
+            android:exported="true"/>
+        <activity android:name=".CreateEventActivity" />
+        <activity android:name=".FacilityProfileActivity" />
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -42,4 +46,4 @@
 
     </application>
 
-</manifest>
+</manifest> 
