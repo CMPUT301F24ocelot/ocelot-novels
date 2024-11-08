@@ -34,7 +34,7 @@ public class FacilityProfileActivityTest {
         facilityProfileActivity = new FacilityProfileActivity();
 
         // Inject mock Firestore instance using the setter
-        facilityProfileActivity.setFirestoreDb(mockDb);
+
 
         // Set up Firestore mock behavior
         when(mockDb.collection("facilities")).thenReturn(mockCollection);
