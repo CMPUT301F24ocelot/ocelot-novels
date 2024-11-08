@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.ocelotnovels.MainActivity;
 import com.example.ocelotnovels.MapsActivity;
 import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.model.Event;
@@ -70,6 +71,14 @@ public class OrganizerMainActivity extends AppCompatActivity {
         facilityProfileButton.setOnClickListener(v -> {
             Intent intent = new Intent(OrganizerMainActivity.this, FacilityProfileActivity.class);
             startActivity(intent);
+        });
+
+        // Back Button Click
+        Button backButton = findViewById(R.id.back_button);
+        backButton.setOnClickListener(v -> {
+            Intent intent = new Intent(OrganizerMainActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish(); // Optional: Call finish to close OrganizerMainActivity
         });
     }
 
