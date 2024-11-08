@@ -101,5 +101,4 @@ public class OrganizerMainActivity extends AppCompatActivity {
                     // Handle any errors
                 });
     }
-
 }
