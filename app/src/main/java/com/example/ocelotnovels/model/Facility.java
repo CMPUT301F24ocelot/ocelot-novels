@@ -1,24 +1,35 @@
 package com.example.ocelotnovels.model;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class Facility {
+    private final String facilityId; // Unique ID for the facility
+    private String ownerId; // ID of the owner of the facility
+    private String facilityName; // Name of the facility
+    private String facilityEmail; // Email contact for the facility
+    private String facilityPhone; // Phone contact for the facility
+    private String facilityLocation; // Physical location of the facility
+    private String facilityDescription; // Description of the facility
+    private ArrayList<String> members; // List of member IDs associated with the facility
 
-    // Facility Attributes
-    private final String facilityId; // UUID for facility
-    private String ownerId; // Owner id referencing userId from users collection of facility owner
-    private String facilityName; // The name of the facility
-    private String facilityEmail; // The contact email of the facility
-    private String facilityPhone; // The contact phone of the facility
-    private String facilityLocation; // The physical location of the facility
-    private String facilityDescription; // A description of the facility
-
-    // Default constructor for Firebase
+    /**
+     * Default constructor for Firebase or other ORM systems
+     */
     public Facility() {
         this.facilityId = UUID.randomUUID().toString();
+        this.members = new ArrayList<>();
     }
 
-    // Constructor with required fields
+    /**
+     * Constructs a facility with specified details.
+     * @param ownerId           ID of the facility owner
+     * @param facilityName      Name of the facility
+     * @param facilityEmail     Contact email for the facility
+     * @param facilityPhone     Contact phone for the facility
+     * @param facilityLocation  Physical location of the facility
+     * @param facilityDescription Description of the facility
+     */
     public Facility(String ownerId, String facilityName, String facilityEmail, String facilityPhone, String facilityLocation, String facilityDescription) {
         this.facilityId = UUID.randomUUID().toString();
         this.ownerId = ownerId;
@@ -27,9 +38,11 @@ public class Facility {
         this.facilityPhone = facilityPhone;
         this.facilityLocation = facilityLocation;
         this.facilityDescription = facilityDescription;
+        this.members = new ArrayList<>();
     }
 
     // Getters and Setters
+
     public String getFacilityId() {
         return facilityId;
     }
@@ -82,6 +95,50 @@ public class Facility {
         this.facilityDescription = facilityDescription;
     }
 
+    public ArrayList<String> getMembers() {
+        return members;
+    }
+
+    public void setMembers(ArrayList<String> members) {
+        this.members = members;
+    }
+
+    // Methods to add and remove members
+
+    /**
+     * Adds a member to the facility.
+     *
+     * @param member the ID of the member to be added
+     * @return true if the member was added, false if the member was already present
+     */
+    public boolean addMember(String member) {
+        if (!members.contains(member)) {
+            members.add(member);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Removes a member from the facility.
+     *
+     * @param member the ID of the member to be removed
+     * @return true if the member was removed, false if the member was not found
+     */
+    public boolean removeMember(String member) {
+        return members.remove(member);
+    }
+
+    /**
+     * Checks if a specific member is part of the facility.
+     *
+     * @param member the ID of the member to check
+     * @return true if the member is part of the facility, false otherwise
+     */
+    public boolean hasMember(String member) {
+        return members.contains(member);
+    }
+
     @Override
     public String toString() {
         return "Facility{" +
@@ -92,6 +149,7 @@ public class Facility {
                 ", facilityPhone='" + facilityPhone + '\'' +
                 ", facilityLocation='" + facilityLocation + '\'' +
                 ", facilityDescription='" + facilityDescription + '\'' +
+                ", members=" + members +
                 '}';
     }
 }
