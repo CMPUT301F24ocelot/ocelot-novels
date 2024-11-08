@@ -13,6 +13,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import com.example.ocelotnovels.utils.FirebaseUtils;
 import com.example.ocelotnovels.view.Entrant.EventDetailsFragment;
+import com.example.ocelotnovels.view.Entrant.WaitingListActivity;
 import com.example.ocelotnovels.view.organizer.OrganizerMainActivity;
 import com.google.android.gms.common.moduleinstall.ModuleInstall;
 import com.google.android.gms.common.moduleinstall.ModuleInstallClient;
@@ -37,8 +38,8 @@ public class MainActivity extends AppCompatActivity {
     private GmsBarcodeScanner scanner;
     private FirebaseAuth mAuth;
     private FirebaseUser user;
+    private Button signUpButton,eventViewBtn;
     public String deviceId;
-    private Button signUpButton;
     private String getUserEmail;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
   
@@ -56,12 +57,12 @@ public class MainActivity extends AppCompatActivity {
         registerUIListener();
 
         signUpButton = findViewById(R.id.user_sign_up_button);
-
+        eventViewBtn = findViewById(R.id.user_event_list);
 
         db.collection("users").document(deviceId).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
-                signUpButton = findViewById(R.id.user_sign_up_button);
+
 
                 // Check if document exists and contains an "email" field
                 if (documentSnapshot.exists() && documentSnapshot.contains("email")) {
@@ -69,6 +70,15 @@ public class MainActivity extends AppCompatActivity {
 
                     // Hide sign-up button if user is already signed up
                     signUpButton.setVisibility(View.GONE);
+                    eventViewBtn.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent(getApplicationContext(), WaitingListActivity.class);
+                            startActivity(intent);
+                            finish();
+                            MainActivity.super.onBackPressed();
+                        }
+                    });
                 } else {
                     // Set up onClickListener only if user is not signed up
                     signUpButton.setVisibility(View.VISIBLE);
@@ -81,6 +91,8 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
                 }
+
+
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -90,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        }
+    }
 
 
     private void initVars(){
@@ -126,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
     }
+
 
     private void registerUIListener() {
         scanQrBtn.setOnClickListener(new View.OnClickListener() {
