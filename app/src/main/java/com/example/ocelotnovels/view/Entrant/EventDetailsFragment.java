@@ -93,8 +93,8 @@ public class EventDetailsFragment extends DialogFragment {
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        String title = documentSnapshot.getString("eventName");
-                        String description = documentSnapshot.getString("eventDescription");
+                        String title = documentSnapshot.getString("Name");
+                        String description = documentSnapshot.getString("Description");
                         String status = documentSnapshot.getString("status");
                         String deadline = documentSnapshot.getTimestamp("registrationClose").toDate().toString();
 
