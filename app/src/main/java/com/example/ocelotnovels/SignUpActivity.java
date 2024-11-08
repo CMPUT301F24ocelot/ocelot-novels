@@ -8,6 +8,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.ocelotnovels.utils.FirebaseUtils;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,7 +20,8 @@ public class SignUpActivity extends AppCompatActivity {
     private EditText emailEditText, nameEditText, phoneEditText;
     private Button signUpButton;
     private FirebaseFirestore db;
-
+    private FirebaseUtils firebaseUtils;
+    private String  deviceId;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,7 +35,8 @@ public class SignUpActivity extends AppCompatActivity {
         nameEditText = findViewById(R.id.editTextName);
         phoneEditText = findViewById(R.id.editPhoneNum);
         signUpButton = findViewById(R.id.buttonSignUp);
-
+        firebaseUtils = new FirebaseUtils(this);
+        deviceId = firebaseUtils.getDeviceId(this);
         // Remove password EditText from layout since we don't need it anymore
 
         signUpButton.setOnClickListener(new View.OnClickListener() {
@@ -66,7 +70,7 @@ public class SignUpActivity extends AppCompatActivity {
 
                 // Add user to Firestore
                 db.collection("users")
-                        .add(userData)
+                        .document(deviceId).set(userData)
                         .addOnSuccessListener(documentReference -> {
                             Toast.makeText(SignUpActivity.this, "Successfully signed up!", Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(getApplicationContext(), MainActivity.class);
