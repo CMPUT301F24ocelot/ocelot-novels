@@ -31,7 +31,7 @@ import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions;
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning;
 
 public class MainActivity extends AppCompatActivity {
-    public FirebaseUtils firebaseUtils;
+    private FirebaseUtils firebaseUtils;
     private Boolean isScannerInstalled = false;
     private Button scanQrBtn;
     public String deviceId;
@@ -85,8 +85,8 @@ public class MainActivity extends AppCompatActivity {
         deviceId = firebaseUtils.getDeviceId(this);
     }
     private GmsBarcodeScannerOptions initializeGoogleScanner(){
-       return new GmsBarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).enableAutoZoom()
-               .build();
+        return new GmsBarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).enableAutoZoom()
+                .build();
     }
     private void installGoogleScanner(){
         ModuleInstallClient moduleInstall = ModuleInstall.getClient(this);

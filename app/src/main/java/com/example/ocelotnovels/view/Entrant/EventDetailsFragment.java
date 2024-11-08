@@ -20,6 +20,7 @@ import androidx.fragment.app.DialogFragment;
 import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.SignUpActivity;
 import com.example.ocelotnovels.utils.FirebaseUtils;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -96,7 +97,10 @@ public class EventDetailsFragment extends DialogFragment {
                         String title = documentSnapshot.getString("Name");
                         String description = documentSnapshot.getString("Description");
                         String status = documentSnapshot.getString("status");
-                        String deadline = documentSnapshot.getTimestamp("registrationClose").toDate().toString();
+
+                        // Check if registrationClose is null
+                        Timestamp registrationCloseTimestamp = documentSnapshot.getTimestamp("regClosed");
+                        String deadline = (registrationCloseTimestamp != null) ? registrationCloseTimestamp.toDate().toString() : "No deadline set";
 
                         eventTitle.setText("Event Title: " + title);
                         eventDescription.setText("Event Description: " + description);
@@ -109,6 +113,7 @@ public class EventDetailsFragment extends DialogFragment {
                     eventTitle.setText("Failed to load event details");
                 });
     }
+
 
     private final ActivityResultLauncher<Intent> signUpLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -143,9 +148,6 @@ public class EventDetailsFragment extends DialogFragment {
                     Toast.makeText(getContext(), "Error checking user in database", Toast.LENGTH_SHORT).show();
                     Log.e("EventDetailsFragment", "Failed to check user", e);
                 });
-
-        // Implement joining the event functionality here
-        Toast.makeText(getContext(), "Joining event: " + eventId, Toast.LENGTH_SHORT).show();
     }
 
     private void checkEventCapacityAndJoin(String eventId, String deviceId) {
