@@ -22,7 +22,7 @@ public class Event {
     private Date registrationOpen;
 
     /** The date and time when registration closes. */
-    private Date registrationClose;
+    private String registrationClose;
 
     /** The maximum capacity of participants for the event. */
     private Long eventCapacity;
@@ -70,7 +70,7 @@ public class Event {
      * @param qrHash                The QR hash of the event.
      * @param geolocationEnabled    Is Geolocation enabled or not for the event.
      */
-    public Event(String eventId,String eventName, String eventDescription, Date eventDate, Date registrationOpen, Date registrationClose, Long eventCapacity, String eventPosterUrl, String organizerId, String eventLocation, ArrayList<String> waitList, ArrayList<String> selectedParticipants, ArrayList<String> cancelledParticipants,String qrHash,Boolean geolocationEnabled) {
+    public Event(String eventId, String eventName, String eventDescription, Date eventDate, Date registrationOpen, String registrationClose, Long eventCapacity, String eventPosterUrl, String organizerId, String eventLocation, ArrayList<String> waitList, ArrayList<String> selectedParticipants, ArrayList<String> cancelledParticipants, String qrHash, Boolean geolocationEnabled) {
         this.eventId = eventId;
         this.eventName = eventName;
         this.eventDescription = eventDescription;
@@ -106,7 +106,7 @@ public class Event {
      * @param qrHash                The QR hash of the event.
      * @param geolocationEnabled    Is Geolocation enabled or not for the event.
      */
-    public Event(String eventId,String eventName, String eventDescription, Date eventDate, Date registrationOpen, Date registrationClose,  String eventPosterUrl, String organizerId, String eventLocation, ArrayList<String> waitList, ArrayList<String> selectedParticipants, ArrayList<String> cancelledParticipants,String qrHash,Boolean geolocationEnabled) {
+    public Event(String eventId, String eventName, String eventDescription, Date eventDate, Date registrationOpen, String registrationClose, String eventPosterUrl, String organizerId, String eventLocation, ArrayList<String> waitList, ArrayList<String> selectedParticipants, ArrayList<String> cancelledParticipants, String qrHash, Boolean geolocationEnabled) {
         this.eventId = eventId;
         this.eventName = eventName;
         this.eventDescription = eventDescription;
@@ -122,6 +122,18 @@ public class Event {
         this.qrHash = qrHash;
         this.geolocationEnabled = geolocationEnabled;
         this.eventCapacity=(long) -1;
+    }
+
+    public Event(String eventId) {
+        this.eventId = eventId;
+    }
+
+    public Event(String eventId, String eventName, String eventDescription, String registrationClose, String eventLocation) {
+        this.eventId = eventId;
+        this.eventName = eventName;
+        this.eventDescription = eventDescription;
+        this.registrationClose = registrationClose;
+        this.eventLocation = eventLocation;
     }
 
     /**
@@ -253,7 +265,7 @@ public class Event {
     }
 
     /** @return The date and time when registration closes. */
-    public Date getRegistrationClose() {
+    public String getRegistrationClose() {
         return registrationClose;
     }
 
@@ -262,7 +274,7 @@ public class Event {
      *
      * @param registrationClose The new registration close date and time.
      */
-    public void setRegistrationClose(Date registrationClose) {
+    public void setRegistrationClose(String registrationClose) {
         this.registrationClose = registrationClose;
     }
 

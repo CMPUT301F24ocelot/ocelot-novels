@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.ocelotnovels.utils.FirebaseUtils;
 import com.example.ocelotnovels.utils.QRCodeUtils;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
@@ -26,8 +27,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
@@ -45,6 +48,9 @@ public class CreateEventActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private ImageView qrCodeImageView;
     private String selectedDate = "";
+    private List<String> waitList;
+    private List<String> selectedList;
+    private List<String> cancelledList;
 
 
     /**
@@ -72,6 +78,9 @@ public class CreateEventActivity extends AppCompatActivity {
         createButton = findViewById(R.id.create_button);
         cancelButton = findViewById(R.id.cancel_button);
         qrCodeImageView = findViewById(R.id.qr_code_image);
+        waitList = new ArrayList<>();
+        selectedList = new ArrayList<>();
+        cancelledList = new ArrayList<>();
 
         // Set up date picker dialog
         dueDateButton.setOnClickListener(v -> showDatePickerDialog());
@@ -116,7 +125,7 @@ public class CreateEventActivity extends AppCompatActivity {
             return;
         }
 
-        // Generates a unique id for each event
+        // Generate a unique id for each event
         String eventId = UUID.randomUUID().toString();
 
         // Create a map to store the event data
@@ -128,6 +137,10 @@ public class CreateEventActivity extends AppCompatActivity {
         eventData.put("regClosed", selectedDate);
         eventData.put("geolocationEnabled", isGeolocationEnabled);
         eventData.put("limitWaitlistEnabled", isLimitWaitlistEnabled);
+        eventData.put("waitList", waitList);
+        eventData.put("selectedList", selectedList);
+        eventData.put("cancelledList", cancelledList);
+        eventData.put("organizerId", FirebaseUtils.getInstance(this).getDeviceId(this));
 
         // Save event to Firestore
         db.collection("events").document(eventId)
