@@ -27,7 +27,7 @@
             android:name=".SignUpActivity"
             android:exported="false" />
 
-        <activity android:name=".view.organizer.OrganizerMainActivity"
+        <activity android:name=".view.Organizer.OrganizerMainActivity"
             android:exported="true"/>
 
         <activity android:name=".CreateEventActivity" />

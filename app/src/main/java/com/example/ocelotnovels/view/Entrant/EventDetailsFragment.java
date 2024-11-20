@@ -110,7 +110,7 @@ public class EventDetailsFragment extends DialogFragment {
                         String status = document.getString("status");
 
                         // Check if registrationClose is null
-                        Date registrationCloseTimestamp = document.getDate("regClosed");
+                        String registrationCloseTimestamp = document.getString("regClosed");
                         String deadline = (registrationCloseTimestamp != null) ? registrationCloseTimestamp.toString() : "No deadline set";
 
                         eventTitle.setText("Event Title: " + title);
