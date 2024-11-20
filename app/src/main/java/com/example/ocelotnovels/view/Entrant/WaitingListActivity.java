@@ -18,7 +18,7 @@ import java.util.List;
 public class WaitingListActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private RecyclerView waitingListRecyclerView;
-    private WaitingListAdapter waitingListAdapter;
+    public WaitingListAdapter waitingListAdapter;
     private List<Event> eventList;
     private String deviceId;
 
@@ -37,32 +37,13 @@ public class WaitingListActivity extends AppCompatActivity {
         FirebaseUtils firebaseUtils = new FirebaseUtils(this);
         deviceId = firebaseUtils.getDeviceId(this);
 
-        fetchUserWaitingListEvents();
+
+        firebaseUtils.fetchUserWaitingListEvents(eventList,()->{
+            waitingListAdapter.notifyDataSetChanged();
+        });
     }
 
-    private void fetchUserWaitingListEvents() {
-        // Query events where waitList array contains the current deviceId
-        db.collection("events")
-                .whereArrayContains("waitList", deviceId)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
 
-                    eventList.clear();
-                    for (DocumentSnapshot document : queryDocumentSnapshots) {
-                        String eventDeadline = document.getTimestamp("regClosed").toString();
-                        String eventName = document.getString("name");
-                        String eventDescription= document.getString("description");
-                        Long eventCapacity = document.getLong("capacity");
-                        String  posterUrl = document.getString("posterURL");
-                        String  waitingList
-                        Event event = new Event()
 
-                        eventList.add(event);
-                    }
-                    waitingListAdapter.notifyDataSetChanged();
-                })
-                .addOnFailureListener(e -> {
-                    // Log or handle errors
-                });
-    }
+
 }
