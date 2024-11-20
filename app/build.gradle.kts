@@ -64,6 +64,7 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.storage)
+    implementation(libs.recyclerview)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -91,4 +92,6 @@ dependencies {
     implementation("com.google.protobuf:protobuf-javalite") // Ensure this is compatible with Firebase
 
     implementation("com.journeyapps:zxing-android-embedded:4.1.0")
+
+    implementation("com.google.android.material:material:1.13.0")
 }
