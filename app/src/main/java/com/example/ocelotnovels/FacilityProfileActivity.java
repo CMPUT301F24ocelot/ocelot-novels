@@ -12,7 +12,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.ocelotnovels.model.Facility;
-import com.example.ocelotnovels.view.organizer.OrganizerMainActivity;
+import com.example.ocelotnovels.view.Organizer.OrganizerMainActivity;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;

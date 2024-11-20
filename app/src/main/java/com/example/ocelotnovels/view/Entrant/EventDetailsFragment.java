@@ -24,6 +24,7 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class EventDetailsFragment extends DialogFragment {
@@ -104,13 +105,13 @@ public class EventDetailsFragment extends DialogFragment {
 //                        if (deadline != null) {
 //                            registrationDeadline.setText("Deadline: " + deadline.toDate().toString());
 //                        }
-                        String title = document.getString("Name");
-                        String description = document.getString("Description");
+                        String title = document.getString("name");
+                        String description = document.getString("description");
                         String status = document.getString("status");
 
                         // Check if registrationClose is null
-                        Timestamp registrationCloseTimestamp = document.getTimestamp("regClosed");
-                        String deadline = (registrationCloseTimestamp != null) ? registrationCloseTimestamp.toDate().toString() : "No deadline set";
+                        String registrationCloseTimestamp = document.getString("regClosed");
+                        String deadline = (registrationCloseTimestamp != null) ? registrationCloseTimestamp.toString() : "No deadline set";
 
                         eventTitle.setText("Event Title: " + title);
                         eventDescription.setText("Event Description: " + description);
@@ -159,11 +160,11 @@ public class EventDetailsFragment extends DialogFragment {
                         return;
                     }
 
-                    Long capacityLong = eventDoc.getLong("capacity");
-                    if (capacityLong == null) {
-                        Toast.makeText(getContext(), "Invalid event capacity", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
+                    Long capacityLong = (eventDoc.get("capacity") == null ? -1 : (long) eventDoc.get("capacity"));
+//                    if (capacityLong == null) {
+//                        Toast.makeText(getContext(), "Invalid event capacity", Toast.LENGTH_SHORT).show();
+//                        return;
+//                    }
 
                     List<String> waitingList = (List<String>) eventDoc.get("waitingList");
                     waitingList = waitingList != null ? waitingList : new ArrayList<>();
@@ -173,7 +174,7 @@ public class EventDetailsFragment extends DialogFragment {
                         return;
                     }
 
-                    if (waitingList.size() < capacityLong) {
+                    if (capacityLong >= 0 && waitingList.size() < capacityLong || capacityLong == -1) {
                         addUserToEvent();
                     } else {
                         Toast.makeText(getContext(), "Event is at full capacity", Toast.LENGTH_SHORT).show();

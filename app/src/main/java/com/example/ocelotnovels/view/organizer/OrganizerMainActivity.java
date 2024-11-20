@@ -1,4 +1,4 @@
-package com.example.ocelotnovels.view.organizer;
+package com.example.ocelotnovels.view.Organizer;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -21,6 +21,7 @@ import com.example.ocelotnovels.WaitingListActivity;
 import com.example.ocelotnovels.model.Event;
 import com.example.ocelotnovels.CreateEventActivity;
 import com.example.ocelotnovels.FacilityProfileActivity;
+import com.example.ocelotnovels.view.Organizer.OrganizerEventAdapter;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -94,6 +95,7 @@ public class OrganizerMainActivity extends AppCompatActivity {
 
     public void loadEventsFromFirestore() {
         db.collection("events")
+<<<<<<< HEAD
                 .addSnapshotListener((queryDocumentSnapshots, error) -> {
                     if (error != null) {
                         Log.e("Firestore Error", error.getMessage());
@@ -108,6 +110,16 @@ public class OrganizerMainActivity extends AppCompatActivity {
                             }
                         }
                         eventAdapter.notifyDataSetChanged(); // Notify adapter about data change
+=======
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    eventNames.clear();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        String eventName = document.getString("name");
+                        if (eventName != null) {
+                            eventNames.add(eventName);
+                        }
+>>>>>>> origin/main
                     }
                 });
     }

@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.model.Event;
 import com.example.ocelotnovels.utils.FirebaseUtils;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
@@ -17,9 +18,8 @@ import java.util.List;
 public class WaitingListActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private RecyclerView waitingListRecyclerView;
-    private WaitingListAdapter waitingListAdapter;
+    public WaitingListAdapter waitingListAdapter;
     private List<Event> eventList;
-    private FirebaseUtils firebaseUtils;
     private String deviceId;
 
     @Override
@@ -33,29 +33,17 @@ public class WaitingListActivity extends AppCompatActivity {
         waitingListRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         waitingListAdapter = new WaitingListAdapter(this, eventList);
         waitingListRecyclerView.setAdapter(waitingListAdapter);
-        firebaseUtils = new FirebaseUtils(this);
+
+        FirebaseUtils firebaseUtils = new FirebaseUtils(this);
         deviceId = firebaseUtils.getDeviceId(this);
-        fetchUserWaitingListEvents();
+
+
+        firebaseUtils.fetchUserWaitingListEvents(eventList,()->{
+            waitingListAdapter.notifyDataSetChanged();
+        });
     }
 
-    private void fetchUserWaitingListEvents() {
-          // Method to get current user's device ID
 
-        db.collection("events")
-                .whereArrayContains("waitList", deviceId)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    eventList.clear();
-                    for (DocumentSnapshot document : queryDocumentSnapshots) {
-                        Event event = document.toObject(Event.class);
-                        eventList.add(event);
-                    }
-                    waitingListAdapter.notifyDataSetChanged();
-                })
-                .addOnFailureListener(e -> {
-                    // Handle failure
-                });
-    }
 
 
 }
