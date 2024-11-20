@@ -7,6 +7,8 @@ import java.util.Date;
  * Represents an event with various details and participant lists.
  */
 public class Event {
+    /** The id of the event **/
+    private  String eventId;
     /** The name of the event. */
     private String eventName;
 
@@ -23,7 +25,7 @@ public class Event {
     private Date registrationClose;
 
     /** The maximum capacity of participants for the event. */
-    private int eventCapacity = -1;
+    private Long eventCapacity;
 
     /** The URL of the event poster image. */
     private String eventPosterUrl;
@@ -43,9 +45,16 @@ public class Event {
     /** The location of the event. */
     private String eventLocation;
 
+    /** The QR hash code for the event **/
+    private String qrHash;
+
+    /** Geolocation tracking is enabled or disabled for the event **/
+    private Boolean geolocationEnabled;
+
     /**
      * Constructs a new Event with all specified details.
      *
+     * @param eventId               The event Id of the event.
      * @param eventName             The name of the event.
      * @param eventDescription      A description of the event.
      * @param eventDate             The date and time of the event.
@@ -58,8 +67,11 @@ public class Event {
      * @param waitList              List of users on the waitlist for the event.
      * @param selectedParticipants  List of selected participants for the event.
      * @param cancelledParticipants List of users who have canceled their participation.
+     * @param qrHash                The QR hash of the event.
+     * @param geolocationEnabled    Is Geolocation enabled or not for the event.
      */
-    public Event(String eventName, String eventDescription, Date eventDate, Date registrationOpen, Date registrationClose, int eventCapacity, String eventPosterUrl, String organizerId, String eventLocation, ArrayList<String> waitList, ArrayList<String> selectedParticipants, ArrayList<String> cancelledParticipants) {
+    public Event(String eventId,String eventName, String eventDescription, Date eventDate, Date registrationOpen, Date registrationClose, Long eventCapacity, String eventPosterUrl, String organizerId, String eventLocation, ArrayList<String> waitList, ArrayList<String> selectedParticipants, ArrayList<String> cancelledParticipants,String qrHash,Boolean geolocationEnabled) {
+        this.eventId = eventId;
         this.eventName = eventName;
         this.eventDescription = eventDescription;
         this.eventDate = eventDate;
@@ -72,12 +84,14 @@ public class Event {
         this.waitList = waitList != null ? waitList : new ArrayList<>();
         this.selectedParticipants = selectedParticipants != null ? selectedParticipants : new ArrayList<>();
         this.cancelledParticipants = cancelledParticipants != null ? cancelledParticipants : new ArrayList<>();
+        this.qrHash = qrHash;
+        this.geolocationEnabled = geolocationEnabled;
     }
 
 
     /**
      * Constructs a new Event with all specified details except eventCapacity.
-     *
+     * @param eventId               The event Id of the event.
      * @param eventName             The name of the event.
      * @param eventDescription      A description of the event.
      * @param eventDate             The date and time of the event.
@@ -89,8 +103,11 @@ public class Event {
      * @param waitList              List of users on the waitlist for the event.
      * @param selectedParticipants  List of selected participants for the event.
      * @param cancelledParticipants List of users who have canceled their participation.
+     * @param qrHash                The QR hash of the event.
+     * @param geolocationEnabled    Is Geolocation enabled or not for the event.
      */
-    public Event(String eventName, String eventDescription, Date eventDate, Date registrationOpen, Date registrationClose,  String eventPosterUrl, String organizerId, String eventLocation, ArrayList<String> waitList, ArrayList<String> selectedParticipants, ArrayList<String> cancelledParticipants) {
+    public Event(String eventId,String eventName, String eventDescription, Date eventDate, Date registrationOpen, Date registrationClose,  String eventPosterUrl, String organizerId, String eventLocation, ArrayList<String> waitList, ArrayList<String> selectedParticipants, ArrayList<String> cancelledParticipants,String qrHash,Boolean geolocationEnabled) {
+        this.eventId = eventId;
         this.eventName = eventName;
         this.eventDescription = eventDescription;
         this.eventDate = eventDate;
@@ -102,6 +119,9 @@ public class Event {
         this.waitList = waitList != null ? waitList : new ArrayList<>();
         this.selectedParticipants = selectedParticipants != null ? selectedParticipants : new ArrayList<>();
         this.cancelledParticipants = cancelledParticipants != null ? cancelledParticipants : new ArrayList<>();
+        this.qrHash = qrHash;
+        this.geolocationEnabled = geolocationEnabled;
+        this.eventCapacity=(long) -1;
     }
 
     /**
@@ -143,6 +163,38 @@ public class Event {
     }
 
     // Getter and Setter methods
+
+    /**
+     *
+     * @return the Id of the event
+     */
+    public String getEventId() {
+        return eventId;
+    }
+
+    /**
+     * Sets the id of the event
+     * @param eventId
+     */
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
+    }
+
+    /**
+     *
+     * @return the QR hash code of the event
+     */
+    public String getQrHash() {
+        return qrHash;
+    }
+
+    /**
+     * Sets the qr hash code of the event
+     * @param qrHash
+     */
+    public void setQrHash(String qrHash) {
+        this.qrHash = qrHash;
+    }
 
     /** @return The name of the event. */
     public String getEventName() {
@@ -215,7 +267,7 @@ public class Event {
     }
 
     /** @return The maximum capacity of participants for the event. */
-    public int getEventCapacity() {
+    public Long getEventCapacity() {
         return eventCapacity;
     }
 
@@ -224,7 +276,7 @@ public class Event {
      *
      * @param eventCapacity The new event capacity.
      */
-    public void setEventCapacity(int eventCapacity) {
+    public void setEventCapacity(Long eventCapacity) {
         this.eventCapacity = eventCapacity;
     }
 
@@ -311,6 +363,22 @@ public class Event {
      */
     public void setCancelledParticipants(ArrayList<String> cancelledParticipants) {
         this.cancelledParticipants = cancelledParticipants;
+    }
+
+    /**
+     *
+     * @return is Geolocation enabled or not.
+     */
+    public Boolean getGeolocationEnabled() {
+        return geolocationEnabled;
+    }
+
+    /**
+     * Sets if geolocation is enabled or not.
+     * @param geolocationEnabled
+     */
+    public void setGeolocationEnabled(Boolean geolocationEnabled) {
+        this.geolocationEnabled = geolocationEnabled;
     }
 
     /**
