@@ -67,9 +67,9 @@ public class EventArrayAdapter extends RecyclerView.Adapter<EventArrayAdapter.Vi
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             eventName = itemView.findViewById(R.id.event_name);
-            eventDate = itemView.findViewById(R.id.event_date);
+            eventDate = itemView.findViewById(R.id.event_due_date);
             eventDescription = itemView.findViewById(R.id.event_description);
-            leaveButton = itemView.findViewById(R.id.deleteButton);
+            leaveButton = itemView.findViewById(R.id.leave_button);
         }
     }
 
