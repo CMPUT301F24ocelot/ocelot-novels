@@ -2,6 +2,7 @@ package com.example.ocelotnovels.view.organizer;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -93,19 +94,21 @@ public class OrganizerMainActivity extends AppCompatActivity {
 
     public void loadEventsFromFirestore() {
         db.collection("events")
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    eventNames.clear();
-                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        String eventName = document.getString("title");
-                        if (eventName != null) {
-                            eventNames.add(eventName);
-                        }
+                .addSnapshotListener((queryDocumentSnapshots, error) -> {
+                    if (error != null) {
+                        Log.e("Firestore Error", error.getMessage());
+                        return;
                     }
-                    eventAdapter.notifyDataSetChanged();
-                })
-                .addOnFailureListener(e -> {
-                    // Handle any errors
+                    if (queryDocumentSnapshots != null) {
+                        eventNames.clear(); // Clear the current list to avoid duplicates
+                        for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                            String eventName = document.getString("name"); // Ensure field matches Firestore schema
+                            if (eventName != null) {
+                                eventNames.add(eventName); // Add event name to the list
+                            }
+                        }
+                        eventAdapter.notifyDataSetChanged(); // Notify adapter about data change
+                    }
                 });
     }
 

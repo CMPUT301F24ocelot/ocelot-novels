@@ -1,5 +1,6 @@
 package com.example.ocelotnovels;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -8,6 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -15,13 +17,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.ocelotnovels.utils.QRCodeUtils;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.google.zxing.WriterException;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -32,6 +32,7 @@ public class CreateEventActivity extends AppCompatActivity {
     private EditText eventDescriptionEditText;
     private EditText eventLocationEditText;
     private EditText dueDateEditText;
+    private EditText capacityEditText;
     private Switch geolocationSwitch;
     private Switch limitWaitlistSwitch;
     private Button createButton;
@@ -39,14 +40,6 @@ public class CreateEventActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private ImageView qrCodeImageView;
 
-
-    /**
-     * Initializes the activity, setting up the layout, views, and Firestore instance.
-     * Sets up listeners for the Create and Cancel buttons.
-     *
-     * @param savedInstanceState If the activity is being re-initialized after previously being shut down,
-     *                           this Bundle contains the data it most recently supplied in onSaveInstanceState().
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,6 +58,19 @@ public class CreateEventActivity extends AppCompatActivity {
         createButton = findViewById(R.id.create_button);
         cancelButton = findViewById(R.id.cancel_button);
         qrCodeImageView = findViewById(R.id.qr_code_image);
+        capacityEditText = findViewById(R.id.event_capacity);
+
+        // Set listeners for the switches
+        limitWaitlistSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                // Disable the capacity field
+                capacityEditText.setVisibility(View.GONE);
+                capacityEditText.setText(""); // Clear the capacity input
+            } else {
+                // Enable the capacity field
+                capacityEditText.setVisibility(View.VISIBLE);
+            }
+        });
 
         // Set listeners for the buttons
         createButton.setOnClickListener(v -> saveEventData());
@@ -86,76 +92,84 @@ public class CreateEventActivity extends AppCompatActivity {
             return;
         }
 
-        // Generates a unique id for each event
+        // Validate capacity if "Limit Waitlist" is off
+        String capacity = null;
+        if (!isLimitWaitlistEnabled) {
+            if (TextUtils.isEmpty(capacityEditText.getText().toString().trim())) {
+                Toast.makeText(this, "Please enter a capacity", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            capacity = capacityEditText.getText().toString().trim();
+        }
+
+        // Generate a unique event ID
         String eventId = UUID.randomUUID().toString();
 
         // Create a map to store the event data
         Map<String, Object> eventData = new HashMap<>();
         eventData.put("eventId", eventId);
-        eventData.put("title", eventTitle);
+        eventData.put("name", eventTitle);
         eventData.put("description", eventDescription);
         eventData.put("location", eventLocation);
         eventData.put("date", dueDate);
         eventData.put("geolocationEnabled", isGeolocationEnabled);
         eventData.put("limitWaitlistEnabled", isLimitWaitlistEnabled);
 
+        if (!isLimitWaitlistEnabled) {
+            eventData.put("capacity", Integer.parseInt(capacity)); // Add capacity to the database
+        }
 
-        // Save event to Firestore
-        db.collection("events").document(eventId)
-                .set(eventData)
-                .addOnSuccessListener(aVoid -> {
-                    showToast("Event created successfully.");
-                    generateAndUploadQrCode(eventId);  // Generate and upload the QR code after saving event data
-                })
-                .addOnFailureListener(e -> showToast("Failed to create event."));
+        // Generate QR Code and hash
+        try {
+            String qrData = eventId + "|" + eventTitle + "|" + eventLocation;
+            Bitmap qrCodeBitmap = QRCodeUtils.generateQrCode(qrData, 500, 500);
+            qrCodeImageView.setImageBitmap(qrCodeBitmap);
+            qrCodeImageView.setVisibility(View.VISIBLE);
+
+            // Generate hash for the QR code data
+            String qrHash = generateHash(qrData);
+
+            // Add QR code hash to event data
+            eventData.put("qrHash", qrHash);
+
+            // Save event data to Firestore
+            db.collection("events").document(eventId)
+                    .set(eventData)
+                    .addOnSuccessListener(aVoid -> {
+                        // Navigate to QrCodeActivity
+                        Intent intent = new Intent(CreateEventActivity.this, QrCodeActivity.class);
+                        intent.putExtra("eventTitle", eventTitle);
+                        intent.putExtra("eventDescription", eventDescription);
+                        intent.putExtra("eventDeadline", dueDate);
+                        intent.putExtra("eventLocation", eventLocation);
+                        intent.putExtra("qrHash", qrHash);
+                        intent.putExtra("qrCodeBitmap", qrCodeBitmap);
+                        startActivity(intent);
+                    })
+                    .addOnFailureListener(e -> {
+                        showToast("Failed to create event.");
+                        Log.e("Firestore Error", e.getMessage());
+                    });
+
+        } catch (WriterException | NoSuchAlgorithmException e) {
+            Log.e("QR Code Error", "Error generating QR Code or Hash: " + e.getMessage());
+            showToast("Error generating QR Code or Hash.");
+        }
+    }
+
+    private String generateHash(String input) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hashBytes = digest.digest(input.getBytes(StandardCharsets.UTF_8));
+        StringBuilder hashBuilder = new StringBuilder();
+        for (byte b : hashBytes) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) hashBuilder.append('0');
+            hashBuilder.append(hex);
+        }
+        return hashBuilder.toString();
     }
 
     private void showToast(String message) {
         Toast.makeText(CreateEventActivity.this, message, Toast.LENGTH_SHORT).show();
-    }
-
-    private void generateAndUploadQrCode(String eventId) {
-        try {
-            // Generate QR code and display it as Bitmap
-            Bitmap qrCodeBitmap = QRCodeUtils.generateQrCode(eventId, 500, 500);
-            qrCodeImageView.setImageBitmap(qrCodeBitmap);
-            qrCodeImageView.setVisibility(View.VISIBLE);
-
-            // Generate QR code and save it locally
-            String qrCodePath = QRCodeUtils.qrCodeGenerator(eventId);
-            File qrCodeFile = new File(qrCodePath);
-
-            // Define the Firebase Storage path
-            StorageReference storageRef = FirebaseStorage.getInstance().getReference().child("qr_codes/" + eventId + ".jpg");
-
-            // Upload the QR code image to Firebase Storage
-            storageRef.putFile(android.net.Uri.fromFile(qrCodeFile))
-                    .addOnSuccessListener(taskSnapshot -> {
-                        // Retrieve the download URL
-                        storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                            String downloadUrl = uri.toString();
-
-                            // Display the download URL in the log
-                            Log.d("QR Code URL", "Download URL: " + downloadUrl);
-
-                            // Display a toast with the download URL
-                            Toast.makeText(CreateEventActivity.this, "QR Code URL: " + downloadUrl, Toast.LENGTH_LONG).show();
-
-                            // Update Firestore with the QR Code URI
-                            storeQrCodeUriInFirestore(eventId, downloadUrl);
-                        });
-                    })
-                    .addOnFailureListener(e -> Log.e("Upload Error", "Failed to upload QR code"));
-        } catch (WriterException | IOException e) {
-            Log.e("QR Code Error", "Failed to generate QR code: " + e.getMessage());
-        }
-    }
-
-
-    private void storeQrCodeUriInFirestore(String eventId, String qrCodeUri) {
-        db.collection("events").document(eventId)
-                .update("qrCodeUrl", qrCodeUri)
-                .addOnSuccessListener(aVoid -> Log.d("Firestore", "QR Code URI successfully updated"))
-                .addOnFailureListener(e -> Log.e("Firestore", "Error updating QR Code URI", e));
     }
 }
