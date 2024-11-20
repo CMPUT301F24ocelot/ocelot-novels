@@ -12,13 +12,18 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 
+import com.example.ocelotnovels.model.Event;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -71,6 +76,43 @@ public class FirebaseUtils {
                     public void onFailure(@NonNull Exception e) {
                         Log.w(TAG, "Error writing document", e);
                     }
+                });
+    }
+
+    public void fetchUserWaitingListEvents(List<Event> eventList, Runnable onComplete) {
+        // Query events where waitList array contains the current deviceId
+        db.collection("events")
+                .whereArrayContains("waitList", deviceId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+
+                    eventList.clear();
+                    for (DocumentSnapshot document : queryDocumentSnapshots) {
+                        String eventId= document.getString("eventId");
+                        Date eventDate =(Date) document.getDate("eventDate");
+                        Date eventRegOpen =(Date) document.getDate("regOpen");
+                        Date eventDeadline =(Date) document.getDate("regClosed");
+                        String eventName = document.getString("name");
+                        String eventDescription= document.getString("description");
+                        Long eventCapacity =document.get("capacity")==null? -1 :  (Long) document.get("capacity");
+
+                        String organizerId = document.getString("organizerId");
+                        String eventLocation = document.getString("location");
+                        String  posterUrl = document.getString("posterURL");
+                        ArrayList<String> waitingList= (ArrayList<String>) document.get("waitList");
+                        ArrayList<String> cancelledParticipants = (ArrayList<String>) document.get("cancelledList");
+                        ArrayList<String> selectedParticipants = (ArrayList<String>) document.get("selectedList");
+                        String qrHash = document.getString("qrHash");
+                        Boolean geolocationEnabled = document.getBoolean("geolocationEnabled");
+                        Event event = new Event(eventId,eventName,eventDescription,eventDate,eventRegOpen,eventDeadline,eventCapacity,posterUrl,organizerId,eventLocation,waitingList,selectedParticipants,cancelledParticipants,qrHash,geolocationEnabled);
+
+                        eventList.add(event);
+                    }
+                    onComplete.run();
+                })
+                .addOnFailureListener(e -> {
+                    // Log or handle errors
+                    Log.e("Firestore", "Error fetching documents", e);
                 });
     }
 
