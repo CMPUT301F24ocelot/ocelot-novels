@@ -155,10 +155,21 @@ public class FirebaseUtils {
                 waitList = new ArrayList<>();
             }
 
-            // Check if user is not already in waitlist and not in cancelled list
-            if (!waitList.contains(deviceId) && (cancelledList == null || !cancelledList.contains(deviceId))) {
+            if (cancelledList == null) {
+                cancelledList = new ArrayList<>();
+            }
+
+            Log.d("CANCEL", String.valueOf(cancelledList));
+            // Check if user is not already in waitlist
+            if (!waitList.contains(deviceId)) {
+                // Remove from cancelledList if present
+                cancelledList.remove(deviceId);
+                // Add user to waitlist
                 waitList.add(deviceId);
+
+                // Update Firestore
                 transaction.update(eventRef, "waitingList", waitList);
+                transaction.update(eventRef, "cancelledList", cancelledList);
             }
 
             return null;
@@ -173,32 +184,34 @@ public class FirebaseUtils {
         });
     }
 
+
     public void leaveEventWaitlist(String eventId, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
         DocumentReference eventRef = db.collection("events").document(eventId);
         DocumentReference userRef = getUserDocument();
 
         db.runTransaction(transaction -> {
-            // Update event's waitlist and cancelled list
+            // Read data for event
             DocumentSnapshot eventSnapshot = transaction.get(eventRef);
             ArrayList<String> waitList = (ArrayList<String>) eventSnapshot.get("waitingList");
             ArrayList<String> cancelledList = (ArrayList<String>) eventSnapshot.get("cancelledList");
 
+            // Read data for user
+            DocumentSnapshot userSnapshot = transaction.get(userRef);
+            ArrayList<String> eventsJoined = (ArrayList<String>) userSnapshot.get("eventsJoined");
+
+            // Perform write operations after all reads are done
             if (waitList != null && waitList.contains(deviceId)) {
                 waitList.remove(deviceId);
                 if (cancelledList == null) {
                     cancelledList = new ArrayList<>();
                 }
-                cancelledList.add(deviceId);
+                if (!cancelledList.contains(deviceId)){
+                    cancelledList.add(deviceId);
+                }
 
-                transaction.update(eventRef,
-                        "waitingList", waitList,
-                        "cancelledList", cancelledList
-                );
+                transaction.update(eventRef, "waitingList", waitList);
+                transaction.update(eventRef, "cancelledList", cancelledList);
             }
-
-            // Update user's eventsJoined list
-            DocumentSnapshot userSnapshot = transaction.get(userRef);
-            ArrayList<String> eventsJoined = (ArrayList<String>) userSnapshot.get("eventsJoined");
 
             if (eventsJoined != null && eventsJoined.contains(eventId)) {
                 eventsJoined.remove(eventId);
@@ -216,6 +229,7 @@ public class FirebaseUtils {
             }
         });
     }
+
 
 
 }
