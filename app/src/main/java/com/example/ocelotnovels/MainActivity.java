@@ -14,7 +14,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.ocelotnovels.utils.FirebaseUtils;
 import com.example.ocelotnovels.view.Entrant.EventDetailsFragment;
 import com.example.ocelotnovels.view.Entrant.WaitingListActivity;
-import com.example.ocelotnovels.view.organizer.OrganizerMainActivity;
+import com.example.ocelotnovels.view.Organizer.OrganizerMainActivity;
 import com.google.android.gms.common.moduleinstall.ModuleInstall;
 import com.google.android.gms.common.moduleinstall.ModuleInstallClient;
 import com.google.android.gms.common.moduleinstall.ModuleInstallRequest;

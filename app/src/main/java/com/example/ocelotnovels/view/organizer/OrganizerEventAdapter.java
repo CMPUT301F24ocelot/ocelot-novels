@@ -1,4 +1,4 @@
-package com.example.ocelotnovels.view.organizer;
+package com.example.ocelotnovels.view.Organizer;
 
 import android.content.Context;
 import android.view.LayoutInflater;
