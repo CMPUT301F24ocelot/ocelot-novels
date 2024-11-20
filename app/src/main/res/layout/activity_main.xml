@@ -5,100 +5,119 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:padding="16dp"
     tools:context=".MainActivity">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/user_toolbar"
-        android:layout_width="409dp"
-        android:layout_height="wrap_content"
-        android:background="#F4E6FB"
-        android:minHeight="?attr/actionBarSize"
-        android:theme="?attr/actionBarTheme"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:title="Events"
-        app:titleMargin="5dp"
-        app:titleMarginStart="180dp"
-        app:titleTextAppearance="@style/TextAppearance.AppCompat.Medium" />
-
+    <!-- Top Section -->
     <TextView
         android:id="@+id/user_welcome_text"
-        android:layout_width="260dp"
-        android:layout_height="52dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="80dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:text="Hello!"
         android:textSize="30sp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/user_toolbar" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="24dp" />
 
     <TextView
         android:id="@+id/user_your_events"
-        android:layout_width="259dp"
-        android:layout_height="52dp"
-        android:layout_marginEnd="80dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:text="Events:"
         android:textSize="30sp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:textColor="@android:color/black"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/user_welcome_text" />
+        app:layout_constraintTop_toBottomOf="@+id/user_welcome_text"
+        android:layout_marginTop="16dp" />
 
+    <!-- Middle Section -->
     <TextView
         android:id="@+id/user_search_events_text"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center"
         android:text="Search for Events"
-        android:textSize="20dp"
+        android:textSize="20sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@id/user_scan_qr"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        android:textColor="@android:color/black"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/user_your_events"
-        app:layout_constraintVertical_bias="0.851" />
+        android:layout_marginTop="32dp" />
 
     <Button
         android:id="@+id/user_scan_qr"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="48dp"
-        android:paddingHorizontal="26dp"
-        android:paddingVertical="10dp"
+        android:layout_marginHorizontal="32dp"
         android:text="Scan QR"
-        android:textSize="20dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:textSize="18sp"
+        android:padding="12dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/user_toolbar"
-        app:layout_constraintVertical_bias="0.499" />
-
-    <Button
-        android:id="@+id/user_event_list"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingHorizontal="26dp"
-        android:paddingVertical="10dp"
-        android:text="Events"
-        android:textSize="20dp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.589"
-        app:layout_constraintStart_toEndOf="@+id/user_scan_qr"
-        app:layout_constraintTop_toBottomOf="@+id/user_toolbar"
-        app:layout_constraintVertical_bias="0.499" />
+        app:layout_constraintTop_toBottomOf="@+id/user_search_events_text"
+        android:layout_marginTop="16dp" />
 
     <Button
         android:id="@+id/user_sign_up_button"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="32dp"
         android:text="Update details"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        android:textSize="18sp"
+        android:padding="12dp"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/user_scan_qr"
-        app:layout_constraintVertical_bias="0.743" />
+        android:layout_marginTop="16dp" />
+
+    <!-- Bottom Navigation Section -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <Button
+            android:id="@+id/user_organizer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Organizer"
+            android:textSize="16sp"
+            android:padding="12dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/user_event_list"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginEnd="8dp" />
+
+        <Button
+            android:id="@+id/user_event_list"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Events"
+            android:textSize="16sp"
+            android:padding="12dp"
+            app:layout_constraintStart_toEndOf="@+id/user_organizer"
+            app:layout_constraintEnd_toStartOf="@+id/user_admin"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginHorizontal="8dp" />
+
+        <Button
+            android:id="@+id/user_admin"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Admin"
+            android:textSize="16sp"
+            android:padding="12dp"
+            app:layout_constraintStart_toEndOf="@+id/user_event_list"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginStart="8dp" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

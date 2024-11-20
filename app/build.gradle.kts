@@ -63,6 +63,7 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.firebase.auth)
+    implementation(libs.firebase.storage)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -77,9 +78,16 @@ dependencies {
     implementation("com.google.android.gms:play-services-base:18.5.0")
     implementation("com.google.android.gms:play-services-tflite-java:16.2.0-beta02")
     implementation("com.google.android.gms:play-services-maps:19.0.0")
-
+    implementation("com.journeyapps:zxing-android-embedded:4.1.0")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.mockito:mockito-core:4.5.1")
     testImplementation("androidx.test.ext:junit:1.1.3")
     testImplementation("androidx.test:core:1.4.0")
+
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.4.0") // For RecyclerView actions
+    // Firebase Firestore and related libraries
+    implementation("com.google.protobuf:protobuf-javalite") // Ensure this is compatible with Firebase
+
+    implementation("com.journeyapps:zxing-android-embedded:4.1.0")
 }

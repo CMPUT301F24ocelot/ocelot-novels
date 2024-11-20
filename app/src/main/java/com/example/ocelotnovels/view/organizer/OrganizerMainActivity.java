@@ -1,19 +1,15 @@
 package com.example.ocelotnovels.view.organizer;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
-
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
+import com.example.ocelotnovels.MainActivity;
 import com.example.ocelotnovels.CancelledEntrantsActivity;
 import com.example.ocelotnovels.ConfirmedEntrantsActivity;
 import com.example.ocelotnovels.InvitedEntrantsActivity;
@@ -22,7 +18,8 @@ import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.SelectedEntrantsActivity;
 import com.example.ocelotnovels.WaitingListActivity;
 import com.example.ocelotnovels.model.Event;
-import com.example.ocelotnovels.utils.FirebaseUtils;
+import com.example.ocelotnovels.CreateEventActivity;
+import com.example.ocelotnovels.FacilityProfileActivity;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -54,9 +51,12 @@ public class OrganizerMainActivity extends AppCompatActivity {
         // Load events from Firestore
         loadEventsFromFirestore();
 
-        // Set greeting text
-        TextView welcomeText = findViewById(R.id.welcome_text);
-        welcomeText.setText("Lists");  // Replace with dynamic username if needed
+        // Add Event Button Click
+        Button addEventButton = findViewById(R.id.add_events_button);
+        addEventButton.setOnClickListener(v -> {
+            Intent intent = new Intent(OrganizerMainActivity.this, CreateEventActivity.class);
+            startActivity(intent);
+        });
 
         // Button to navigate to Entrant Map
         Button entrantMapButton = findViewById(R.id.entrant_map);
@@ -65,67 +65,30 @@ public class OrganizerMainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        /*
-        Button waitingListButton = findViewById(R.id.entrant_list);
-        entrantMapButton.setOnClickListener(v -> {
-            Intent intent = new Intent(OrganizerMainActivity.this, MapOfEntrantsActivity.class);
+
+        // Facility Profile Button Click
+        Button facilityProfileButton = findViewById(R.id.facility_profile_button);
+        facilityProfileButton.setOnClickListener(v -> {
+            Intent intent = new Intent(OrganizerMainActivity.this, FacilityProfileActivity.class);
             startActivity(intent);
         });
-        */
 
+        // Entrant List Button Click
         Button entrantListButton = findViewById(R.id.entrant_list);
         entrantListButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showEntrantOptionsDialog();
+                showEntrantListDropdown(v);
             }
         });
 
-        /*
-        Button addEventButton = findViewById(R.id.add_events_button);
-        entrantMapButton.setOnClickListener(v -> {
-            Intent intent = new Intent(OrganizerMainActivity.this, CreateEventActivity.class);
+        // Back Button Click
+        Button backButton = findViewById(R.id.back_button);
+        backButton.setOnClickListener(v -> {
+            Intent intent = new Intent(OrganizerMainActivity.this, MainActivity.class);
             startActivity(intent);
-        }); */
-    }
-    private void showEntrantOptionsDialog() {
-        final CharSequence[] items = {"Waitlist of Entrants", "Selected Entrants", "Invited Entrants", "Cancelled Entrants", "Confirmed Entrants"};
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Manage Entrants");
-        builder.setItems(items, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int item) {
-                switch (item) {
-                    case 0:
-                        startActivity(new Intent(OrganizerMainActivity.this, WaitingListActivity.class));
-                        break;
-                    case 1:
-                        startActivity(new Intent(OrganizerMainActivity.this, SelectedEntrantsActivity.class));
-                        break;
-                    case 2:
-                        startActivity(new Intent(OrganizerMainActivity.this, InvitedEntrantsActivity.class));
-                        break;
-                    case 3:
-                        startActivity(new Intent(OrganizerMainActivity.this, CancelledEntrantsActivity.class));
-                        break;
-                    case 4:
-                        startActivity(new Intent(OrganizerMainActivity.this, ConfirmedEntrantsActivity.class));
-                        break;
-                }
-            }
+            finish(); // Optional: Call finish to close OrganizerMainActivity
         });
-        AlertDialog alert = builder.create();
-        alert.show();
-    }
-
-    // Constructor for dependency injection (for testing)
-    public OrganizerMainActivity(FirebaseFirestore firestore) {
-        this.db = firestore;
-        this.eventNames = new ArrayList<>();
-    }
-
-    // Default constructor
-    public OrganizerMainActivity() {
-        this(FirebaseFirestore.getInstance());  // Use the real Firestore by default
     }
 
     public void loadEventsFromFirestore() {
@@ -134,7 +97,7 @@ public class OrganizerMainActivity extends AppCompatActivity {
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     eventNames.clear();
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        String eventName = document.getString("eventName");
+                        String eventName = document.getString("title");
                         if (eventName != null) {
                             eventNames.add(eventName);
                         }
@@ -146,4 +109,42 @@ public class OrganizerMainActivity extends AppCompatActivity {
                 });
     }
 
+    private void showEntrantListDropdown(View view) {
+        PopupMenu popupMenu = new PopupMenu(this, view);
+
+        // Dynamically add menu items
+        popupMenu.getMenu().add("Waiting List");
+        popupMenu.getMenu().add("Selected Entrants");
+        popupMenu.getMenu().add("Invited Entrants");
+        popupMenu.getMenu().add("Cancelled Entrants");
+        popupMenu.getMenu().add("Confirmed Entrants");
+
+        // Handle click events for each item in the dropdown menu
+        popupMenu.setOnMenuItemClickListener(item -> {
+            String title = item.getTitle().toString();
+            switch (title) {
+                case "Waiting List":
+                    startActivity(new Intent(OrganizerMainActivity.this, WaitingListActivity.class));
+                    break;
+                case "Selected Entrants":
+                    startActivity(new Intent(OrganizerMainActivity.this, SelectedEntrantsActivity.class));
+                    break;
+                case "Invited Entrants":
+                    startActivity(new Intent(OrganizerMainActivity.this, InvitedEntrantsActivity.class));
+                    break;
+                case "Cancelled Entrants":
+                    startActivity(new Intent(OrganizerMainActivity.this, CancelledEntrantsActivity.class));
+                    break;
+                case "Confirmed Entrants":
+                    startActivity(new Intent(OrganizerMainActivity.this, ConfirmedEntrantsActivity.class));
+                    break;
+                default:
+                    return false;
+            }
+            return true;
+        });
+
+        // Show the dropdown menu
+        popupMenu.show();
+    }
 }

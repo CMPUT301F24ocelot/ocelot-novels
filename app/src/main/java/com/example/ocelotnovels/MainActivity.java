@@ -5,24 +5,20 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-
 import com.example.ocelotnovels.utils.FirebaseUtils;
 import com.example.ocelotnovels.view.Entrant.EventDetailsFragment;
 import com.example.ocelotnovels.view.Entrant.WaitingListActivity;
+import com.example.ocelotnovels.view.organizer.OrganizerMainActivity;
 import com.google.android.gms.common.moduleinstall.ModuleInstall;
 import com.google.android.gms.common.moduleinstall.ModuleInstallClient;
 import com.google.android.gms.common.moduleinstall.ModuleInstallRequest;
 import com.google.android.gms.common.moduleinstall.ModuleInstallResponse;
-import com.google.android.gms.tasks.OnCanceledListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -38,27 +34,26 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseUtils firebaseUtils;
     private Boolean isScannerInstalled = false;
     private Button scanQrBtn;
-    public String deviceId;
+    private Button organizerBtn;  // Additional button for Organizer Main Activity
     private GmsBarcodeScanner scanner;
     private FirebaseAuth mAuth;
     private FirebaseUser user;
     private Button signUpButton,eventViewBtn;
+    public String deviceId;
     private String getUserEmail;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
+  
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+
+        // Initialize views and FirebaseUtils
         initVars();
         installGoogleScanner();
 
+        // Set up button click listeners
         registerUIListener();
 
         signUpButton = findViewById(R.id.user_sign_up_button);
@@ -112,17 +107,19 @@ public class MainActivity extends AppCompatActivity {
 
     private void initVars(){
         scanQrBtn = findViewById(R.id.user_scan_qr);
-        //scannedValueTv =findViewById(R.id.scannedValueTv);
+        organizerBtn = findViewById(R.id.user_organizer);  // Organizer button initialization
+
         GmsBarcodeScannerOptions options = initializeGoogleScanner();
-        scanner = GmsBarcodeScanning.getClient(this,options);
+        scanner = GmsBarcodeScanning.getClient(this, options);
         firebaseUtils = new FirebaseUtils(this);
         deviceId = firebaseUtils.getDeviceId(this);
         Log.i("Main Activity:deviceId",deviceId);
     }
+
     private GmsBarcodeScannerOptions initializeGoogleScanner(){
-        return new GmsBarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).enableAutoZoom()
-                .build();
+        return new GmsBarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).enableAutoZoom().build();
     }
+
     private void installGoogleScanner(){
         ModuleInstallClient moduleInstall = ModuleInstall.getClient(this);
         ModuleInstallRequest moduleInstallRequest = ModuleInstallRequest.newBuilder().addApi(GmsBarcodeScanning.getClient(this)).build();
@@ -142,17 +139,23 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    private void registerUIListener(){
+
+    private void registerUIListener() {
         scanQrBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isScannerInstalled){
+                if (isScannerInstalled) {
                     startScanning();
                 } else {
                     Toast.makeText(getApplicationContext(), "Scanner not Installed, Please try again!", Toast.LENGTH_SHORT).show();
-
                 }
             }
+        });
+
+        // Organizer button listener to open OrganizerMainActivity
+        organizerBtn.setOnClickListener(v -> {
+            Intent organizerIntent = new Intent(MainActivity.this, OrganizerMainActivity.class);
+            startActivity(organizerIntent);
         });
     }
 
@@ -178,19 +181,13 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "Invalid QR Code content", Toast.LENGTH_SHORT).show();
                 }
             }
-        }).addOnCanceledListener(new OnCanceledListener() {
-            @Override
-            public void onCanceled() {
-                Toast.makeText(MainActivity.this, "Scan canceled", Toast.LENGTH_SHORT).show();
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(MainActivity.this, "Scan failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-
+        }).addOnCanceledListener(() ->
+                Toast.makeText(MainActivity.this, "Scan canceled", Toast.LENGTH_SHORT).show()
+        ).addOnFailureListener(e ->
+                Toast.makeText(MainActivity.this, "Scan failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+        );
     }
+
 
     private void toEventDetails(String eventId,String deviceId) {
         EventDetailsFragment fragment = EventDetailsFragment.newInstance(eventId,deviceId);
@@ -198,5 +195,4 @@ public class MainActivity extends AppCompatActivity {
                 .add(fragment, "eventDetails")
                 .commitAllowingStateLoss();
     }
-
 }
