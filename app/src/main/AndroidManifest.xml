@@ -46,7 +46,7 @@
 
         <activity android:name=".MapsActivity"
             android:exported="true"
-            android:parentActivityName=".view.organizer.OrganizerMainActivity">
+            android:parentActivityName=".view.Organizer.OrganizerMainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -68,4 +68,4 @@
 
     </application>
 
-</manifest> 
+</manifest>

@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     public String deviceId;
     private String getUserEmail;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
-  
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,8 +75,9 @@ public class MainActivity extends AppCompatActivity {
                         public void onClick(View v) {
                             Intent intent = new Intent(getApplicationContext(), WaitingListActivity.class);
                             startActivity(intent);
-                            finish();
-                            MainActivity.super.onBackPressed();
+//                            finish();
+//                            MainActivity.super.onBackPressed();
+//                            MainActivity.super.getOnBackPressedDispatcher().onBackPressed();
                         }
                     });
                 } else {
