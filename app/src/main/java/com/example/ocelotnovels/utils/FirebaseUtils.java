@@ -1,21 +1,18 @@
 package com.example.ocelotnovels.utils;
 
-
 import static android.content.ContentValues.TAG;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
-
-
 import androidx.annotation.NonNull;
-
 
 import com.example.ocelotnovels.model.Event;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -27,93 +24,211 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Utility class to manage Firebase Firestore operations for the application.
+ */
 public class FirebaseUtils {
-    private FirebaseFirestore db;
-    private String deviceId;
+    private static FirebaseUtils instance;
+    private final FirebaseFirestore db;
+    private final String deviceId;
 
-    public FirebaseUtils(Context context){
-        if (context!=null){
-            this.db = FirebaseFirestore.getInstance();
-            this.deviceId = getDeviceId(context);
-        }
+    /**
+     * Private constructor for FirebaseUtils to initialize Firebase Firestore instance and device ID.
+     *
+     * @param context The application context.
+     */
+    public FirebaseUtils(Context context) {
+        this.db = FirebaseFirestore.getInstance();
+        this.deviceId = getDeviceId(context);
     }
 
+    /**
+     * Provides a singleton instance of FirebaseUtils.
+     *
+     * @param context The application context.
+     * @return Singleton instance of FirebaseUtils.
+     */
+    public static FirebaseUtils getInstance(Context context) {
+        if (instance == null) {
+            instance = new FirebaseUtils(context);
+        }
+        return instance;
+    }
+
+    /**
+     * Returns the Firebase Firestore instance.
+     *
+     * @return FirebaseFirestore instance.
+     */
     public FirebaseFirestore getDb() {
         return db;
     }
 
-    public String getDeviceId(Context context){
-        SharedPreferences sharedPreferences;
-        sharedPreferences = context.getApplicationContext().getSharedPreferences("user_settings",Context.MODE_PRIVATE);
-        String deviceId = sharedPreferences.getString("DeviceId",null);
+    /**
+     * Retrieves or generates a unique device ID for the user.
+     *
+     * @param context The application context.
+     * @return The unique device ID.
+     */
+    public String getDeviceId(Context context) {
+        SharedPreferences sharedPreferences = context.getApplicationContext()
+                .getSharedPreferences("user_settings", Context.MODE_PRIVATE);
+        String deviceId = sharedPreferences.getString("DeviceId", null);
 
-        if (deviceId==null){
+        if (deviceId == null) {
             deviceId = UUID.randomUUID().toString();
-            SharedPreferences.Editor editor= sharedPreferences.edit();
-            editor.putString("DeviceId",deviceId);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("DeviceId", deviceId);
             editor.apply();
         }
 
         return deviceId;
     }
 
-    public DocumentReference getUserDocument(){
+    /**
+     * Gets the user's document reference in the Firestore database.
+     *
+     * @return DocumentReference to the user's document.
+     */
+    public DocumentReference getUserDocument() {
         return this.db.collection("users").document(deviceId);
-
     }
 
-    public void pushUserDocument(Context context, Map<String,Object> userData){
-
+    /**
+     * Pushes user data to the Firestore database.
+     *
+     * @param context  The application context.
+     * @param userData A map containing user data.
+     */
+    public void pushUserDocument(Context context, Map<String, Object> userData) {
         db.collection("users").document(deviceId).set(userData)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d(TAG, "DocumentSnapshot successfully written!");
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG, "Error writing document", e);
-                    }
-                });
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "DocumentSnapshot successfully written!"))
+                .addOnFailureListener(e -> Log.w(TAG, "Error writing document", e));
     }
 
-    public void fetchUserWaitingListEvents(List<Event> eventList, Runnable onComplete) {
-        // Query events where waitList array contains the current deviceId
-        db.collection("events")
-                .whereArrayContains("waitList", deviceId)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-
-                    eventList.clear();
-                    for (DocumentSnapshot document : queryDocumentSnapshots) {
-                        String eventId= document.getString("eventId");
-                        Date eventDate =(Date) document.getDate("eventDate");
-                        Date eventRegOpen =(Date) document.getDate("regOpen");
-                        Date eventDeadline =(Date) document.getDate("regClosed");
-                        String eventName = document.getString("name");
-                        String eventDescription= document.getString("description");
-                        Long eventCapacity =document.get("capacity")==null? -1 :  (Long) document.get("capacity");
-
-                        String organizerId = document.getString("organizerId");
-                        String eventLocation = document.getString("location");
-                        String  posterUrl = document.getString("posterURL");
-                        ArrayList<String> waitingList= (ArrayList<String>) document.get("waitList");
-                        ArrayList<String> cancelledParticipants = (ArrayList<String>) document.get("cancelledList");
-                        ArrayList<String> selectedParticipants = (ArrayList<String>) document.get("selectedList");
-                        String qrHash = document.getString("qrHash");
-                        Boolean geolocationEnabled = document.getBoolean("geolocationEnabled");
-                        Event event = new Event(eventId,eventName,eventDescription,eventDate,eventRegOpen,eventDeadline,eventCapacity,posterUrl,organizerId,eventLocation,waitingList,selectedParticipants,cancelledParticipants,qrHash,geolocationEnabled);
-
-                        eventList.add(event);
+    /**
+     * Fetches the list of events the user has joined and populates the provided list.
+     *
+     * @param eventList  The list to populate with Event objects.
+     * @param onComplete Runnable to execute when the fetch is complete.
+     */
+    public void fetchUserJoinedEvents(List<Event> eventList, Runnable onComplete) {
+        getUserDocument().get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        ArrayList<String> eventsJoined = (ArrayList<String>) documentSnapshot.get("eventsJoined");
+                        if (eventsJoined != null && !eventsJoined.isEmpty()) {
+                            List<Task<DocumentSnapshot>> tasks = new ArrayList<>();
+                            for (String eventId : eventsJoined) {
+                                tasks.add(db.collection("events").document(eventId).get());
+                            }
+                            Tasks.whenAllComplete(tasks)
+                                    .addOnSuccessListener(taskSnapshots -> {
+                                        eventList.clear();
+                                        for (Task<DocumentSnapshot> task : tasks) {
+                                            if (task.isSuccessful()) {
+                                                DocumentSnapshot doc = task.getResult();
+                                                if (doc.exists()) {
+                                                    Event event = new Event(
+                                                            doc.getId(),
+                                                            doc.getString("name"),
+                                                            doc.getString("description"),
+                                                            doc.getString("regClosed"),
+                                                            doc.getString("location")
+                                                    );
+                                                    event.setGeolocationEnabled(doc.getBoolean("geolocationEnabled"));
+                                                    event.setWaitList((ArrayList<String>) doc.get("waitingList"));
+                                                    event.setSelectedParticipants((ArrayList<String>) doc.get("selectedList"));
+                                                    event.setCancelledParticipants((ArrayList<String>) doc.get("cancelledList"));
+                                                    eventList.add(event);
+                                                }
+                                            }
+                                        }
+                                        if (onComplete != null) {
+                                            onComplete.run();
+                                        }
+                                    })
+                                    .addOnFailureListener(e -> Log.e(TAG, "Error fetching events", e));
+                        } else {
+                            eventList.clear();
+                            if (onComplete != null) {
+                                onComplete.run();
+                            }
+                        }
                     }
-                    onComplete.run();
                 })
-                .addOnFailureListener(e -> {
-                    // Log or handle errors
-                    Log.e("Firestore", "Error fetching documents", e);
-                });
+                .addOnFailureListener(e -> Log.e(TAG, "Error fetching user document", e));
     }
 
+    /**
+     * Adds the user to the waitlist of a specified event.
+     *
+     * @param eventId   The ID of the event.
+     * @param onSuccess Listener to handle success.
+     * @param onFailure Listener to handle failure.
+     */
+    public void joinEventWaitlist(String eventId, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+        DocumentReference eventRef = db.collection("events").document(eventId);
+
+        db.runTransaction(transaction -> {
+            DocumentSnapshot snapshot = transaction.get(eventRef);
+            ArrayList<String> waitList = (ArrayList<String>) snapshot.get("waitingList");
+            ArrayList<String> cancelledList = (ArrayList<String>) snapshot.get("cancelledList");
+
+            if (waitList == null) waitList = new ArrayList<>();
+            if (cancelledList == null) cancelledList = new ArrayList<>();
+
+            cancelledList.remove(deviceId);
+            if (!waitList.contains(deviceId)) {
+                waitList.add(deviceId);
+                transaction.update(eventRef, "waitingList", waitList);
+                transaction.update(eventRef, "cancelledList", cancelledList);
+            }
+            return null;
+        }).addOnSuccessListener(result -> {
+            if (onSuccess != null) onSuccess.onSuccess(null);
+        }).addOnFailureListener(e -> {
+            if (onFailure != null) onFailure.onFailure(e);
+        });
+    }
+
+    /**
+     * Removes the user from the waitlist of a specified event and updates the cancelled list.
+     *
+     * @param eventId   The ID of the event.
+     * @param onSuccess Listener to handle success.
+     * @param onFailure Listener to handle failure.
+     */
+    public void leaveEventWaitlist(String eventId, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+        DocumentReference eventRef = db.collection("events").document(eventId);
+        DocumentReference userRef = getUserDocument();
+
+        db.runTransaction(transaction -> {
+            DocumentSnapshot eventSnapshot = transaction.get(eventRef);
+            ArrayList<String> waitList = (ArrayList<String>) eventSnapshot.get("waitingList");
+            ArrayList<String> cancelledList = (ArrayList<String>) eventSnapshot.get("cancelledList");
+
+            DocumentSnapshot userSnapshot = transaction.get(userRef);
+            ArrayList<String> eventsJoined = (ArrayList<String>) userSnapshot.get("eventsJoined");
+
+            if (waitList != null && waitList.contains(deviceId)) {
+                waitList.remove(deviceId);
+                if (cancelledList == null) cancelledList = new ArrayList<>();
+                if (!cancelledList.contains(deviceId)) cancelledList.add(deviceId);
+
+                transaction.update(eventRef, "waitingList", waitList);
+                transaction.update(eventRef, "cancelledList", cancelledList);
+            }
+
+            if (eventsJoined != null && eventsJoined.contains(eventId)) {
+                eventsJoined.remove(eventId);
+                transaction.update(userRef, "eventsJoined", eventsJoined);
+            }
+            return null;
+        }).addOnSuccessListener(result -> {
+            if (onSuccess != null) onSuccess.onSuccess(null);
+        }).addOnFailureListener(e -> {
+            if (onFailure != null) onFailure.onFailure(e);
+        });
+    }
 }
