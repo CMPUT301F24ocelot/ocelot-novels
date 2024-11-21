@@ -2,7 +2,6 @@ package com.example.ocelotnovels.view.Organizer;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,10 +16,8 @@ import com.example.ocelotnovels.MapsActivity;
 import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.SelectedEntrantsActivity;
 import com.example.ocelotnovels.WaitingListActivity;
-import com.example.ocelotnovels.model.Event;
 import com.example.ocelotnovels.CreateEventActivity;
 import com.example.ocelotnovels.FacilityProfileActivity;
-import com.example.ocelotnovels.view.Organizer.OrganizerEventAdapter;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
