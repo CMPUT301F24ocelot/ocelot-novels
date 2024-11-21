@@ -1,21 +1,16 @@
 package com.example.ocelotnovels.utils;
 
-
 import static android.content.ContentValues.TAG;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
-
-
 import androidx.annotation.NonNull;
-
 
 import com.example.ocelotnovels.model.Event;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentReference;
@@ -29,16 +24,30 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Utility class to manage Firebase Firestore operations for the application.
+ */
 public class FirebaseUtils {
     private static FirebaseUtils instance;
     private final FirebaseFirestore db;
     private final String deviceId;
 
+    /**
+     * Private constructor for FirebaseUtils to initialize Firebase Firestore instance and device ID.
+     *
+     * @param context The application context.
+     */
     public FirebaseUtils(Context context) {
         this.db = FirebaseFirestore.getInstance();
         this.deviceId = getDeviceId(context);
     }
 
+    /**
+     * Provides a singleton instance of FirebaseUtils.
+     *
+     * @param context The application context.
+     * @return Singleton instance of FirebaseUtils.
+     */
     public static FirebaseUtils getInstance(Context context) {
         if (instance == null) {
             instance = new FirebaseUtils(context);
@@ -46,65 +55,73 @@ public class FirebaseUtils {
         return instance;
     }
 
+    /**
+     * Returns the Firebase Firestore instance.
+     *
+     * @return FirebaseFirestore instance.
+     */
     public FirebaseFirestore getDb() {
         return db;
     }
 
-    public String getDeviceId(Context context){
-        SharedPreferences sharedPreferences;
-        sharedPreferences = context.getApplicationContext().getSharedPreferences("user_settings",Context.MODE_PRIVATE);
-        String deviceId = sharedPreferences.getString("DeviceId",null);
+    /**
+     * Retrieves or generates a unique device ID for the user.
+     *
+     * @param context The application context.
+     * @return The unique device ID.
+     */
+    public String getDeviceId(Context context) {
+        SharedPreferences sharedPreferences = context.getApplicationContext()
+                .getSharedPreferences("user_settings", Context.MODE_PRIVATE);
+        String deviceId = sharedPreferences.getString("DeviceId", null);
 
-        if (deviceId==null){
+        if (deviceId == null) {
             deviceId = UUID.randomUUID().toString();
-            SharedPreferences.Editor editor= sharedPreferences.edit();
-            editor.putString("DeviceId",deviceId);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("DeviceId", deviceId);
             editor.apply();
         }
 
         return deviceId;
     }
 
-    public DocumentReference getUserDocument(){
+    /**
+     * Gets the user's document reference in the Firestore database.
+     *
+     * @return DocumentReference to the user's document.
+     */
+    public DocumentReference getUserDocument() {
         return this.db.collection("users").document(deviceId);
-
     }
 
-    public void pushUserDocument(Context context, Map<String,Object> userData){
-
+    /**
+     * Pushes user data to the Firestore database.
+     *
+     * @param context  The application context.
+     * @param userData A map containing user data.
+     */
+    public void pushUserDocument(Context context, Map<String, Object> userData) {
         db.collection("users").document(deviceId).set(userData)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d(TAG, "DocumentSnapshot successfully written!");
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG, "Error writing document", e);
-                    }
-                });
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "DocumentSnapshot successfully written!"))
+                .addOnFailureListener(e -> Log.w(TAG, "Error writing document", e));
     }
 
+    /**
+     * Fetches the list of events the user has joined and populates the provided list.
+     *
+     * @param eventList  The list to populate with Event objects.
+     * @param onComplete Runnable to execute when the fetch is complete.
+     */
     public void fetchUserJoinedEvents(List<Event> eventList, Runnable onComplete) {
         getUserDocument().get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         ArrayList<String> eventsJoined = (ArrayList<String>) documentSnapshot.get("eventsJoined");
                         if (eventsJoined != null && !eventsJoined.isEmpty()) {
-                            // Create a list to store all the event fetch tasks
                             List<Task<DocumentSnapshot>> tasks = new ArrayList<>();
-
-                            // Create tasks for fetching each event
                             for (String eventId : eventsJoined) {
-                                Task<DocumentSnapshot> task = db.collection("events")
-                                        .document(eventId)
-                                        .get();
-                                tasks.add(task);
+                                tasks.add(db.collection("events").document(eventId).get());
                             }
-
-                            // Wait for all tasks to complete
                             Tasks.whenAllComplete(tasks)
                                     .addOnSuccessListener(taskSnapshots -> {
                                         eventList.clear();
@@ -143,6 +160,13 @@ public class FirebaseUtils {
                 .addOnFailureListener(e -> Log.e(TAG, "Error fetching user document", e));
     }
 
+    /**
+     * Adds the user to the waitlist of a specified event.
+     *
+     * @param eventId   The ID of the event.
+     * @param onSuccess Listener to handle success.
+     * @param onFailure Listener to handle failure.
+     */
     public void joinEventWaitlist(String eventId, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
         DocumentReference eventRef = db.collection("events").document(eventId);
 
@@ -151,63 +175,46 @@ public class FirebaseUtils {
             ArrayList<String> waitList = (ArrayList<String>) snapshot.get("waitingList");
             ArrayList<String> cancelledList = (ArrayList<String>) snapshot.get("cancelledList");
 
-            if (waitList == null) {
-                waitList = new ArrayList<>();
-            }
+            if (waitList == null) waitList = new ArrayList<>();
+            if (cancelledList == null) cancelledList = new ArrayList<>();
 
-            if (cancelledList == null) {
-                cancelledList = new ArrayList<>();
-            }
-
-            Log.d("CANCEL", String.valueOf(cancelledList));
-            // Check if user is not already in waitlist
+            cancelledList.remove(deviceId);
             if (!waitList.contains(deviceId)) {
-                // Remove from cancelledList if present
-                cancelledList.remove(deviceId);
-                // Add user to waitlist
                 waitList.add(deviceId);
-
-                // Update Firestore
                 transaction.update(eventRef, "waitingList", waitList);
                 transaction.update(eventRef, "cancelledList", cancelledList);
             }
-
             return null;
         }).addOnSuccessListener(result -> {
-            if (onSuccess != null) {
-                onSuccess.onSuccess(null);
-            }
+            if (onSuccess != null) onSuccess.onSuccess(null);
         }).addOnFailureListener(e -> {
-            if (onFailure != null) {
-                onFailure.onFailure(e);
-            }
+            if (onFailure != null) onFailure.onFailure(e);
         });
     }
 
-
+    /**
+     * Removes the user from the waitlist of a specified event and updates the cancelled list.
+     *
+     * @param eventId   The ID of the event.
+     * @param onSuccess Listener to handle success.
+     * @param onFailure Listener to handle failure.
+     */
     public void leaveEventWaitlist(String eventId, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
         DocumentReference eventRef = db.collection("events").document(eventId);
         DocumentReference userRef = getUserDocument();
 
         db.runTransaction(transaction -> {
-            // Read data for event
             DocumentSnapshot eventSnapshot = transaction.get(eventRef);
             ArrayList<String> waitList = (ArrayList<String>) eventSnapshot.get("waitingList");
             ArrayList<String> cancelledList = (ArrayList<String>) eventSnapshot.get("cancelledList");
 
-            // Read data for user
             DocumentSnapshot userSnapshot = transaction.get(userRef);
             ArrayList<String> eventsJoined = (ArrayList<String>) userSnapshot.get("eventsJoined");
 
-            // Perform write operations after all reads are done
             if (waitList != null && waitList.contains(deviceId)) {
                 waitList.remove(deviceId);
-                if (cancelledList == null) {
-                    cancelledList = new ArrayList<>();
-                }
-                if (!cancelledList.contains(deviceId)){
-                    cancelledList.add(deviceId);
-                }
+                if (cancelledList == null) cancelledList = new ArrayList<>();
+                if (!cancelledList.contains(deviceId)) cancelledList.add(deviceId);
 
                 transaction.update(eventRef, "waitingList", waitList);
                 transaction.update(eventRef, "cancelledList", cancelledList);
@@ -217,19 +224,11 @@ public class FirebaseUtils {
                 eventsJoined.remove(eventId);
                 transaction.update(userRef, "eventsJoined", eventsJoined);
             }
-
             return null;
         }).addOnSuccessListener(result -> {
-            if (onSuccess != null) {
-                onSuccess.onSuccess(null);
-            }
+            if (onSuccess != null) onSuccess.onSuccess(null);
         }).addOnFailureListener(e -> {
-            if (onFailure != null) {
-                onFailure.onFailure(e);
-            }
+            if (onFailure != null) onFailure.onFailure(e);
         });
     }
-
-
-
 }

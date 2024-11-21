@@ -19,6 +19,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Activity for creating and updating facility profiles.
+ */
 public class FacilityProfileActivity extends AppCompatActivity {
 
     private EditText facilityName, facilityEmail, facilityPhone, facilityLocation, facilityDescription;
@@ -26,6 +29,12 @@ public class FacilityProfileActivity extends AppCompatActivity {
     private Button facilitySaveButton, facilityCancelButton;
     private FirebaseFirestore db;
 
+    /**
+     * Called when the activity is created. Initializes the UI components and sets up button click listeners.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously being shut down,
+     *                           this contains the data it most recently supplied in {@link #onSaveInstanceState}.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,9 +56,13 @@ public class FacilityProfileActivity extends AppCompatActivity {
         // Set up save button functionality
         facilitySaveButton.setOnClickListener(v -> saveFacilityProfile());
 
+        // Set up cancel button functionality
         facilityCancelButton.setOnClickListener(v -> navigateBack());
     }
 
+    /**
+     * Navigates back to the OrganizerMainActivity.
+     */
     private void navigateBack() {
         Intent intent = new Intent(FacilityProfileActivity.this, OrganizerMainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -57,6 +70,9 @@ public class FacilityProfileActivity extends AppCompatActivity {
         finish();
     }
 
+    /**
+     * Validates the user input and saves the facility profile to Firestore.
+     */
     private void saveFacilityProfile() {
         // Retrieve and validate data from input fields
         String name = facilityName.getText().toString().trim();
@@ -65,10 +81,11 @@ public class FacilityProfileActivity extends AppCompatActivity {
         String location = facilityLocation.getText().toString().trim();
         String description = facilityDescription.getText().toString().trim();
 
-        // Assuming ownerId is derived from the current user's ID (you may replace this with actual ownerId)
-        String ownerId = "sampleOwnerId";  // Replace this with the actual owner ID logic
+        // Assuming ownerId is derived from the current user's ID (replace with actual logic)
+        String ownerId = "sampleOwnerId";  // Replace this with actual owner ID logic
         String facilityId = UUID.randomUUID().toString();
 
+        // Validate input fields
         if (TextUtils.isEmpty(name) || name.length() > 100) {
             showToast("Facility name must be between 1 and 100 characters.");
             return;
@@ -112,11 +129,16 @@ public class FacilityProfileActivity extends AppCompatActivity {
                 .set(facilityData)
                 .addOnSuccessListener(aVoid -> {
                     showToast("Facility profile saved successfully.");
-                    navigateBack(); // After saving, navigate back
+                    navigateBack(); // Navigate back after saving
                 })
                 .addOnFailureListener(e -> showToast("Failed to save facility profile."));
     }
 
+    /**
+     * Displays a toast message to the user.
+     *
+     * @param message The message to be displayed.
+     */
     private void showToast(String message) {
         Toast.makeText(FacilityProfileActivity.this, message, Toast.LENGTH_SHORT).show();
     }
