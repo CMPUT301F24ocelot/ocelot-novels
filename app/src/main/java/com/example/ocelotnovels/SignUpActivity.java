@@ -11,17 +11,30 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.ocelotnovels.utils.FirebaseUtils;
 import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * The SignUpActivity class handles the user sign-up functionality.
+ * It collects user input, validates it, and stores user data in Firebase Firestore.
+ */
 public class SignUpActivity extends AppCompatActivity {
 
     private EditText emailEditText, nameEditText, phoneEditText;
     private Button signUpButton;
     private FirebaseFirestore db;
     private FirebaseUtils firebaseUtils;
-    private String  deviceId;
+    private String deviceId;
+
+    /**
+     * Called when the activity is first created.
+     * Initializes the UI components, Firestore database, and FirebaseUtils.
+     * Sets up the sign-up button click listener to handle user registration.
+     *
+     * @param savedInstanceState A Bundle containing the activity's previously saved state.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,9 +50,15 @@ public class SignUpActivity extends AppCompatActivity {
         signUpButton = findViewById(R.id.buttonSignUp);
         firebaseUtils = new FirebaseUtils(this);
         deviceId = firebaseUtils.getDeviceId(this);
-        // Remove password EditText from layout since we don't need it anymore
 
+        // Set up the click listener for the sign-up button
         signUpButton.setOnClickListener(new View.OnClickListener() {
+            /**
+             * Handles the sign-up button click event.
+             * Validates user input and stores the data in Firebase Firestore.
+             *
+             * @param view The view that was clicked.
+             */
             @Override
             public void onClick(View view) {
                 String email = emailEditText.getText().toString().trim();
@@ -57,7 +76,7 @@ public class SignUpActivity extends AppCompatActivity {
                 String firstName = nameParts[0];
                 String lastName = nameParts.length > 1 ? nameParts[1] : "";
 
-                // Create user data map according to your Firestore structure
+                // Create user data map for Firestore
                 Map<String, Object> userData = new HashMap<>();
                 userData.put("name", firstName + " " + lastName);
                 userData.put("email", email);
