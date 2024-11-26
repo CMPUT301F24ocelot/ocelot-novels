@@ -7,7 +7,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.ocelotnovels.utils.FirebaseUtils;
@@ -17,9 +16,6 @@ import com.example.ocelotnovels.view.Organizer.OrganizerMainActivity;
 import com.google.android.gms.common.moduleinstall.ModuleInstall;
 import com.google.android.gms.common.moduleinstall.ModuleInstallClient;
 import com.google.android.gms.common.moduleinstall.ModuleInstallRequest;
-import com.google.android.gms.common.moduleinstall.ModuleInstallResponse;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -35,125 +31,58 @@ import com.google.mlkit.vision.codescanner.GmsBarcodeScanning;
  */
 public class MainActivity extends AppCompatActivity {
 
+    // Firebase related fields
     private FirebaseUtils firebaseUtils;
-    private Boolean isScannerInstalled = false;
+    private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
+
+    // UI elements
     private Button scanQrBtn;
     private Button organizerBtn;
+    private Button signUpButton;
+    private Button eventViewBtn;
+
+    // Scanner related fields
     private GmsBarcodeScanner scanner;
-    private FirebaseAuth mAuth;
-    private Button signUpButton, eventViewBtn;
+    private boolean isScannerInstalled = false;
+
+    // User related fields
     private String deviceId;
-    private String getUserEmail;
-<<<<<<< HEAD
-    FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private String userEmail;
 
-=======
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
->>>>>>> origin/main
-
-    /**
-     * Called when the activity is created. Initializes views, Firebase instances, and
-     * handles dynamic UI setup based on user data.
-     *
-     * @param savedInstanceState the previously saved state of the activity, if any.
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize views and FirebaseUtils
-        initVars();
+        initializeFirebase();
+        initializeViews();
         installGoogleScanner();
-
-        // Set up button click listeners
-        registerUIListener();
-
-<<<<<<< HEAD
-        signUpButton = findViewById(R.id.user_sign_up_button);
-        eventViewBtn = findViewById(R.id.user_event_list);
-
-        db.collection("users").document(deviceId).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-
-
-                // Check if document exists and contains an "email" field
-                if (documentSnapshot.exists() && documentSnapshot.contains("email")) {
-                    getUserEmail = documentSnapshot.getString("email");
-
-                    // Hide sign-up button if user is already signed up
-                    signUpButton.setVisibility(View.GONE);
-                    eventViewBtn.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Intent intent = new Intent(getApplicationContext(), WaitingListActivity.class);
-                            startActivity(intent);
-//                            finish();
-//                            MainActivity.super.onBackPressed();
-//                            MainActivity.super.getOnBackPressedDispatcher().onBackPressed();
-                        }
-                    });
-                } else {
-                    // Set up onClickListener only if user is not signed up
-                    signUpButton.setVisibility(View.VISIBLE);
-                    signUpButton.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
-                            startActivity(intent);
-                            finish();
-                        }
-                    });
-                }
-
-
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(MainActivity.this, "Error fetching user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-
-
-=======
-        // Fetch user data and update the UI accordingly
+        setupClickListeners();
         fetchUserData();
->>>>>>> origin/main
     }
 
-    /**
-     * Initializes variables and configures the barcode scanner.
-     */
-    private void initVars() {
+    private void initializeFirebase() {
+        db = FirebaseFirestore.getInstance();
+        firebaseUtils = new FirebaseUtils(this);
+        deviceId = firebaseUtils.getDeviceId(this);
+        Log.i("MainActivity:deviceId", deviceId);
+    }
+
+    private void initializeViews() {
         scanQrBtn = findViewById(R.id.user_scan_qr);
         organizerBtn = findViewById(R.id.user_organizer);
         signUpButton = findViewById(R.id.user_sign_up_button);
         eventViewBtn = findViewById(R.id.user_event_list);
 
-        GmsBarcodeScannerOptions options = initializeGoogleScanner();
-        scanner = GmsBarcodeScanning.getClient(this, options);
-        firebaseUtils = new FirebaseUtils(this);
-        deviceId = firebaseUtils.getDeviceId(this);
-        Log.i("Main Activity:deviceId", deviceId);
-    }
-
-    /**
-     * Configures the options for the Google Barcode Scanner.
-     *
-     * @return an instance of GmsBarcodeScannerOptions.
-     */
-    private GmsBarcodeScannerOptions initializeGoogleScanner() {
-        return new GmsBarcodeScannerOptions.Builder()
+        // Initialize scanner with options
+        GmsBarcodeScannerOptions options = new GmsBarcodeScannerOptions.Builder()
                 .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
                 .enableAutoZoom()
                 .build();
+        scanner = GmsBarcodeScanning.getClient(this, options);
     }
 
-    /**
-     * Installs the Google Barcode Scanner module dynamically.
-     */
     private void installGoogleScanner() {
         ModuleInstallClient moduleInstall = ModuleInstall.getClient(this);
         ModuleInstallRequest moduleInstallRequest = ModuleInstallRequest.newBuilder()
@@ -161,22 +90,19 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
         moduleInstall.installModules(moduleInstallRequest)
-                .addOnSuccessListener(moduleInstallResponse -> isScannerInstalled = true)
+                .addOnSuccessListener(response -> isScannerInstalled = true)
                 .addOnFailureListener(e -> {
                     isScannerInstalled = false;
-                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                    showToast(e.getMessage());
                 });
     }
 
-    /**
-     * Sets up button click listeners for various actions.
-     */
-    private void registerUIListener() {
+    private void setupClickListeners() {
         scanQrBtn.setOnClickListener(v -> {
             if (isScannerInstalled) {
                 startScanning();
             } else {
-                Toast.makeText(getApplicationContext(), "Scanner not Installed, Please try again!", Toast.LENGTH_SHORT).show();
+                showToast("Scanner not installed. Please try again!");
             }
         });
 
@@ -186,64 +112,61 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Initiates the QR code scanning process.
-     */
+    private void fetchUserData() {
+        db.collection("users").document(deviceId).get()
+                .addOnSuccessListener(this::handleUserDataResponse)
+                .addOnFailureListener(e -> showToast("Error fetching user data: " + e.getMessage()));
+    }
+
+    private void handleUserDataResponse(DocumentSnapshot documentSnapshot) {
+        if (documentSnapshot.exists() && documentSnapshot.contains("email")) {
+            userEmail = documentSnapshot.getString("email");
+            setupSignedInUser();
+        } else {
+            setupNewUser();
+        }
+    }
+
+    private void setupSignedInUser() {
+        signUpButton.setVisibility(View.GONE);
+        eventViewBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(getApplicationContext(), WaitingListActivity.class);
+            startActivity(intent);
+        });
+    }
+
+    private void setupNewUser() {
+        signUpButton.setVisibility(View.VISIBLE);
+        signUpButton.setOnClickListener(v -> {
+            Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
+            startActivity(intent);
+            finish();
+        });
+    }
+
     private void startScanning() {
         scanner.startScan()
                 .addOnSuccessListener(barcode -> {
                     String qrContent = barcode.getRawValue();
                     if (qrContent != null && !qrContent.isEmpty()) {
-                        String eventId = qrContent;
-                        Toast.makeText(MainActivity.this, "Event ID: " + eventId, Toast.LENGTH_SHORT).show();
-                        toEventDetails(eventId, deviceId);
+                        showToast("Event ID: " + qrContent);
+                        toEventDetails(qrContent, deviceId);
                     } else {
-                        Toast.makeText(MainActivity.this, "Invalid QR Code content", Toast.LENGTH_SHORT).show();
+                        showToast("Invalid QR Code content");
                     }
                 })
-                .addOnCanceledListener(() -> Toast.makeText(MainActivity.this, "Scan canceled", Toast.LENGTH_SHORT).show())
-                .addOnFailureListener(e -> Toast.makeText(MainActivity.this, "Scan failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                .addOnCanceledListener(() -> showToast("Scan canceled"))
+                .addOnFailureListener(e -> showToast("Scan failed: " + e.getMessage()));
     }
 
-    /**
-     * Navigates to the event details view with the given event ID and device ID.
-     *
-     * @param eventId   the ID of the event.
-     * @param deviceId  the ID of the device.
-     */
     private void toEventDetails(String eventId, String deviceId) {
         EventDetailsFragment fragment = EventDetailsFragment.newInstance(eventId, deviceId);
         getSupportFragmentManager().beginTransaction()
                 .add(fragment, "eventDetails")
                 .commitAllowingStateLoss();
     }
-<<<<<<< HEAD
-}
-=======
 
-    /**
-     * Fetches user data from Firestore and updates the UI.
-     */
-    private void fetchUserData() {
-        db.collection("users").document(deviceId).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists() && documentSnapshot.contains("email")) {
-                        getUserEmail = documentSnapshot.getString("email");
-                        signUpButton.setVisibility(View.GONE);
-                        eventViewBtn.setOnClickListener(v -> {
-                            Intent intent = new Intent(getApplicationContext(), WaitingListActivity.class);
-                            startActivity(intent);
-                        });
-                    } else {
-                        signUpButton.setVisibility(View.VISIBLE);
-                        signUpButton.setOnClickListener(view -> {
-                            Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
-                            startActivity(intent);
-                            finish();
-                        });
-                    }
-                })
-                .addOnFailureListener(e -> Toast.makeText(MainActivity.this, "Error fetching user data: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    private void showToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }
->>>>>>> origin/main
