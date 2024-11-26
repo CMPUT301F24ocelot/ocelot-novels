@@ -23,6 +23,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.zxing.WriterException;
 
 import java.io.ByteArrayOutputStream;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -91,7 +92,6 @@ public class CreateEventActivity extends AppCompatActivity {
         limitWaitlistSwitch = findViewById(R.id.limit_waitlist_switch);
         createButton = findViewById(R.id.create_button);
         cancelButton = findViewById(R.id.cancel_button);
-        qrCodeImageView = findViewById(R.id.qr_code_image);
 
         // Initialize lists
         waitList = new ArrayList<>();
@@ -110,19 +110,6 @@ public class CreateEventActivity extends AppCompatActivity {
                 capacityEditText.setText("");
             }
         });
-    }
-
-    private void initializeQrCodeViews() {
-        setContentView(R.layout.organizer_qr_code);
-
-        qrCodeImageView = findViewById(R.id.event_qr_code_image);
-        eventTitleText = findViewById(R.id.event_title);
-        eventDescriptionText = findViewById(R.id.event_description);
-        eventDeadlineText = findViewById(R.id.event_deadline);
-        eventStatusText = findViewById(R.id.event_status);
-        backButton = findViewById(R.id.back_button);
-
-        backButton.setOnClickListener(v -> finish());
     }
 
     private void showDatePickerDialog() {
@@ -150,17 +137,56 @@ public class CreateEventActivity extends AppCompatActivity {
         String eventId = UUID.randomUUID().toString();
         Map<String, Object> eventData = createEventData(eventId);
 
-        db.collection("events").document(eventId)
-                .set(eventData)
-                .addOnSuccessListener(aVoid -> {
-                    showToast("Event created successfully.");
-                    generateAndDisplayQrCode(eventId,
-                            eventTitleEditText.getText().toString().trim(),
-                            eventDescriptionEditText.getText().toString().trim(),
-                            selectedDate);
-                })
-                .addOnFailureListener(e -> showToast("Failed to create event."));
+        try {
+            Bitmap qrCodeBitmap = QRCodeUtils.generateQrCode(eventId, 500, 500);
+
+            // Compute QR code hash
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            qrCodeBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+            byte[] qrCodeBytes = baos.toByteArray();
+            String qrCodeHash = computeHash(qrCodeBytes);
+
+            // Add the hash to event data
+            eventData.put("qrCodeHash", qrCodeHash);
+
+            // Save event data to Firestore
+            db.collection("events").document(eventId)
+                    .set(eventData)
+                    .addOnSuccessListener(aVoid -> {
+                        showToast("Event created successfully.");
+                        displayQrCode(eventId, qrCodeBitmap, eventData);
+                        uploadQrCodeToStorage(eventId, qrCodeBitmap);
+                    })
+                    .addOnFailureListener(e -> showToast("Failed to create event."));
+        } catch (WriterException e) {
+            Log.e("QR Code Error", "Error generating QR Code: " + e.getMessage());
+            showToast("Failed to generate QR Code.");
+        }
     }
+
+    private void displayQrCode(String eventId, Bitmap qrCodeBitmap, Map<String, Object> eventData) {
+        // Switch to the QR Code display layout
+        setContentView(R.layout.organizer_qr_code);
+
+        // Initialize views in the new layout
+        ImageView qrCodeImageView = findViewById(R.id.event_qr_code_image);
+        TextView eventTitleText = findViewById(R.id.event_title);
+        TextView eventDescriptionText = findViewById(R.id.event_description);
+        TextView eventDeadlineText = findViewById(R.id.event_deadline);
+        TextView eventStatusText = findViewById(R.id.event_status);
+        Button backButton = findViewById(R.id.back_button);
+
+        // Populate the QR Code and event details
+        qrCodeImageView.setImageBitmap(qrCodeBitmap);
+        eventTitleText.setText("Event Title: " + eventData.get("name"));
+        eventDescriptionText.setText("Event Description: " + eventData.get("description"));
+        eventDeadlineText.setText("Event Deadline: " + eventData.get("regClosed"));
+        eventStatusText.setText("Event Status: Active");
+
+        // Handle back button click to finish activity
+        backButton.setOnClickListener(v -> finish());
+    }
+
 
     private boolean validateInputs() {
         String eventTitle = eventTitleEditText.getText().toString().trim();
@@ -207,28 +233,6 @@ public class CreateEventActivity extends AppCompatActivity {
         return eventData;
     }
 
-    private void generateAndDisplayQrCode(String eventId, String eventTitle,
-                                          String eventDescription, String eventDeadline) {
-        try {
-            initializeQrCodeViews();
-            isQrCodeDisplayed = true;
-
-            Bitmap qrCodeBitmap = QRCodeUtils.generateQrCode(eventId, 500, 500);
-            qrCodeImageView.setImageBitmap(qrCodeBitmap);
-
-            eventTitleText.setText("Event Title: " + eventTitle);
-            eventDescriptionText.setText("Event Description: " + eventDescription);
-            eventDeadlineText.setText("Event Deadline: " + eventDeadline);
-            eventStatusText.setText("Event Status: Active");
-
-            uploadQrCodeToStorage(eventId, qrCodeBitmap);
-
-        } catch (WriterException e) {
-            Log.e("QR Code Error", "Failed to generate QR code: " + e.getMessage());
-            showToast("Failed to generate QR code.");
-        }
-    }
-
     private void uploadQrCodeToStorage(String eventId, Bitmap qrCodeBitmap) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         qrCodeBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
@@ -241,20 +245,34 @@ public class CreateEventActivity extends AppCompatActivity {
         storageRef.putBytes(data)
                 .addOnSuccessListener(taskSnapshot ->
                         storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                            // Update Firestore with QR code URL
                             Map<String, Object> updates = new HashMap<>();
                             updates.put("qrCodeUrl", uri.toString());
 
                             db.collection("events")
                                     .document(eventId)
                                     .update(updates)
-                                    .addOnSuccessListener(aVoid ->
-                                            Log.d("QR Code", "QR code URL saved to Firestore"))
-                                    .addOnFailureListener(e ->
-                                            Log.e("QR Code", "Failed to save QR code URL", e));
-                        })
-                )
-                .addOnFailureListener(e ->
-                        Log.e("Upload Error", "Failed to upload QR code: " + e.getMessage()));
+                                    .addOnSuccessListener(aVoid -> Log.d("QR Code", "QR code URL saved to Firestore."))
+                                    .addOnFailureListener(e -> Log.e("QR Code", "Failed to save QR code URL.", e));
+                        }))
+                .addOnFailureListener(e -> Log.e("Upload Error", "Failed to upload QR code: " + e.getMessage()));
+    }
+
+    private String computeHash(byte[] data) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hashBytes = digest.digest(data);
+            StringBuilder hashString = new StringBuilder();
+            for (byte b : hashBytes) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hashString.append('0');
+                hashString.append(hex);
+            }
+            return hashString.toString();
+        } catch (Exception e) {
+            Log.e("Hash Error", "Error computing hash: " + e.getMessage());
+            return null;
+        }
     }
 
     private void showToast(String message) {

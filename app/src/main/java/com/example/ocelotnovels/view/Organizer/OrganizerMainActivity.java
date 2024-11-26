@@ -2,6 +2,7 @@ package com.example.ocelotnovels.view.Organizer;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
@@ -96,7 +97,10 @@ public class OrganizerMainActivity extends AppCompatActivity {
                     eventNames.clear();
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         String eventName = document.getString("name");
+                        String qrCodeHash = document.getString("qrCodeHash"); // Fetch the QR code hash
+
                         if (eventName != null) {
+                            Log.d("Event Data", "Name: " + eventName + ", QR Code Hash: " + qrCodeHash);
                             eventNames.add(eventName);
                         }
                     }
@@ -106,6 +110,7 @@ public class OrganizerMainActivity extends AppCompatActivity {
                     // Handle any errors
                 });
     }
+
 
     private void showEntrantListDropdown(View view) {
         PopupMenu popupMenu = new PopupMenu(this, view);
