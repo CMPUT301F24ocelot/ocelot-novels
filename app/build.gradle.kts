@@ -92,6 +92,4 @@ dependencies {
     implementation("com.google.protobuf:protobuf-javalite") // Ensure this is compatible with Firebase
 
     implementation("com.journeyapps:zxing-android-embedded:4.1.0")
-
-    implementation("com.google.android.material:material:1.13.0")
 }
