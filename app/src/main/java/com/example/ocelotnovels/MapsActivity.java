@@ -20,12 +20,12 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMapOptions;
+import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
@@ -44,13 +44,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
 
-        // Load the map fragment from XML layout
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        if (mapFragment != null) {
-            mapFragment.getMapAsync(this);
-        } else {
-            Log.e("MapsActivity", "Error: Map fragment not found");
+        // Initialize the MapFragment with the custom Map ID
+        MapFragment mapFragment = MapFragment.newInstance(
+                new GoogleMapOptions().mapId(getResources().getString(R.string.map_id))
+        );
+
+        // Add the MapFragment to the layout dynamically
+        getFragmentManager().beginTransaction()
+                .replace(R.id.map, mapFragment)
+                .commit();
+
+        // Set up the MapAsync callback
+        mapFragment.getMapAsync(this);
+
+        checkAndRequestLocationPermission();
+    }
+
+    private void checkAndRequestLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST_CODE);
         }
     }
 
@@ -94,24 +109,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                        == PackageManager.PERMISSION_GRANTED) {
-                    mMap.setMyLocationEnabled(true);
+                // Permission granted
+                if (mMap != null) {
+                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED) {
+                        mMap.setMyLocationEnabled(true);
+                    }
                 }
-            } else if (!ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-                // Permission denied permanently
-                new AlertDialog.Builder(this)
-                        .setTitle("Permission Denied")
-                        .setMessage("You have permanently denied location access. Enable it in app settings.")
-                        .setPositiveButton("Settings", (dialog, which) -> openAppSettings())
-                        .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
-                        .create()
-                        .show();
             } else {
-                // Permission denied temporarily
-                Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show();
+                // Permission denied
+                Toast.makeText(this, "Location permission denied. Location features are disabled.", Toast.LENGTH_SHORT).show();
             }
         }
     }
