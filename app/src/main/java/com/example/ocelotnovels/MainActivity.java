@@ -91,10 +91,6 @@ public class MainActivity extends AppCompatActivity {
             // Navigate to Profile Activity
             Intent profileActivity = new Intent(MainActivity.this, ProfileActivity.class);
             startActivity(profileActivity);
-        } else if (id == R.id.action_settings) {
-            // Navigate to Settings Activity
-            startActivity(new Intent(this, com.example.ocelotnovels.view.Entrant.SettingsActivity.class));
-            return true;
         }
 
         return super.onOptionsItemSelected(item);
