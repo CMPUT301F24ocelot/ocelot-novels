@@ -72,7 +72,10 @@ public class CreateEventActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.organizer_create_event);
 
-        // Initialize Firestore
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        // Initialize Firestore and UI components
         db = FirebaseFirestore.getInstance();
 
         // Initialize views and lists

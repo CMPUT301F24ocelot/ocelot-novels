@@ -3,7 +3,12 @@
     <style name="Base.Theme.OcelotNovels" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:actionBarStyle">@style/MyActionBar</item>
     </style>
 
     <style name="Theme.OcelotNovels" parent="Base.Theme.OcelotNovels" />
+
+    <style name="MyActionBar" parent="@style/Widget.AppCompat.ActionBar">
+        <item name="android:displayOptions">showHome|useLogo|homeAsUp</item>
+    </style>
 </resources>
