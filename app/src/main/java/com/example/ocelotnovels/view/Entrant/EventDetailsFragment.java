@@ -167,6 +167,7 @@ public class EventDetailsFragment extends DialogFragment {
 //                    }
 
                     List<String> waitingList = (List<String>) eventDoc.get("waitingList");
+                    List<String> cancelledList = (List<String>) eventDoc.get("cancelledList");
                     waitingList = waitingList != null ? waitingList : new ArrayList<>();
 
                     if (waitingList.contains(userId)) {
@@ -174,8 +175,14 @@ public class EventDetailsFragment extends DialogFragment {
                         return;
                     }
 
+
                     if (capacityLong >= 0 && waitingList.size() < capacityLong || capacityLong == -1) {
                         addUserToEvent();
+                        if (cancelledList.contains(userId)){
+                            cancelledList.remove(userId);
+                            eventDocument.update("cancelledList",cancelledList);
+
+                        }
                     } else {
                         Toast.makeText(getContext(), "Event is at full capacity", Toast.LENGTH_SHORT).show();
                     }
