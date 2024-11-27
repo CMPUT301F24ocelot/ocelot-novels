@@ -5,7 +5,4 @@
         android:id="@+id/action_profile"
         android:title="Profile" />
 
-    <item
-        android:id="@+id/action_settings"
-        android:title="Settings" />
 </menu>

@@ -102,7 +102,6 @@ public class OrganizerMainActivity extends AppCompatActivity {
                         String qrCodeHash = document.getString("qrCodeHash"); // Fetch the QR code hash
 
                         if (eventName != null) {
-                            Log Log;
                             Log.d("Event Data", "Name: " + eventName + ", QR Code Hash: " + qrCodeHash);
                             eventNames.add(eventName);
                         }
