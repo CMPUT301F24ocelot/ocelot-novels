@@ -2,7 +2,7 @@
   "project_info": {
     "project_number": "809333175554",
     "project_id": "ocelotnovels",
-    "storage_bucket": "ocelotnovels.appspot.com"
+    "storage_bucket": "ocelotnovels.firebasestorage.app"
   },
   "client": [
     {
