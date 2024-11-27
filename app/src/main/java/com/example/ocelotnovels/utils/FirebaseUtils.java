@@ -4,7 +4,9 @@ import static android.content.ContentValues.TAG;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -16,7 +18,10 @@ import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,6 +35,8 @@ import java.util.UUID;
 public class FirebaseUtils {
     private static FirebaseUtils instance;
     private final FirebaseFirestore db;
+    private FirebaseStorage storage;
+    private StorageReference storageRef,imagesRef,defaultPics,profilePic;
     private final String deviceId;
 
     /**
@@ -40,6 +47,12 @@ public class FirebaseUtils {
     public FirebaseUtils(Context context) {
         this.db = FirebaseFirestore.getInstance();
         this.deviceId = getDeviceId(context);
+        this.storage = FirebaseStorage.getInstance();
+        this.storageRef = storage.getReference();
+        this.imagesRef=storageRef.child("images");
+        this.defaultPics=imagesRef.child("default");
+        this.profilePic = imagesRef.child((this.deviceId+".jpg"));
+
     }
 
     /**
@@ -83,6 +96,46 @@ public class FirebaseUtils {
         }
 
         return deviceId;
+    }
+
+    public FirebaseStorage getStorage() {
+        return storage;
+    }
+
+    public void setStorage(FirebaseStorage storage) {
+        this.storage = storage;
+    }
+
+    public StorageReference getStorageRef() {
+        return storageRef;
+    }
+
+    public void setStorageRef(StorageReference storageRef) {
+        this.storageRef = storageRef;
+    }
+
+    public StorageReference getImagesRef() {
+        return imagesRef;
+    }
+
+    public void setImagesRef(StorageReference imagesRef) {
+        this.imagesRef = imagesRef;
+    }
+
+    public StorageReference getDefaultPics() {
+        return defaultPics;
+    }
+
+    public void setDefaultPics(StorageReference defaultPics) {
+        this.defaultPics = defaultPics;
+    }
+
+    public StorageReference getProfilePic() {
+        return profilePic;
+    }
+
+    public void setProfilePic(StorageReference profilePic) {
+        this.profilePic = profilePic;
     }
 
     /**
@@ -231,4 +284,23 @@ public class FirebaseUtils {
             if (onFailure != null) onFailure.onFailure(e);
         });
     }
+
+    public void uploadProfilePictureToFirebase(Bitmap bitmap) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] data = baos.toByteArray();
+
+
+        profilePic.putBytes(data)
+                .addOnSuccessListener(taskSnapshot -> profilePic.getDownloadUrl()
+                        .addOnSuccessListener(uri -> updateUserProfilePicUrl(uri.toString())));
+    }
+
+    public void updateUserProfilePicUrl(String url) {
+        db.collection("users").document(deviceId).update("profilePicUrl", url)
+                //.addOnCompleteListener(task -> Toast.makeText(this, "Profile picture updated!", Toast.LENGTH_SHORT).show())
+        ;
+    }
+
+
 }
