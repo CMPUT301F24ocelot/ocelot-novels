@@ -43,6 +43,7 @@ public class CreateEventActivity extends AppCompatActivity {
     private EditText eventDescriptionEditText;
     private EditText eventLocationEditText;
     private EditText capacityEditText;
+    private TextView capacityTextView;
     private Button dueDateButton;
     private Switch geolocationSwitch;
     private Switch limitWaitlistSwitch;
@@ -63,7 +64,6 @@ public class CreateEventActivity extends AppCompatActivity {
     private boolean isQrCodeDisplayed = false;
 
     // Lists for event data
-    private List<String> waitList;
     private List<String> selectedList;
     private List<String> cancelledList;
 
@@ -72,7 +72,10 @@ public class CreateEventActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.organizer_create_event);
 
-        // Initialize Firestore
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        // Initialize Firestore and UI components
         db = FirebaseFirestore.getInstance();
 
         // Initialize views and lists
@@ -87,6 +90,7 @@ public class CreateEventActivity extends AppCompatActivity {
         eventDescriptionEditText = findViewById(R.id.event_description);
         eventLocationEditText = findViewById(R.id.event_location);
         capacityEditText = findViewById(R.id.event_capacity);
+        capacityTextView = findViewById(R.id.capacity_text);
         dueDateButton = findViewById(R.id.event_due_date);
         geolocationSwitch = findViewById(R.id.geolocation_switch);
         limitWaitlistSwitch = findViewById(R.id.limit_waitlist_switch);
@@ -94,20 +98,23 @@ public class CreateEventActivity extends AppCompatActivity {
         cancelButton = findViewById(R.id.cancel_button);
 
         // Initialize lists
-        waitList = new ArrayList<>();
         selectedList = new ArrayList<>();
         cancelledList = new ArrayList<>();
     }
 
     private void setupListeners() {
         dueDateButton.setOnClickListener(v -> showDatePickerDialog());
+
+        // Save and Cancel button setup
         createButton.setOnClickListener(v -> saveEventData());
         cancelButton.setOnClickListener(v -> finish());
 
+        // Limit Waitlist Switch Listener
         limitWaitlistSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            capacityEditText.setVisibility(isChecked ? View.GONE : View.VISIBLE);
-            if (isChecked) {
-                capacityEditText.setText("");
+            capacityTextView.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+            capacityEditText.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+            if (!isChecked) {
+                capacityEditText.setText(""); // Clear capacity input when hidden
             }
         });
     }
@@ -201,7 +208,7 @@ public class CreateEventActivity extends AppCompatActivity {
             return false;
         }
 
-        if (!isLimitWaitlistEnabled && TextUtils.isEmpty(capacity)) {
+        if (isLimitWaitlistEnabled && TextUtils.isEmpty(capacity)) {
             showToast("Please enter event capacity");
             return false;
         }
@@ -221,11 +228,10 @@ public class CreateEventActivity extends AppCompatActivity {
         eventData.put("createdAt", System.currentTimeMillis());
 
         String capacity = capacityEditText.getText().toString().trim();
-        if (!limitWaitlistSwitch.isChecked() && !TextUtils.isEmpty(capacity)) {
+        if (limitWaitlistSwitch.isChecked() && !TextUtils.isEmpty(capacity)) {
             eventData.put("capacity", Integer.parseInt(capacity));
         }
 
-        eventData.put("waitList", waitList);
         eventData.put("selectedList", selectedList);
         eventData.put("cancelledList", cancelledList);
         eventData.put("organizerId", FirebaseUtils.getInstance(this).getDeviceId(this));
@@ -279,12 +285,4 @@ public class CreateEventActivity extends AppCompatActivity {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
-    @Override
-    public void onBackPressed() {
-        if (isQrCodeDisplayed) {
-            finish();
-        } else {
-            super.onBackPressed();
-        }
-    }
 }

@@ -40,6 +40,8 @@ public class FacilityProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.facility_profile_activity);
 
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
 

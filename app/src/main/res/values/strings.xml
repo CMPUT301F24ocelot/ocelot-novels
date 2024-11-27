@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">OcelotNovels</string>
     <string name="map_id">9aad53a4ad71710a</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
 </resources>
