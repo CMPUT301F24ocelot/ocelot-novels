@@ -86,6 +86,27 @@ public class FirebaseUtils {
     }
 
     /**
+     * Retrieves or generates a unique facility ID.
+     *
+     * @param context The application context.
+     * @return The unique facility ID.
+     */
+    public String getFacilityId(Context context) {
+        SharedPreferences sharedPreferences = context.getApplicationContext()
+                .getSharedPreferences("facility_settings", Context.MODE_PRIVATE);
+        String facilityId = sharedPreferences.getString("FacilityId", null);
+
+        if (facilityId == null) {
+            facilityId = UUID.randomUUID().toString();
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("FacilityId", facilityId);
+            editor.apply();
+        }
+
+        return facilityId;
+    }
+
+    /**
      * Gets the user's document reference in the Firestore database.
      *
      * @return DocumentReference to the user's document.
