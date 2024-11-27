@@ -41,6 +41,8 @@ public class EventDetailsFragment extends DialogFragment {
     private TextView eventStatus;
     private TextView registrationDeadline;
 
+    private TextView geolocationWarning;
+
     public static EventDetailsFragment newInstance(String eventId, String userId) {
         EventDetailsFragment fragment = new EventDetailsFragment();
         Bundle args = new Bundle();
@@ -63,7 +65,7 @@ public class EventDetailsFragment extends DialogFragment {
         eventDescription = view.findViewById(R.id.user_event_description);
         eventStatus = view.findViewById(R.id.user_event_status);
         registrationDeadline = view.findViewById(R.id.user_event_deadline);
-
+        geolocationWarning = view.findViewById(R.id.warning_text);
         // Get event and user IDs from arguments
         if (getArguments() != null) {
             eventId = getArguments().getString(ARG_EVENT_ID);
@@ -108,7 +110,7 @@ public class EventDetailsFragment extends DialogFragment {
                         String title = document.getString("name");
                         String description = document.getString("description");
                         String status = document.getString("status");
-
+                        Boolean geolocationEnabled = document.getBoolean("geolocationEnabled");
                         // Check if registrationClose is null
                         String registrationCloseTimestamp = document.getString("regClosed");
                         String deadline = (registrationCloseTimestamp != null) ? registrationCloseTimestamp.toString() : "No deadline set";
@@ -118,6 +120,9 @@ public class EventDetailsFragment extends DialogFragment {
                         eventStatus.setText("Event Status: " + status);
                         registrationDeadline.setText("Event Deadline: " + deadline);
                         //Log.i("deviceId",deviceId);
+                        if (geolocationEnabled){
+                            geolocationWarning.setVisibility(View.VISIBLE);
+                        }
                     }
                 })
                 .addOnFailureListener(e -> {
