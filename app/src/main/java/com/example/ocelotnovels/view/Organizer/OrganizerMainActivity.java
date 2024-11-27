@@ -3,6 +3,8 @@ package com.example.ocelotnovels.view.Organizer;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
@@ -67,29 +69,57 @@ public class OrganizerMainActivity extends AppCompatActivity {
         });
 
 
-        // Facility Profile Button Click
+        /*// Facility Profile Button Click
         Button facilityProfileButton = findViewById(R.id.facility_profile_button);
         facilityProfileButton.setOnClickListener(v -> {
             Intent intent = new Intent(OrganizerMainActivity.this, FacilityProfileActivity.class);
             startActivity(intent);
-        });
+        });*/
 
         // Entrant List Button Click
-        Button entrantListButton = findViewById(R.id.entrant_list);
+        /*Button entrantListButton = findViewById(R.id.entrant_list);
         entrantListButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showEntrantListDropdown(v);
             }
-        });
+        });*/
 
-        // Back Button Click
+        /*// Back Button Click
         Button backButton = findViewById(R.id.back_button);
         backButton.setOnClickListener(v -> {
             Intent intent = new Intent(OrganizerMainActivity.this, MainActivity.class);
             startActivity(intent);
             finish(); // Optional: Call finish to close OrganizerMainActivity
-        });
+        });*/
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.organizer_drawer_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+
+        // Handle menu item clicks
+        if (id == R.id.menu_facility_profile) {
+            // Navigate to Profile Activity
+            Intent facilityProfileActivity = new Intent(OrganizerMainActivity.this, com.example.ocelotnovels.FacilityProfileActivity.class);
+            startActivity(facilityProfileActivity);
+        }
+
+        if (id == R.id.menu_selected_list) {
+            // Navigate to Profile Activity
+            Intent mapsActivity = new Intent(OrganizerMainActivity.this, MapsActivity.class);
+            startActivity(mapsActivity);
+        }
+
+
+        return super.onOptionsItemSelected(item);
     }
 
     public void loadEventsFromFirestore() {

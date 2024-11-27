@@ -36,12 +36,12 @@
             android:exported="false" />
 
         <activity android:name=".view.Organizer.OrganizerMainActivity"
-            android:exported="true"/>
+            android:exported="true" android:parentActivityName=".MainActivity"/>
 
         <activity android:name=".CreateEventActivity" android:parentActivityName=".view.Organizer.OrganizerMainActivity" />
 
         <activity android:name=".FacilityProfileActivity" android:parentActivityName=".view.Organizer.OrganizerMainActivity"/>
-
+        <activity android:name=".view.Organizer.EventDetailsActivity" android:parentActivityName=".view.Organizer.OrganizerMainActivity" />
         <activity
             android:name=".MainActivity"
             android:exported="true">

@@ -1,8 +1,10 @@
 package com.example.ocelotnovels.view.Organizer;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.content.Intent;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -32,7 +34,15 @@ public class OrganizerEventAdapter extends RecyclerView.Adapter<OrganizerEventAd
 
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
-        holder.eventNameTextView.setText(eventNames.get(position));
+        String eventName = eventNames.get(position);
+        holder.eventNameTextView.setText(eventName);
+        // Set a click listener on the item
+        holder.itemView.setOnClickListener(v -> {
+            // Open EventDetailsActivity when the item is clicked
+            Intent intent = new Intent(context, EventDetailsActivity.class);
+            intent.putExtra("eventName", eventName); // Pass the event name to the next activity
+            context.startActivity(intent);
+        });
     }
 
     @Override
