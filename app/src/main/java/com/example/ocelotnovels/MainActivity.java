@@ -3,15 +3,19 @@ package com.example.ocelotnovels;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import com.example.ocelotnovels.utils.FirebaseUtils;
 import com.example.ocelotnovels.view.Entrant.EventDetailsFragment;
+import com.example.ocelotnovels.view.Entrant.ProfileActivity;
 import com.example.ocelotnovels.view.Entrant.WaitingListActivity;
 import com.example.ocelotnovels.view.Organizer.OrganizerMainActivity;
 import com.google.android.gms.common.moduleinstall.ModuleInstall;
@@ -56,6 +60,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+//        Toolbar toolbar = findViewById(R.id.toolbar);
+//        setSupportActionBar(toolbar);
 
         // Initialize views and FirebaseUtils
         initVars();
@@ -66,6 +72,28 @@ public class MainActivity extends AppCompatActivity {
 
         // Fetch user data and update the UI accordingly
         fetchUserData();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.drawer_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+
+        // Handle menu item clicks
+        if (id == R.id.action_profile) {
+            // Navigate to Profile Activity
+            Intent profileActivity = new Intent(MainActivity.this, ProfileActivity.class);
+            startActivity(profileActivity);
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     /**
