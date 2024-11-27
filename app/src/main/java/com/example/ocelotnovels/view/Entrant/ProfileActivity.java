@@ -73,7 +73,7 @@ public class ProfileActivity extends AppCompatActivity {
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         String name = documentSnapshot.getString("name");
-                        String firstLetter = name != null && !name.isEmpty() ? Character.toString(name.charAt(0)) : "default";
+                        String firstLetter = name != null && !name.isEmpty() ? Character.toString(name.charAt(0)).toUpperCase() : "A";
                         nameEditText.setText(name);
                         emailEditText.setText(documentSnapshot.getString("email"));
                         phoneEditText.setText(documentSnapshot.getString("phone"));
@@ -197,6 +197,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         db.collection("users").document(deviceId).update(updates)
                 .addOnCompleteListener(task -> Toast.makeText(this, "Profile updated!", Toast.LENGTH_SHORT).show());
+        loadUserData();
     }
 }
 
