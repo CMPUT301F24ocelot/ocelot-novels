@@ -31,6 +31,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.util.List;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
     private GoogleMap mMap;
     private FirebaseFirestore db;
@@ -100,44 +102,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         ProgressBar progressBar = findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);
 
-        db.collection("events")
+        db.collection("users")
                 .get()
                 .addOnCompleteListener(task -> {
                     progressBar.setVisibility(View.GONE);
+
                     if (task.isSuccessful() && task.getResult() != null) {
-                        LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
-                        boolean hasMarkers = false;
-
                         for (QueryDocumentSnapshot document : task.getResult()) {
-                            GeoPoint geoPoint = document.getGeoPoint("eventLocation");
-                            String eventName = document.getString("eventName");
+                            // Attempt to retrieve the eventLocations field as a list of GeoPoints
+                            List<GeoPoint> eventLocations = (List<GeoPoint>) document.get("eventLocations");
 
-                            if (geoPoint != null && eventName != null) {
-                                LatLng eventLocation = new LatLng(geoPoint.getLatitude(), geoPoint.getLongitude());
-                                mMap.addMarker(new MarkerOptions()
-                                        .position(eventLocation)
-                                        .title(eventName)
-                                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
-                                boundsBuilder.include(eventLocation);
-                                hasMarkers = true;
+                            if (eventLocations != null) {
+                                for (GeoPoint geoPoint : eventLocations) {
+                                    if (geoPoint != null) {
+                                        LatLng userLocation = new LatLng(geoPoint.getLatitude(), geoPoint.getLongitude());
+                                        if (mMap != null) {
+                                            mMap.addMarker(new MarkerOptions()
+                                                    .position(userLocation)
+                                                    .title("User Location")
+                                                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                                        }
+                                    } else {
+                                        Log.w("Firestore", "Null GeoPoint in eventLocations for user: " + document.getId());
+                                    }
+                                }
                             } else {
-                                Log.w("Firestore", "Invalid data: GeoPoint or eventName is null");
+                                Log.w("Firestore", "No eventLocations field for user: " + document.getId());
                             }
                         }
-
-                        if (hasMarkers) {
-                            // Move the camera to include all markers
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), 100));
-                        } else {
-                            // No points available, center map at user's current location
-                            Log.w("MapsActivity", "No valid markers to show. Centering at user's location.");
-                            centerMapAtUserLocation();
-                        }
                     } else {
-                        Log.w("Firestore", "Failed to retrieve event locations", task.getException());
-                        Toast.makeText(this, "Failed to load event locations.", Toast.LENGTH_SHORT).show();
-                        centerMapAtUserLocation();
+                        Log.w("Firestore", "Failed to retrieve users", task.getException());
+                        Toast.makeText(this, "Failed to load entrant locations.", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
+
 }
