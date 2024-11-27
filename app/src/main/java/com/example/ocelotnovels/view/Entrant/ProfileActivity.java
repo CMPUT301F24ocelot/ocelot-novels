@@ -2,6 +2,8 @@ package com.example.ocelotnovels.view.Entrant;
 
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.bumptech.glide.Glide;
 import com.example.ocelotnovels.R;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -27,7 +29,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     private FirebaseFirestore db;
     private FirebaseUtils firebaseUtils;
-    private StorageReference storageRef;
+
     private String deviceId;
 
 
@@ -40,7 +42,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         // Initialize Firebase
         db = FirebaseFirestore.getInstance();
-        storageRef = FirebaseStorage.getInstance().getReference();
+
         firebaseUtils = new FirebaseUtils(this);
         deviceId = firebaseUtils.getDeviceId(this);
 
@@ -70,22 +72,47 @@ public class ProfileActivity extends AppCompatActivity {
         db.collection("users").document(deviceId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        nameEditText.setText(documentSnapshot.getString("name"));
+                        String name = documentSnapshot.getString("name");
+                        String firstLetter = name != null && !name.isEmpty() ? Character.toString(name.charAt(0)).toUpperCase() : "A";
+                        nameEditText.setText(name);
                         emailEditText.setText(documentSnapshot.getString("email"));
                         phoneEditText.setText(documentSnapshot.getString("phone"));
                         Boolean notificationsEnabled = documentSnapshot.getBoolean("notificationsEnabled");
                         if (notificationsEnabled != null) {
                             notificationsSwitch.setChecked(notificationsEnabled);
                         }
+
+                        // Determine which profile picture to load
                         String profilePicUrl = documentSnapshot.getString("profilePicUrl");
-//                        if (profilePicUrl != null) {
-//                            // Load profile picture from URL
-//                            // Use a library like Picasso or Glide
-//                            Glide.with(this).load(profilePicUrl).into(profileImageView);
-//                        }
+                        if (profilePicUrl != null && !profilePicUrl.isEmpty()) {
+                            // Use the stored profile picture URL
+                            Glide.with(this)
+                                    .load(profilePicUrl)
+                                    .placeholder(R.drawable.ic_image_placeholder) // Optional
+                                    .error(R.drawable.ic_image_placeholder) // Optional
+                                    .into(profileImageView);
+                        } else {
+                            // Use default profile picture logic
+                            StorageReference defaultPicRef = firebaseUtils.getDefaultPics().child(firstLetter + ".jpg");
+                            defaultPicRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                                Glide.with(this)
+                                        .load(uri.toString())
+                                        .placeholder(R.drawable.ic_image_placeholder) // Optional
+                                        .error(R.drawable.ic_image_placeholder) // Optional
+                                        .into(profileImageView);
+                            }).addOnFailureListener(e -> {
+                                // Handle failure (e.g., file doesn't exist)
+                                profileImageView.setImageResource(R.drawable.ic_image_placeholder);
+                            });
+                        }
                     }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to load user data.", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
                 });
     }
+
 
     private void toggleNotifications(boolean isEnabled) {
         db.collection("users").document(deviceId)
@@ -114,36 +141,53 @@ public class ProfileActivity extends AppCompatActivity {
             try {
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
                 profileImageView.setImageBitmap(bitmap);
-                uploadProfilePictureToFirebase(bitmap);
+                firebaseUtils.uploadProfilePictureToFirebase(bitmap);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private void uploadProfilePictureToFirebase(Bitmap bitmap) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-        byte[] data = baos.toByteArray();
 
-        StorageReference profilePicRef = storageRef.child("profile_pictures/" + deviceId + ".jpg");
-        profilePicRef.putBytes(data)
-                .addOnSuccessListener(taskSnapshot -> profilePicRef.getDownloadUrl()
-                        .addOnSuccessListener(uri -> updateUserProfilePicUrl(uri.toString())));
-    }
 
-    private void updateUserProfilePicUrl(String url) {
-        db.collection("users").document(deviceId).update("profilePicUrl", url)
-                .addOnCompleteListener(task -> Toast.makeText(this, "Profile picture updated!", Toast.LENGTH_SHORT).show());
-    }
+
 
     private void removeProfilePicture() {
-        db.collection("users").document(deviceId).update("profilePicUrl", null)
-                .addOnCompleteListener(task -> {
-                    profileImageView.setImageResource(R.drawable.ic_image_placeholder);
-                    Toast.makeText(this, "Profile picture removed!", Toast.LENGTH_SHORT).show();
+        firebaseUtils.getUserDocument().get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String profilePicUrl = documentSnapshot.getString("profilePicUrl");
+                        if (profilePicUrl != null && !profilePicUrl.isEmpty()) {
+                            // Create a StorageReference to the profile picture using its URL
+                            StorageReference profilePicRef = FirebaseStorage.getInstance().getReferenceFromUrl(profilePicUrl);
+
+                            // Delete the picture from Firebase Storage
+                            profilePicRef.delete()
+                                    .addOnSuccessListener(unused -> {
+                                        // Update Firestore to remove the profilePicUrl field
+                                        firebaseUtils.getUserDocument().update("profilePicUrl", null)
+                                                .addOnCompleteListener(task -> {
+                                                    loadUserData();
+                                                    Toast.makeText(this, "Profile picture removed!", Toast.LENGTH_SHORT).show();
+                                                });
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Toast.makeText(this, "Failed to delete profile picture.", Toast.LENGTH_SHORT).show();
+                                        e.printStackTrace();
+                                    });
+                        } else {
+                            Toast.makeText(this, "No profile picture to remove.", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(this, "User document does not exist.", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to load user data.", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
                 });
     }
+
 
     private void saveChanges() {
         Map<String, Object> updates = new HashMap<>();
@@ -153,6 +197,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         db.collection("users").document(deviceId).update(updates)
                 .addOnCompleteListener(task -> Toast.makeText(this, "Profile updated!", Toast.LENGTH_SHORT).show());
+        loadUserData();
     }
 }
 
