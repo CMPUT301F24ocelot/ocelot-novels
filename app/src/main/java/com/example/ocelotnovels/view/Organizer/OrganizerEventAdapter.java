@@ -10,7 +10,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ocelotnovels.R;
-import com.example.ocelotnovels.model.Event;
 
 import java.util.List;
 
