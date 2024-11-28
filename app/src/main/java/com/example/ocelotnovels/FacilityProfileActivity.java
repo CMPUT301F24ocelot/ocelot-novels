@@ -87,13 +87,29 @@ public class FacilityProfileActivity extends AppCompatActivity {
                         facilityPhone.setText(documentSnapshot.getString("facilityPhone"));
                         facilityLocation.setText(documentSnapshot.getString("facilityLocation"));
                         facilityDescription.setText(documentSnapshot.getString("facilityDescription"));
+
+                        // Load profile picture URL
                         String profilePicUrl = documentSnapshot.getString("facilityPicUrl");
-                        if (profilePicUrl != null) {
-                            Glide.with(this).load(profilePicUrl).into(facilityProfileImage);
+                        if (profilePicUrl != null && !profilePicUrl.isEmpty()) {
+                            Glide.with(this)
+                                    .load(profilePicUrl)
+                                    .placeholder(R.drawable.ic_image_placeholder) // Placeholder while loading
+                                    .error(R.drawable.ic_image_placeholder)      // Fallback image on error
+                                    .into(facilityProfileImage);
+                        } else {
+                            // Default picture logic
+                            facilityProfileImage.setImageResource(R.drawable.ic_image_placeholder);
                         }
+                    } else {
+                        Toast.makeText(this, "Facility data not found.", Toast.LENGTH_SHORT).show();
                     }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to load facility data.", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
                 });
     }
+
 
     /**
      * Opens an intent to allow the user to select a picture from their device gallery.
@@ -127,8 +143,8 @@ public class FacilityProfileActivity extends AppCompatActivity {
      * @param bitmap The selected picture.
      */
     private void uploadFacilityPictureToFirebase(Bitmap bitmap) {
-        String pictureId = facilityId + "_profile.jpg"; // Unique picture name based on facility ID
-        StorageReference profilePicRef = storageRef.child("facility_pictures/" + pictureId);
+        String pictureId = facilityId + "_profile.jpg"; // Unique file name
+        StorageReference profilePicRef = storageRef.child("images/facilities/" + pictureId);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
@@ -136,9 +152,26 @@ public class FacilityProfileActivity extends AppCompatActivity {
 
         profilePicRef.putBytes(data)
                 .addOnSuccessListener(taskSnapshot -> profilePicRef.getDownloadUrl()
-                        .addOnSuccessListener(uri -> updateFacilityProfilePicUrl(uri.toString()))
+                        .addOnSuccessListener(uri -> {
+                            // Update Firestore with the new profile picture URL
+                            db.collection("facilities").document(facilityId)
+                                    .update("facilityPicUrl", uri.toString())
+                                    .addOnSuccessListener(aVoid -> {
+                                        // Immediately load the new profile picture
+                                        Glide.with(this)
+                                                .load(uri.toString())
+                                                .placeholder(R.drawable.ic_image_placeholder)
+                                                .error(R.drawable.ic_image_placeholder)
+                                                .into(facilityProfileImage);
+
+                                        Toast.makeText(this, "Profile picture updated!", Toast.LENGTH_SHORT).show();
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Toast.makeText(this, "Failed to update Firestore.", Toast.LENGTH_SHORT).show();
+                                    });
+                        })
                         .addOnFailureListener(e -> Toast.makeText(this, "Failed to get image URL.", Toast.LENGTH_SHORT).show()))
-                .addOnFailureListener(e -> Toast.makeText(this, "Failed to upload picture.", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> Toast.makeText(this, "Failed to upload facility picture.", Toast.LENGTH_SHORT).show());
     }
 
     /**
@@ -156,10 +189,19 @@ public class FacilityProfileActivity extends AppCompatActivity {
      * Removes the facility's profile picture from Firestore and resets the ImageView.
      */
     private void removeFacilityPicture() {
-        db.collection("facilities").document(facilityId).update("facilityPicUrl", null)
-                .addOnCompleteListener(task -> {
-                    facilityProfileImage.setImageResource(R.drawable.ic_image_placeholder); // Reset to placeholder
-                    Toast.makeText(this, "Facility picture removed!", Toast.LENGTH_SHORT).show();
+        // Define the path of the picture to be removed
+        StorageReference profilePicRef = storageRef.child("images/facilities/" + facilityId + "_profile.jpg");
+
+        // Delete the image from Firebase Storage
+        profilePicRef.delete()
+                .addOnSuccessListener(aVoid -> {
+                    // Update Firestore to remove the URL field
+                    db.collection("facilities").document(facilityId).update("facilityPicUrl", null)
+                            .addOnSuccessListener(task -> {
+                                facilityProfileImage.setImageResource(R.drawable.ic_image_placeholder); // Reset to placeholder
+                                Toast.makeText(this, "Facility picture removed!", Toast.LENGTH_SHORT).show();
+                            })
+                            .addOnFailureListener(e -> Toast.makeText(this, "Failed to update Firestore.", Toast.LENGTH_SHORT).show());
                 })
                 .addOnFailureListener(e -> Toast.makeText(this, "Failed to remove facility picture.", Toast.LENGTH_SHORT).show());
     }
@@ -208,9 +250,19 @@ public class FacilityProfileActivity extends AppCompatActivity {
         facilityData.put("facilityLocation", location);
         facilityData.put("facilityDescription", description);
 
-        db.collection("facilities").document(facilityId).set(facilityData)
-                .addOnSuccessListener(aVoid -> showToast("Facility profile saved successfully."))
-                .addOnFailureListener(e -> showToast("Failed to save facility profile."));
+        // Ensure facilityPicUrl is included if it exists
+        db.collection("facilities").document(facilityId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String profilePicUrl = documentSnapshot.getString("facilityPicUrl");
+                        if (profilePicUrl != null) {
+                            facilityData.put("facilityPicUrl", profilePicUrl);
+                        }
+                    }
+                    db.collection("facilities").document(facilityId).set(facilityData)
+                            .addOnSuccessListener(aVoid -> showToast("Facility profile saved successfully."))
+                            .addOnFailureListener(e -> showToast("Failed to save facility profile."));
+                });
     }
 
     /**
