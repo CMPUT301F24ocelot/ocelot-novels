@@ -6,5 +6,8 @@
     <item
         android:id="@+id/menu_entrant_map"
         android:title="Entrant Map" />
+    <item
+        android:id="@+id/menu_waiting_list_entrant"
+        android:title="Waiting List of Entrants" />
 
 </menu>
