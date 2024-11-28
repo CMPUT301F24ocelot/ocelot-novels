@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_facility_profile"
+        android:title="Facility Profile" />
+    <item
+        android:id="@+id/menu_entrant_map"
+        android:title="Entrant Map" />
+
+</menu>
