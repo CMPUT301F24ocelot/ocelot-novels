@@ -19,6 +19,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
 import com.example.ocelotnovels.utils.FirebaseUtils;
 import com.example.ocelotnovels.utils.QRCodeUtils;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -160,7 +161,7 @@ public class CreateEventActivity extends AppCompatActivity {
             Uri imageUri = data.getData();
             try {
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
-                posterImageView.setImageBitmap(bitmap);
+                // Upload the selected image
                 uploadPosterToStorage(bitmap);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -170,8 +171,8 @@ public class CreateEventActivity extends AppCompatActivity {
     }
 
     private void uploadPosterToStorage(Bitmap bitmap) {
-        String posterId = UUID.randomUUID().toString();
-        StorageReference posterRef = storageRef.child("event_posters/" + posterId + ".jpg");
+        String posterId = UUID.randomUUID().toString(); // Unique ID for the poster
+        StorageReference posterRef = storageRef.child("images/events/" + posterId + ".jpg");
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
@@ -180,7 +181,16 @@ public class CreateEventActivity extends AppCompatActivity {
         posterRef.putBytes(data)
                 .addOnSuccessListener(taskSnapshot -> posterRef.getDownloadUrl()
                         .addOnSuccessListener(uri -> {
-                            eventPosterUrl = uri.toString();
+                            eventPosterUrl = uri.toString(); // Save the URL for Firestore
+
+                            // Dynamically load the poster into the ImageView within the CardView
+                            ImageView eventPosterImageView = findViewById(R.id.event_poster_image);
+                            Glide.with(this)
+                                    .load(eventPosterUrl)
+                                    .placeholder(R.drawable.ic_image_placeholder)
+                                    .error(R.drawable.ic_image_placeholder)
+                                    .into(eventPosterImageView);
+
                             Toast.makeText(this, "Poster uploaded successfully!", Toast.LENGTH_SHORT).show();
                         })
                         .addOnFailureListener(e -> {
@@ -195,7 +205,7 @@ public class CreateEventActivity extends AppCompatActivity {
 
     private void removePoster() {
         posterImageView.setImageResource(R.drawable.ic_image_placeholder); // Reset to placeholder
-        eventPosterUrl = null;
+        eventPosterUrl = null; // Clear the poster URL
         Toast.makeText(this, "Poster removed!", Toast.LENGTH_SHORT).show();
     }
 
@@ -204,7 +214,7 @@ public class CreateEventActivity extends AppCompatActivity {
             return;
         }
 
-        String eventId = UUID.randomUUID().toString();
+        String eventId = UUID.randomUUID().toString(); // Generate unique event ID
         Map<String, Object> eventData = createEventData(eventId);
 
         // Save event data to Firestore
@@ -224,7 +234,7 @@ public class CreateEventActivity extends AppCompatActivity {
         eventData.put("regClosed", selectedDueDate);
         eventData.put("geolocationEnabled", geolocationSwitch.isChecked());
         eventData.put("limitWaitlistEnabled", limitWaitlistSwitch.isChecked());
-        eventData.put("posterUrl", eventPosterUrl);
+        eventData.put("posterUrl", eventPosterUrl); // Include the poster URL
         eventData.put("createdAt", System.currentTimeMillis());
 
         String capacity = capacityEditText.getText().toString().trim();

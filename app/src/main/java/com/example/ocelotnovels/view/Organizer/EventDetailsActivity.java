@@ -2,10 +2,12 @@ package com.example.ocelotnovels.view.Organizer;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
 import com.example.ocelotnovels.R;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -43,6 +45,7 @@ public class EventDetailsActivity extends AppCompatActivity {
                             String eventDate = document.getString("date");
                             String eventLocation = document.getString("location");
                             String eventDescription = document.getString("description");
+                            String posterUrl = document.getString("posterUrl"); // Field for poster URL
 
                             // Set the details in TextViews
                             TextView nameTextView = findViewById(R.id.event_name_textview);
@@ -54,6 +57,18 @@ public class EventDetailsActivity extends AppCompatActivity {
                             dateTextView.setText(eventDate != null ? eventDate : "No date available");
                             locationTextView.setText(eventLocation != null ? eventLocation : "No location available");
                             descriptionTextView.setText(eventDescription != null ? eventDescription : "No description available");
+
+                            // Load the event poster
+                            ImageView posterImageView = findViewById(R.id.event_poster_imageview);
+                            if (posterUrl != null && !posterUrl.isEmpty()) {
+                                Glide.with(this)
+                                        .load(posterUrl)
+                                        .placeholder(R.drawable.ic_image_placeholder)
+                                        .error(R.drawable.ic_image_placeholder)
+                                        .into(posterImageView);
+                            } else {
+                                posterImageView.setImageResource(R.drawable.ic_image_placeholder);
+                            }
                         }
                     } else {
                         Log.w(TAG, "No matching documents found.");
