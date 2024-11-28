@@ -36,7 +36,7 @@ public class FirebaseUtils {
     private static FirebaseUtils instance;
     private final FirebaseFirestore db;
     private FirebaseStorage storage;
-    private StorageReference storageRef,imagesRef,defaultPics,profilePic;
+    private StorageReference storageRef,imagesRef,defaultPics,profileRef,profilePic;
     private final String deviceId;
 
     /**
@@ -51,8 +51,8 @@ public class FirebaseUtils {
         this.storageRef = storage.getReference();
         this.imagesRef=storageRef.child("images");
         this.defaultPics=imagesRef.child("default");
-        this.profilePic = imagesRef.child((this.deviceId+".jpg"));
-
+        this.profileRef = imagesRef.child("profilePic");
+        this.profilePic = profileRef.child((this.deviceId+".jpg"));
     }
 
     /**
