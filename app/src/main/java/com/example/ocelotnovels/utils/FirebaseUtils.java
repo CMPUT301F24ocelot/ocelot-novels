@@ -104,6 +104,68 @@ public class FirebaseUtils {
         return deviceId;
     }
 
+    public FirebaseStorage getStorage() {
+        return storage;
+    }
+
+    public void setStorage(FirebaseStorage storage) {
+        this.storage = storage;
+    }
+
+    public StorageReference getStorageRef() {
+        return storageRef;
+    }
+
+    public void setStorageRef(StorageReference storageRef) {
+        this.storageRef = storageRef;
+    }
+
+    public StorageReference getImagesRef() {
+        return imagesRef;
+    }
+
+    public void setImagesRef(StorageReference imagesRef) {
+        this.imagesRef = imagesRef;
+    }
+
+    public StorageReference getDefaultPics() {
+        return defaultPics;
+    }
+
+    public void setDefaultPics(StorageReference defaultPics) {
+        this.defaultPics = defaultPics;
+    }
+
+    public StorageReference getProfilePic() {
+        return profilePic;
+    }
+
+    public void setProfilePic(StorageReference profilePic) {
+        this.profilePic = profilePic;
+    }
+
+    /**
+     * Retrieves or generates a unique facility ID.
+     *
+     * @param context The application context.
+     * @return The unique facility ID.
+     */
+    public String getFacilityId(Context context) {
+        SharedPreferences sharedPreferences = context.getApplicationContext()
+                .getSharedPreferences("facility_settings", Context.MODE_PRIVATE);
+        String facilityId = sharedPreferences.getString("FacilityId", null);
+
+        if (facilityId == null) {
+            facilityId = UUID.randomUUID().toString();
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("FacilityId", facilityId);
+            editor.apply();
+        }
+
+        return facilityId;
+    }
+
+
     /**
      * Gets the user's document reference in the Firestore database.
      *
