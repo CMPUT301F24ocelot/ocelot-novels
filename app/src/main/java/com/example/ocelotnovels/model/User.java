@@ -17,6 +17,8 @@ public class User {
     private String email;
     private String phoneNumber; // Optional
 
+    private String device_ID;
+
     /**
      * Constructs a User with the specified first name, last name, and email.
      * @param firstName the user's first name
@@ -133,6 +135,23 @@ public class User {
             throw new IllegalArgumentException("Invalid phone number format!");
         }
         this.phoneNumber = phoneNumber;
+    }
+
+    /**
+     * this is used to get the device ID so that when the admin deletes a user from the  database they have the device ID to find their profile
+     * it will be set when admin retrieves the user from the database
+     * @param device_ID the device ID from a given user
+     */
+    public void setDevice_ID(String device_ID){
+        this.device_ID = device_ID;
+    }
+
+    /**
+     * this will return the device ID and will be called on when an admin has to delete a user from the database
+     * @return device_ID
+     */
+    public String getDevice_ID(){
+        return device_ID;
     }
 
     /**
