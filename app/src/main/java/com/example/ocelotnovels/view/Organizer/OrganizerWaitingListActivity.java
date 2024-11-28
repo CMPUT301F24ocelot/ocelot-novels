@@ -13,10 +13,18 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.model.Organizer;
 import com.example.ocelotnovels.model.User;
+import com.example.ocelotnovels.utils.FirebaseUtils;
+import com.example.ocelotnovels.view.Entrant.WaitingListAdapter;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class OrganizerWaitingListActivity extends AppCompatActivity {
 
@@ -27,6 +35,8 @@ public class OrganizerWaitingListActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private TextView emptyStateText;
     private String eventId;
+    private FirebaseUtils firebaseUtils;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,8 +46,9 @@ public class OrganizerWaitingListActivity extends AppCompatActivity {
         initializeViews();
         initializeFirebase();
 
-//        eventId = getIntent().getStringExtra("eventId");
-        eventId = "7bd81111-6033-4219-acb5-7ee28e0aeccd";
+        eventId = getIntent().getStringExtra("eventId").toString();
+//        eventId = "7bd81111-6033-4219-acb5-7ee28e0aeccd";
+        Log.d("EVENTIDW", eventId);
         if (eventId == null) {
             Toast.makeText(this, "Event ID not provided", Toast.LENGTH_SHORT).show();
             finish();
@@ -45,7 +56,8 @@ public class OrganizerWaitingListActivity extends AppCompatActivity {
         }
 
         setupRecyclerView();
-        loadWaitingList();
+//        loadWaitingList();
+        loadOrganiserWaitingList();
     }
 
     private void initializeViews() {
@@ -70,56 +82,18 @@ public class OrganizerWaitingListActivity extends AppCompatActivity {
         waitingListRecyclerView.setAdapter(waitingListAdapter);
     }
 
-    private void loadWaitingList() {
-        db.collection("events").document(eventId).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        List<String> waitingListFromDb = (List<String>) documentSnapshot.get("waitingList");
-                        if (waitingListFromDb != null && !waitingListFromDb.isEmpty()) {
-                            fetchUserDetails(waitingListFromDb);
-                        } else {
-                            updateEmptyState();
-                        }
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error fetching waiting list", e);
-                    Toast.makeText(this, "Failed to load waiting list", Toast.LENGTH_SHORT).show();
-                });
+
+    private void loadOrganiserWaitingList() {
+        firebaseUtils = new FirebaseUtils(this);
+        firebaseUtils.fetchOrganiserWaitingListEntrants(eventId, waitingListUsers, () -> {
+            waitingListAdapter.notifyDataSetChanged();
+            updateEmptyState();
+        });
     }
-
-    private void fetchUserDetails(List<String> userIds) {
-        waitingListUsers.clear();
-
-        for (String userId : userIds) {
-            db.collection("users").document(userId).get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.exists()) {
-                            String fullName = documentSnapshot.getString("name");
-                            String email = documentSnapshot.getString("email");
-
-                            if (fullName != null && email != null) {
-                                // Split fullName into first and last name
-                                String[] nameParts = fullName.split(" ", 2);
-                                String firstName = nameParts.length > 0 ? nameParts[0] : "";
-                                String lastName = nameParts.length > 1 ? nameParts[1] : "";
-
-                                // Create a User object
-                                User user = new User(firstName, lastName, email) {
-                                };
-                                waitingListUsers.add(user);
-                                waitingListAdapter.notifyDataSetChanged();
-                                updateEmptyState();
-                            }
-                        }
-                    })
-                    .addOnFailureListener(e -> Log.e(TAG, "Error fetching user details for ID: " + userId, e));
-        }
-    }
-
 
     private void updateEmptyState() {
         runOnUiThread(() -> {
+            Log.d(TAG, "Updating empty state. Users count: " + waitingListUsers.size());
             if (waitingListUsers.isEmpty()) {
                 emptyStateText.setVisibility(View.VISIBLE);
                 waitingListRecyclerView.setVisibility(View.GONE);

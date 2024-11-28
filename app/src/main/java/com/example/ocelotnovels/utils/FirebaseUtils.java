@@ -11,6 +11,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 
 import com.example.ocelotnovels.model.Event;
+import com.example.ocelotnovels.model.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -322,6 +323,119 @@ public class FirebaseUtils {
                 //.addOnCompleteListener(task -> Toast.makeText(this, "Profile picture updated!", Toast.LENGTH_SHORT).show())
         ;
     }
+
+
+
+    public void fetchOrganiserWaitingListEntrants(String eventId, List<User> userList, Runnable onComplete) {
+        // Add null checks
+        if (eventId == null) {
+            Log.e(TAG, "Event ID is null");
+            if (onComplete != null) {
+                onComplete.run();
+            }
+            return;
+        }
+
+        db.collection("events").document(eventId).get()
+                .addOnSuccessListener(eventDocumentSnapshot -> {
+                    if (eventDocumentSnapshot.exists()) {
+                        Object waitingListObj = eventDocumentSnapshot.get("waitingList");
+
+                        // Log the waiting list object for debugging
+                        Log.d(TAG, "Waiting List Object: " + waitingListObj);
+                        Log.d(TAG, "Waiting List Object Type: " + (waitingListObj != null ? waitingListObj.getClass().getName() : "null"));
+
+                        // Handle different possible types of waitingList
+                        ArrayList<String> usersInWaitingList;
+                        if (waitingListObj instanceof ArrayList) {
+                            usersInWaitingList = (ArrayList<String>) waitingListObj;
+                        } else if (waitingListObj instanceof List) {
+                            usersInWaitingList = new ArrayList<>((List<String>) waitingListObj);
+                        } else {
+                            Log.e(TAG, "Unexpected waitingList type");
+                            usersInWaitingList = new ArrayList<>();
+                        }
+
+                        if (usersInWaitingList != null && !usersInWaitingList.isEmpty()) {
+                            Log.d(TAG, "Number of users in waiting list: " + usersInWaitingList.size());
+
+                            // Use a more robust method to fetch multiple documents
+                            List<Task<DocumentSnapshot>> tasks = new ArrayList<>();
+                            for (String userId : usersInWaitingList) {
+                                Log.d(TAG, "Fetching user ID: " + userId);
+                                tasks.add(db.collection("users").document(userId).get());
+                            }
+
+                            Tasks.whenAllComplete(tasks)
+                                    .addOnSuccessListener(taskSnapshots -> {
+                                        userList.clear();
+                                        for (Task<DocumentSnapshot> task : tasks) {
+                                            try {
+                                                if (task.isSuccessful()) {
+                                                    DocumentSnapshot doc = task.getResult();
+                                                    if (doc != null && doc.exists()) {
+                                                        String fullName = doc.getString("name");
+                                                        Log.d(TAG, "Processing user: " + fullName);
+
+                                                        String firstName = "";
+                                                        String lastName = "";
+                                                        if (fullName != null && !fullName.isEmpty()) {
+                                                            String[] nameParts = fullName.split(" ", 2);
+                                                            firstName = nameParts.length > 0 ? nameParts[0] : "";
+                                                            lastName = nameParts.length > 1 ? nameParts[1] : nameParts[0]; // TO CHANGE FIX LAST FIRST NAME ISSUE
+                                                        }
+
+                                                        User user = new User(
+                                                                firstName,
+                                                                lastName,
+                                                                doc.getString("email")
+                                                        );
+                                                        userList.add(user);
+                                                    } else {
+                                                        Log.w(TAG, "User document does not exist or is null");
+                                                    }
+                                                } else {
+                                                    Log.e(TAG, "Task to fetch user failed", task.getException());
+                                                }
+                                            } catch (Exception e) {
+                                                Log.e(TAG, "Error processing individual user", e);
+                                            }
+                                        }
+
+                                        Log.d(TAG, "Total users processed: " + userList.size());
+
+                                        if (onComplete != null) {
+                                            onComplete.run();
+                                        }
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Log.e(TAG, "Error fetching waiting list users", e);
+                                        if (onComplete != null) {
+                                            onComplete.run();
+                                        }
+                                    });
+                        } else {
+                            Log.d(TAG, "No users in waiting list");
+                            userList.clear();
+                            if (onComplete != null) {
+                                onComplete.run();
+                            }
+                        }
+                    } else {
+                        Log.e(TAG, "Event document does not exist");
+                        if (onComplete != null) {
+                            onComplete.run();
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error fetching event document", e);
+                    if (onComplete != null) {
+                        onComplete.run();
+                    }
+                });
+    }
+
 
 
 }
