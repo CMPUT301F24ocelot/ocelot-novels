@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
     private String getUserEmail;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+    private boolean isUserSignedUp;
 
     /**
      * Called when the activity is created. Initializes views, Firebase instances, and
@@ -89,9 +90,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        // Control menu visibility based on user sign-up status
+        menu.setGroupVisible(R.id.menu_group_signed_in, isUserSignedUp);
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-
 
         // Handle menu item clicks
         if (id == R.id.action_profile) {
@@ -206,12 +213,14 @@ public class MainActivity extends AppCompatActivity {
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists() && documentSnapshot.contains("email")) {
                         getUserEmail = documentSnapshot.getString("email");
+                        isUserSignedUp = true;
                         signUpButton.setVisibility(View.GONE);
                         eventViewBtn.setOnClickListener(v -> {
                             Intent intent = new Intent(getApplicationContext(), WaitingListActivity.class);
                             startActivity(intent);
                         });
                     } else {
+                        isUserSignedUp = false;
                         signUpButton.setVisibility(View.VISIBLE);
                         signUpButton.setOnClickListener(view -> {
                             Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
@@ -219,8 +228,13 @@ public class MainActivity extends AppCompatActivity {
                             finish();
                         });
                     }
+                    invalidateOptionsMenu();
                 })
-                .addOnFailureListener(e -> Toast.makeText(MainActivity.this, "Error fetching user data: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    isUserSignedUp = false; // Default to not signed up in case of error
+                    Toast.makeText(MainActivity.this, "Error fetching user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    invalidateOptionsMenu(); // Refresh the menu
+                });
     }
 
     private void requestLocationPermission() {

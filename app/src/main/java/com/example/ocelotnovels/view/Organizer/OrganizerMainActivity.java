@@ -7,6 +7,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -27,13 +29,15 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class OrganizerMainActivity extends AppCompatActivity {
 
     public RecyclerView organizerRecyclerView;
     public OrganizerEventAdapter eventAdapter;
-    public List<String> eventNames;
+    private List<Map<String, String>> eventDetails;
     public FirebaseFirestore db;
 
     @Override
@@ -47,8 +51,8 @@ public class OrganizerMainActivity extends AppCompatActivity {
         // Setup RecyclerView
         organizerRecyclerView = findViewById(R.id.OrganizerRecyclerView);
         organizerRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        eventNames = new ArrayList<>();
-        eventAdapter = new OrganizerEventAdapter(eventNames, this);
+        eventDetails = new ArrayList<>();
+        eventAdapter = new OrganizerEventAdapter(eventDetails, this);
         organizerRecyclerView.setAdapter(eventAdapter);
 
         // Load events from Firestore
@@ -126,20 +130,26 @@ public class OrganizerMainActivity extends AppCompatActivity {
         db.collection("events")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    eventNames.clear();
+                    eventDetails.clear();
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         String eventName = document.getString("name");
-                        String qrCodeHash = document.getString("qrCodeHash"); // Fetch the QR code hash
+                        String eventDate = document.getString("regClosed");
+                        String eventLocation = document.getString("location");
 
-                        if (eventName != null) {
-                            Log.d("Event Data", "Name: " + eventName + ", QR Code Hash: " + qrCodeHash);
-                            eventNames.add(eventName);
+                        Log.d("EVENTDATE", eventDate);
+
+                        if (eventName != null && eventDate != null && eventLocation != null) {
+                            Map<String, String> event = new HashMap<>();
+                            event.put("name", eventName);
+                            event.put("date", eventDate);
+                            event.put("location", eventLocation);
+                            eventDetails.add(event);
                         }
                     }
                     eventAdapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e -> {
-                    // Handle any errors
+                    Toast.makeText(this, "Failed to load events: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 
