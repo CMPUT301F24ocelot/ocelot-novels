@@ -133,15 +133,17 @@ public class OrganizerMainActivity extends AppCompatActivity {
                     eventDetails.clear();
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         String eventName = document.getString("name");
-                        String eventDate = document.getString("regClosed");
+                        String eventDate = document.getString("eventDate");
                         String eventLocation = document.getString("location");
 
-                        Log.d("EVENTDATE", eventDate);
+                        // Log the event date
+                        Log.d("EVENTDATE", eventDate != null ? eventDate : "null");
 
-                        if (eventName != null && eventDate != null && eventLocation != null) {
+                        // Handle null values for eventDate
+                        if (eventName != null && eventLocation != null) {
                             Map<String, String> event = new HashMap<>();
                             event.put("name", eventName);
-                            event.put("date", eventDate);
+                            event.put("date", eventDate != null ? eventDate : "No date available");
                             event.put("location", eventLocation);
                             eventDetails.add(event);
                         }

@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -19,17 +18,13 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.ocelotnovels.utils.FirebaseUtils;
-import com.example.ocelotnovels.utils.QRCodeUtils;
+import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.zxing.WriterException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.security.MessageDigest;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -46,6 +41,7 @@ public class CreateEventActivity extends AppCompatActivity {
     private EditText eventLocationEditText;
     private EditText capacityEditText;
     private TextView capacityTextView;
+    private Button eventDateButton; // New button for Event Date
     private Button dueDateButton;
     private Button registrationOpenButton;
     private Switch geolocationSwitch;
@@ -59,6 +55,7 @@ public class CreateEventActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private StorageReference storageRef;
 
+    private String selectedEventDate = ""; // New field for Event Date
     private String selectedDueDate = "";
     private String selectedRegistrationOpenDate = "";
     private String eventPosterUrl = null;
@@ -90,6 +87,7 @@ public class CreateEventActivity extends AppCompatActivity {
         eventLocationEditText = findViewById(R.id.event_location);
         capacityEditText = findViewById(R.id.event_capacity);
         capacityTextView = findViewById(R.id.capacity_text);
+        eventDateButton = findViewById(R.id.event_happening_date); // New button
         dueDateButton = findViewById(R.id.event_due_date);
         registrationOpenButton = findViewById(R.id.event_registration_open);
         geolocationSwitch = findViewById(R.id.geolocation_switch);
@@ -98,15 +96,13 @@ public class CreateEventActivity extends AppCompatActivity {
         cancelButton = findViewById(R.id.cancel_button);
         uploadPosterButton = findViewById(R.id.upload_poster_button);
         removePosterButton = findViewById(R.id.remove_poster_button);
-        posterImageView = findViewById(R.id.organizer_event_image);
-
-        selectedList = new ArrayList<>();
-        cancelledList = new ArrayList<>();
+        posterImageView = findViewById(R.id.event_poster_image);
     }
 
     private void setupListeners() {
-        dueDateButton.setOnClickListener(v -> showDatePickerDialog(dueDateButton, true));
-        registrationOpenButton.setOnClickListener(v -> showDatePickerDialog(registrationOpenButton, false));
+        eventDateButton.setOnClickListener(v -> showDatePickerDialog(eventDateButton, "eventDate"));
+        dueDateButton.setOnClickListener(v -> showDatePickerDialog(dueDateButton, "dueDate"));
+        registrationOpenButton.setOnClickListener(v -> showDatePickerDialog(registrationOpenButton, "registrationOpen"));
 
         uploadPosterButton.setOnClickListener(v -> selectPoster());
         removePosterButton.setOnClickListener(v -> removePoster());
@@ -123,7 +119,7 @@ public class CreateEventActivity extends AppCompatActivity {
         });
     }
 
-    private void showDatePickerDialog(Button button, boolean isDueDate) {
+    private void showDatePickerDialog(Button button, String dateType) {
         Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);
@@ -135,10 +131,16 @@ public class CreateEventActivity extends AppCompatActivity {
                             selectedYear, selectedMonth + 1, selectedDay);
                     button.setText(selectedDate);
 
-                    if (isDueDate) {
-                        selectedDueDate = selectedDate;
-                    } else {
-                        selectedRegistrationOpenDate = selectedDate;
+                    switch (dateType) {
+                        case "eventDate":
+                            selectedEventDate = selectedDate;
+                            break;
+                        case "dueDate":
+                            selectedDueDate = selectedDate;
+                            break;
+                        case "registrationOpen":
+                            selectedRegistrationOpenDate = selectedDate;
+                            break;
                     }
                 }, year, month, day);
 
@@ -160,7 +162,6 @@ public class CreateEventActivity extends AppCompatActivity {
             Uri imageUri = data.getData();
             try {
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
-                posterImageView.setImageBitmap(bitmap);
                 uploadPosterToStorage(bitmap);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -170,8 +171,8 @@ public class CreateEventActivity extends AppCompatActivity {
     }
 
     private void uploadPosterToStorage(Bitmap bitmap) {
-        String posterId = UUID.randomUUID().toString();
-        StorageReference posterRef = storageRef.child("event_posters/" + posterId + ".jpg");
+        String posterId = UUID.randomUUID().toString(); // Unique ID for the poster
+        StorageReference posterRef = storageRef.child("images/events/" + posterId + ".jpg");
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
@@ -181,6 +182,11 @@ public class CreateEventActivity extends AppCompatActivity {
                 .addOnSuccessListener(taskSnapshot -> posterRef.getDownloadUrl()
                         .addOnSuccessListener(uri -> {
                             eventPosterUrl = uri.toString();
+                            Glide.with(this)
+                                    .load(eventPosterUrl)
+                                    .placeholder(R.drawable.ic_image_placeholder)
+                                    .error(R.drawable.ic_image_placeholder)
+                                    .into(posterImageView);
                             Toast.makeText(this, "Poster uploaded successfully!", Toast.LENGTH_SHORT).show();
                         })
                         .addOnFailureListener(e -> {
@@ -195,7 +201,7 @@ public class CreateEventActivity extends AppCompatActivity {
 
     private void removePoster() {
         posterImageView.setImageResource(R.drawable.ic_image_placeholder); // Reset to placeholder
-        eventPosterUrl = null;
+        eventPosterUrl = null; // Clear the poster URL
         Toast.makeText(this, "Poster removed!", Toast.LENGTH_SHORT).show();
     }
 
@@ -204,10 +210,9 @@ public class CreateEventActivity extends AppCompatActivity {
             return;
         }
 
-        String eventId = UUID.randomUUID().toString();
+        String eventId = UUID.randomUUID().toString(); // Generate unique event ID
         Map<String, Object> eventData = createEventData(eventId);
 
-        // Save event data to Firestore
         db.collection("events").document(eventId)
                 .set(eventData)
                 .addOnSuccessListener(aVoid -> showToast("Event created successfully."))
@@ -220,21 +225,18 @@ public class CreateEventActivity extends AppCompatActivity {
         eventData.put("name", eventTitleEditText.getText().toString().trim());
         eventData.put("description", eventDescriptionEditText.getText().toString().trim());
         eventData.put("location", eventLocationEditText.getText().toString().trim());
+        eventData.put("eventDate", selectedEventDate); // Save Event Date
         eventData.put("registrationOpen", selectedRegistrationOpenDate);
         eventData.put("regClosed", selectedDueDate);
         eventData.put("geolocationEnabled", geolocationSwitch.isChecked());
         eventData.put("limitWaitlistEnabled", limitWaitlistSwitch.isChecked());
-        eventData.put("posterUrl", eventPosterUrl);
+        eventData.put("posterUrl", eventPosterUrl); // Include the poster URL
         eventData.put("createdAt", System.currentTimeMillis());
 
         String capacity = capacityEditText.getText().toString().trim();
         if (limitWaitlistSwitch.isChecked() && !TextUtils.isEmpty(capacity)) {
             eventData.put("capacity", Integer.parseInt(capacity));
         }
-
-        eventData.put("selectedList", selectedList);
-        eventData.put("cancelledList", cancelledList);
-        eventData.put("organizerId", FirebaseUtils.getInstance(this).getDeviceId(this));
 
         return eventData;
     }
@@ -246,13 +248,8 @@ public class CreateEventActivity extends AppCompatActivity {
 
         if (TextUtils.isEmpty(eventTitle) || TextUtils.isEmpty(eventDescription) ||
                 TextUtils.isEmpty(eventLocation) || TextUtils.isEmpty(selectedDueDate) ||
-                TextUtils.isEmpty(selectedRegistrationOpenDate)) {
+                TextUtils.isEmpty(selectedRegistrationOpenDate) || TextUtils.isEmpty(selectedEventDate)) {
             showToast("Please fill in all fields");
-            return false;
-        }
-
-        if (limitWaitlistSwitch.isChecked() && TextUtils.isEmpty(capacityEditText.getText().toString().trim())) {
-            showToast("Please enter event capacity");
             return false;
         }
 
