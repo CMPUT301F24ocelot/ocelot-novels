@@ -36,6 +36,10 @@ public class OrganizerEventAdapter extends RecyclerView.Adapter<OrganizerEventAd
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         String eventName = eventNames.get(position);
         holder.eventNameTextView.setText(eventName);
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
         // Set a click listener on the item
         holder.itemView.setOnClickListener(v -> {
             // Open EventDetailsActivity when the item is clicked

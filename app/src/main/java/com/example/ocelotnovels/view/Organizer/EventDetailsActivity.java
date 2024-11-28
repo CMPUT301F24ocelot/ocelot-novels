@@ -1,14 +1,21 @@
 package com.example.ocelotnovels.view.Organizer;
+<<<<<<< HEAD
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+=======
+
+import android.os.Bundle;
+import android.util.Log;
+>>>>>>> origin/main
 import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+<<<<<<< HEAD
 import com.example.ocelotnovels.CancelledEntrantsActivity;
 import com.example.ocelotnovels.ConfirmedEntrantsActivity;
 import com.example.ocelotnovels.InvitedEntrantsActivity;
@@ -22,18 +29,41 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 public class EventDetailsActivity extends AppCompatActivity {
     private static final String TAG = "EventDetailsActivity";
     private FirebaseFirestore db;
+=======
+import com.example.ocelotnovels.R;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+public class EventDetailsActivity extends AppCompatActivity {
+
+    private static final String TAG = "EventDetailsActivity";
+
+    private FirebaseFirestore db;
+
+>>>>>>> origin/main
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.event_details);
+<<<<<<< HEAD
         // Get the event name passed from the adapter
         String eventName = getIntent().getStringExtra("eventName");
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
+=======
+
+        // Get the event name passed from the adapter
+        String eventName = getIntent().getStringExtra("eventName");
+
+        // Initialize Firestore
+        db = FirebaseFirestore.getInstance();
+
+>>>>>>> origin/main
         // Fetch event details and display them
         fetchEventDetails(eventName);
     }
 
+<<<<<<< HEAD
 
 
     @Override
@@ -81,6 +111,8 @@ public class EventDetailsActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+=======
+>>>>>>> origin/main
     private void fetchEventDetails(String eventName) {
         // Query Firestore for the event details
         db.collection("events")
@@ -93,11 +125,19 @@ public class EventDetailsActivity extends AppCompatActivity {
                             String eventDate = document.getString("date");
                             String eventLocation = document.getString("location");
                             String eventDescription = document.getString("description");
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
                             // Set the details in TextViews
                             TextView nameTextView = findViewById(R.id.event_name_textview);
                             TextView dateTextView = findViewById(R.id.event_date_textview);
                             TextView locationTextView = findViewById(R.id.event_location_textview);
                             TextView descriptionTextView = findViewById(R.id.event_description_textview);
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
                             nameTextView.setText(eventName);
                             dateTextView.setText(eventDate != null ? eventDate : "No date available");
                             locationTextView.setText(eventLocation != null ? eventLocation : "No location available");
@@ -111,4 +151,8 @@ public class EventDetailsActivity extends AppCompatActivity {
                     Log.e(TAG, "Error fetching event details", e);
                 });
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/main
