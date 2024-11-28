@@ -1,9 +1,11 @@
 package com.example.ocelotnovels.view.Entrant;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,15 +15,20 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 
 import com.example.ocelotnovels.MainActivity;
 import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.view.Entrant.WaitingListActivity;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.GoogleMap;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -42,6 +49,8 @@ public class EventDetailsFragment extends DialogFragment {
     private TextView registrationDeadline;
 
     private TextView geolocationWarning;
+
+    private GoogleMap mMap;
 
     public static EventDetailsFragment newInstance(String eventId, String userId) {
         EventDetailsFragment fragment = new EventDetailsFragment();
@@ -141,7 +150,7 @@ public class EventDetailsFragment extends DialogFragment {
                 .addOnSuccessListener(userDoc -> {
                     if (userDoc.exists() && userDoc.contains("email")) {
                         // User has email, proceed with joining
-                        checkEventCapacityAndJoin();
+                        fetchUserLocationAndJoinEvent();
                     } else {
                         // No email found, redirect to MainActivity
                         handleNoUser();
@@ -156,6 +165,70 @@ public class EventDetailsFragment extends DialogFragment {
                     Log.e("JoinEventFragment", "Error verifying user", e);
                 });
     }
+
+    private void fetchUserLocationAndJoinEvent() {
+        // Check if location permission is granted
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Permission is not granted, show a message
+            Toast.makeText(requireContext(), "Location permission is required to join the event.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(location -> {
+                    if (location != null) {
+                        double latitude = location.getLatitude();
+                        double longitude = location.getLongitude();
+                        Log.i("EventDetailsFragment", "Location fetched: Lat = " + latitude + ", Lon = " + longitude);
+                        updateUserEventLocations(latitude, longitude);
+                    } else {
+                        Toast.makeText(requireContext(), "Unable to fetch your location.", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(requireContext(), "Error fetching location: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Log.e("EventDetailsFragment", "Error fetching location", e);
+                });
+    }
+
+    private void updateUserEventLocations(double latitude, double longitude) {
+        // Create a GeoPoint object to be added
+        GeoPoint geoPoint = new GeoPoint(latitude, longitude);
+
+        userDocument.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                List<GeoPoint> eventLocations = (List<GeoPoint>) documentSnapshot.get("eventLocations");
+
+                if (eventLocations == null) {
+                    // If the eventLocations field does not exist, initialize it as an array
+                    eventLocations = new ArrayList<>();
+                }
+
+                // Add the new GeoPoint to the array
+                eventLocations.add(geoPoint);
+
+                // Update the eventLocations field in Firestore
+                userDocument.update("eventLocations", eventLocations)
+                        .addOnSuccessListener(aVoid -> {
+                            Log.i("EventDetailsFragment", "GeoPoint added to eventLocations field");
+                            checkEventCapacityAndJoin(); // Proceed with joining the event
+                        })
+                        .addOnFailureListener(e -> {
+                            Toast.makeText(requireContext(), "Failed to update your location in Firestore.", Toast.LENGTH_SHORT).show();
+                            Log.e("EventDetailsFragment", "Error updating location in Firestore", e);
+                        });
+            } else {
+                Log.w("EventDetailsFragment", "User document does not exist.");
+            }
+        }).addOnFailureListener(e -> {
+            Toast.makeText(requireContext(), "Failed to fetch user document.", Toast.LENGTH_SHORT).show();
+            Log.e("EventDetailsFragment", "Error fetching user document", e);
+        });
+    }
+
+
 
     private void checkEventCapacityAndJoin() {
         eventDocument.get()

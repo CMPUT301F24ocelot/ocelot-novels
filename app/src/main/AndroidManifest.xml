@@ -67,6 +67,9 @@
         <activity android:name=".CancelledEntrantsActivity" />
         <activity android:name=".ConfirmedEntrantsActivity" />
 
+        <activity android:name=".view.Organizer.EventDetailsActivity" />
+
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}" />
