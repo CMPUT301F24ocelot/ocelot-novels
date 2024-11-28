@@ -15,9 +15,11 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.lang.reflect.Method;
+
 public class FacilityProfileActivityTest {
 
-    /*rivate FacilityProfileActivity facilityProfileActivity;
+    private FacilityProfileActivity facilityProfileActivity;
 
     @Mock
     FirebaseFirestore mockDb;
@@ -114,12 +116,22 @@ public class FacilityProfileActivityTest {
         assertEquals("Description should be at least 20 characters.", result);
     }
 
+    private void callSaveFacilityProfileUsingReflection() {
+        try {
+            Method method = FacilityProfileActivity.class.getDeclaredMethod("saveFacilityProfile");
+            method.setAccessible(true);
+            method.invoke(facilityProfileActivity);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to invoke method via reflection", e);
+        }
+    }
+
     @Test
     public void testSaveFacilityProfileWithValidData() {
-        // Directly call saveFacilityProfile, and verify Firestore behavior
-        facilityProfileActivity.saveFacilityProfile();
+        // Call saveFacilityProfile via reflection
+        callSaveFacilityProfileUsingReflection();
 
         // Verify that set() was called on the document reference
         verify(mockDocument, times(1)).set(anyMap());
-    }*/
+    }
 }

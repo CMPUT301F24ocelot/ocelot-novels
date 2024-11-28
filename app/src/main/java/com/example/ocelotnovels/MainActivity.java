@@ -1,6 +1,8 @@
 package com.example.ocelotnovels;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -12,6 +14,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.example.ocelotnovels.utils.FirebaseUtils;
 import com.example.ocelotnovels.view.Entrant.EventDetailsFragment;
@@ -50,6 +54,8 @@ public class MainActivity extends AppCompatActivity {
     private String deviceId;
     private String getUserEmail;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+    private boolean isUserSignedUp;
 
     /**
      * Called when the activity is created. Initializes views, Firebase instances, and
@@ -73,6 +79,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Fetch user data and update the UI accordingly
         fetchUserData();
+
+        requestLocationPermission();
     }
 
     @Override
@@ -83,9 +91,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        // Control menu visibility based on user sign-up status
+        menu.setGroupVisible(R.id.menu_group_signed_in, isUserSignedUp);
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-
 
         // Handle menu item clicks
         if (id == R.id.action_profile) {
@@ -208,12 +222,14 @@ public class MainActivity extends AppCompatActivity {
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists() && documentSnapshot.contains("email")) {
                         getUserEmail = documentSnapshot.getString("email");
+                        isUserSignedUp = true;
                         signUpButton.setVisibility(View.GONE);
                         eventViewBtn.setOnClickListener(v -> {
                             Intent intent = new Intent(getApplicationContext(), WaitingListActivity.class);
                             startActivity(intent);
                         });
                     } else {
+                        isUserSignedUp = false;
                         signUpButton.setVisibility(View.VISIBLE);
                         signUpButton.setOnClickListener(view -> {
                             Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
@@ -221,7 +237,34 @@ public class MainActivity extends AppCompatActivity {
                             finish();
                         });
                     }
+                    invalidateOptionsMenu();
                 })
-                .addOnFailureListener(e -> Toast.makeText(MainActivity.this, "Error fetching user data: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    isUserSignedUp = false; // Default to not signed up in case of error
+                    Toast.makeText(MainActivity.this, "Error fetching user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    invalidateOptionsMenu(); // Refresh the menu
+                });
+    }
+
+    private void requestLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST_CODE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Location permission granted.", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Location permission denied. Some features may be limited.", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }
