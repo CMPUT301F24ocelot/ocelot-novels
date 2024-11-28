@@ -9,7 +9,9 @@ import java.util.Objects;
  * and an optional phone number. This class is intended to be extended by specific user roles
  * such as Entrant, Organizer, and Admin.
  */
-public abstract class User {
+public class User {
+    private String[] roles = {"entrant"};
+
     private String firstName;
     private String lastName;
     private String email;

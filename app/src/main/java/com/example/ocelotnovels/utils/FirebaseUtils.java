@@ -9,13 +9,19 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.example.ocelotnovels.model.Event;
+import com.example.ocelotnovels.model.User;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -230,5 +236,37 @@ public class FirebaseUtils {
         }).addOnFailureListener(e -> {
             if (onFailure != null) onFailure.onFailure(e);
         });
+    }
+
+    /**
+     * This method will get all of the user profiles for the admin to be able to browse them and then delete them if they have to.
+     * @return ArrayList<User> return a list of users for the admin to be able to browse
+     */
+    public ArrayList<User> getProfilesCollection(){
+        ArrayList<User> userArray = new ArrayList<User>();
+        db.collection("users").get().addOnSuccessListener(querySnapshot ->{
+            if(!querySnapshot.isEmpty()){
+                List<DocumentSnapshot> profiles = querySnapshot.getDocuments();
+                for(int i = 0;i<profiles.size();i++) {
+                    DocumentSnapshot profile = profiles.get(i);
+                    if(profile.exists()){
+                        String name = profile.getString("name");
+                        String[] nameParts = name.split(" ", 2);
+                        String firstName = nameParts[0];
+                        String lastName = nameParts[1];
+                        String email = profile.getString("email");
+                        String phone = profile.getString("phone");
+                        User user;
+                        if(phone != null && !phone.equals("")){
+                            user = new User(firstName, lastName, email, phone);
+                        }else{
+                            user = new User(firstName, lastName, email);
+                        }
+                        userArray.add(user);
+                    }
+                }
+            }
+        });
+        return userArray;
     }
 }
