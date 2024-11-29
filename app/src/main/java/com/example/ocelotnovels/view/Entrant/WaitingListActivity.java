@@ -82,6 +82,12 @@ public class WaitingListActivity extends AppCompatActivity {
             firebaseUtils.leaveEventWaitlist(
                     event.getEventId(),
                     aVoid -> runOnUiThread(() -> {
+                        // Remove the event and corresponding location
+                        int eventIndex = eventList.indexOf(event);
+                        if (eventIndex >= 0) {
+                            removeUserLocation(eventIndex); // Remove location using index
+                        }
+
                         // Remove event from the eventList
                         eventList.remove(event);
                         waitingListAdapter.notifyDataSetChanged();
@@ -100,6 +106,22 @@ public class WaitingListActivity extends AppCompatActivity {
             );
         }
     }
+
+    private void removeUserLocation(int index) {
+        firebaseUtils.getUserDocument().get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                List<Object> eventLocations = (List<Object>) documentSnapshot.get("eventLocations");
+                if (eventLocations != null && index >= 0 && index < eventLocations.size()) {
+                    // Remove the location at the specified index
+                    eventLocations.remove(index);
+                    firebaseUtils.getUserDocument().update("eventLocations", eventLocations)
+                            .addOnSuccessListener(aVoid -> Log.i(TAG, "Location removed successfully"))
+                            .addOnFailureListener(e -> Log.e(TAG, "Error removing location", e));
+                }
+            }
+        }).addOnFailureListener(e -> Log.e(TAG, "Error fetching user document", e));
+    }
+
 
 
     private void updateEmptyState() {
