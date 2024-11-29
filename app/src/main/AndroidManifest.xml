@@ -69,7 +69,7 @@
         <activity android:name=".ConfirmedEntrantsActivity" />
 
         <activity android:name=".view.Organizer.EventDetailsActivity"  android:parentActivityName=".view.Organizer.OrganizerMainActivity"/>
-
+        <activity android:name=".QrCodeActivity" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

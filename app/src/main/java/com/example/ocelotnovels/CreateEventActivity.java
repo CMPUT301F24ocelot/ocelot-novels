@@ -19,9 +19,11 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
+import com.example.ocelotnovels.utils.QRCodeUtils;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.zxing.WriterException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -205,19 +207,6 @@ public class CreateEventActivity extends AppCompatActivity {
         Toast.makeText(this, "Poster removed!", Toast.LENGTH_SHORT).show();
     }
 
-    private void saveEventData() {
-        if (!validateInputs()) {
-            return;
-        }
-
-        String eventId = UUID.randomUUID().toString(); // Generate unique event ID
-        Map<String, Object> eventData = createEventData(eventId);
-
-        db.collection("events").document(eventId)
-                .set(eventData)
-                .addOnSuccessListener(aVoid -> showToast("Event created successfully."))
-                .addOnFailureListener(e -> showToast("Failed to create event."));
-    }
 
     private Map<String, Object> createEventData(String eventId) {
         Map<String, Object> eventData = new HashMap<>();
@@ -225,12 +214,12 @@ public class CreateEventActivity extends AppCompatActivity {
         eventData.put("name", eventTitleEditText.getText().toString().trim());
         eventData.put("description", eventDescriptionEditText.getText().toString().trim());
         eventData.put("location", eventLocationEditText.getText().toString().trim());
-        eventData.put("eventDate", selectedEventDate); // Save Event Date
+        eventData.put("eventDate", selectedEventDate);
         eventData.put("registrationOpen", selectedRegistrationOpenDate);
         eventData.put("regClosed", selectedDueDate);
         eventData.put("geolocationEnabled", geolocationSwitch.isChecked());
         eventData.put("limitWaitlistEnabled", limitWaitlistSwitch.isChecked());
-        eventData.put("posterUrl", eventPosterUrl); // Include the poster URL
+        eventData.put("posterUrl", eventPosterUrl);
         eventData.put("createdAt", System.currentTimeMillis());
 
         String capacity = capacityEditText.getText().toString().trim();
@@ -240,19 +229,67 @@ public class CreateEventActivity extends AppCompatActivity {
 
         return eventData;
     }
+    private void saveEventData() {
+        if (!validateInputs()) return;
+
+
+
+        String eventId = UUID.randomUUID().toString();
+        Map<String, Object> eventData = createEventData(eventId); // Prepare event data
+
+        // Save the event to Firestore
+        db.collection("events").document(eventId)
+                .set(eventData)
+                .addOnSuccessListener(aVoid -> {
+                    String qrData = generateQrData(eventId);
+                    try {
+                        // Generate the QR code and navigate to QR code activity
+                        Bitmap qrCodeBitmap = QRCodeUtils.generateQrCode(qrData, 500, 500);
+                        navigateToQrCodeActivity(qrCodeBitmap, qrData);
+                    } catch (WriterException e) {
+                        e.printStackTrace();
+                        showToast("Event saved but failed to generate QR Code.");
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    e.printStackTrace();
+                    showToast("Failed to save event to the database.");
+                });
+    }
+
+    private String generateQrData(String eventId) {
+        return String.format(Locale.getDefault(),
+                "Event ID: %s\nName: %s\nDescription: %s\nDate: %s\nLocation: %s",
+                eventId,
+                eventTitleEditText.getText().toString().trim(),
+                eventDescriptionEditText.getText().toString().trim(),
+                selectedEventDate,
+                eventLocationEditText.getText().toString().trim()
+        );
+    }
+
+    private void navigateToQrCodeActivity(Bitmap qrCodeBitmap, String qrData) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        qrCodeBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        byte[] byteArray = baos.toByteArray();
+
+        Intent intent = new Intent(CreateEventActivity.this, QrCodeActivity.class);
+        intent.putExtra("eventTitle", eventTitleEditText.getText().toString().trim());
+        intent.putExtra("eventDescription", eventDescriptionEditText.getText().toString().trim());
+        intent.putExtra("eventDeadline", selectedDueDate);
+        intent.putExtra("eventLocation", eventLocationEditText.getText().toString().trim());
+        intent.putExtra("qrCode", byteArray);
+        startActivity(intent);
+    }
 
     private boolean validateInputs() {
-        String eventTitle = eventTitleEditText.getText().toString().trim();
-        String eventDescription = eventDescriptionEditText.getText().toString().trim();
-        String eventLocation = eventLocationEditText.getText().toString().trim();
-
-        if (TextUtils.isEmpty(eventTitle) || TextUtils.isEmpty(eventDescription) ||
-                TextUtils.isEmpty(eventLocation) || TextUtils.isEmpty(selectedDueDate) ||
-                TextUtils.isEmpty(selectedRegistrationOpenDate) || TextUtils.isEmpty(selectedEventDate)) {
-            showToast("Please fill in all fields");
+        if (TextUtils.isEmpty(eventTitleEditText.getText().toString().trim())
+                || TextUtils.isEmpty(eventDescriptionEditText.getText().toString().trim())
+                || TextUtils.isEmpty(eventLocationEditText.getText().toString().trim())
+                || TextUtils.isEmpty(selectedEventDate)) {
+            showToast("Please fill in all required fields.");
             return false;
         }
-
         return true;
     }
 
