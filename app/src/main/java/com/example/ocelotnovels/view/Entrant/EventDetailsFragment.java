@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,6 +19,7 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 
+import com.bumptech.glide.Glide;
 import com.example.ocelotnovels.MainActivity;
 import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.view.Entrant.WaitingListActivity;
@@ -47,6 +49,7 @@ public class EventDetailsFragment extends DialogFragment {
     private TextView eventDescription;
     private TextView eventStatus;
     private TextView registrationDeadline;
+    private ImageView eventImage;
 
     private TextView geolocationWarning;
 
@@ -72,9 +75,10 @@ public class EventDetailsFragment extends DialogFragment {
         // Initialize UI elements
         eventTitle = view.findViewById(R.id.user_event_title);
         eventDescription = view.findViewById(R.id.user_event_description);
-        eventStatus = view.findViewById(R.id.user_event_status);
+//        eventStatus = view.findViewById(R.id.user_event_status);
         registrationDeadline = view.findViewById(R.id.user_event_deadline);
         geolocationWarning = view.findViewById(R.id.warning_text);
+        eventImage = view.findViewById(R.id.event_details_poster_image);
         // Get event and user IDs from arguments
         if (getArguments() != null) {
             eventId = getArguments().getString(ARG_EVENT_ID);
@@ -108,28 +112,34 @@ public class EventDetailsFragment extends DialogFragment {
                 .get()
                 .addOnSuccessListener(document -> {
                     if (document.exists()) {
-//                        eventTitle.setText(document.getString("title"));
-//                        eventDescription.setText(document.getString("description"));
-//                        //eventCapacity.setText("Capacity: " + document.getLong("eventCapacity"));
-//
-//                        Timestamp deadline = document.getTimestamp("registrationDeadline");
-//                        if (deadline != null) {
-//                            registrationDeadline.setText("Deadline: " + deadline.toDate().toString());
-//                        }
+                        // Get event details
+                        String eventDetailsImage = document.getString("posterUrl");
                         String title = document.getString("name");
                         String description = document.getString("description");
-                        String status = document.getString("status");
+//                        String status = document.getString("status");
                         Boolean geolocationEnabled = document.getBoolean("geolocationEnabled");
-                        // Check if registrationClose is null
-                        String registrationCloseTimestamp = document.getString("regClosed");
-                        String deadline = (registrationCloseTimestamp != null) ? registrationCloseTimestamp.toString() : "No deadline set";
 
+                        // Get registration close timestamp
+                        String registrationCloseTimestamp = document.getString("regClosed");
+                        String deadline = (registrationCloseTimestamp != null) ? registrationCloseTimestamp : "No deadline set";
+
+                        // Set the TextViews with event details
                         eventTitle.setText("Event Title: " + title);
                         eventDescription.setText("Event Description: " + description);
-                        eventStatus.setText("Event Status: " + status);
+//                        eventStatus.setText("Event Status: " + status);
                         registrationDeadline.setText("Event Deadline: " + deadline);
-                        //Log.i("deviceId",deviceId);
-                        if (geolocationEnabled){
+
+                        // Load event poster image using Glide
+                        if (eventDetailsImage != null && !eventDetailsImage.isEmpty()) {
+                            Glide.with(getContext())
+                                    .load(eventDetailsImage) // Load the image URL from Firestore
+                                    .placeholder(R.drawable.ic_image_placeholder) // Placeholder image while loading
+                                    .error(R.drawable.ic_image_placeholder) // Error image if loading fails
+                                    .into(eventImage); // Set the loaded image into the ImageView
+                        }
+
+                        // Handle geolocation setting if applicable
+                        if (geolocationEnabled != null && geolocationEnabled) {
                             geolocationWarning.setVisibility(View.VISIBLE);
                         }
                     }
@@ -139,6 +149,7 @@ public class EventDetailsFragment extends DialogFragment {
                     Log.e("JoinEventFragment", "Error loading event details", e);
                 });
     }
+
 
     private void verifyUserAndJoinEvent() {
         if (!isAdded()) return;

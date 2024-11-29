@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -19,7 +20,11 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
+import com.example.ocelotnovels.utils.FirebaseUtils;
 import com.example.ocelotnovels.utils.QRCodeUtils;
+import com.example.ocelotnovels.view.Organizer.OrganizerMainActivity;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -58,6 +63,8 @@ public class CreateEventActivity extends AppCompatActivity {
 
     private FirebaseFirestore db;
     private StorageReference storageRef;
+    private String currentDeviceId;
+    private String facilityId;
 
     private String selectedEventDate = ""; // New field for Event Date
     private String selectedDueDate = "";
@@ -77,12 +84,14 @@ public class CreateEventActivity extends AppCompatActivity {
         // Initialize Firestore and Storage
         db = FirebaseFirestore.getInstance();
         storageRef = FirebaseStorage.getInstance().getReference();
-
+        currentDeviceId = FirebaseUtils.getInstance(this).getDeviceId(this);
+        facilityId = getIntent().getStringExtra("facilityId");
         // Initialize views and lists
         initializeViews();
 
         // Set up listeners
         setupListeners();
+        Log.d("FACILITYID", facilityId);
     }
 
     private void initializeViews() {
@@ -223,6 +232,7 @@ public class CreateEventActivity extends AppCompatActivity {
         eventData.put("limitWaitlistEnabled", limitWaitlistSwitch.isChecked());
         eventData.put("posterUrl", eventPosterUrl);
         eventData.put("createdAt", System.currentTimeMillis());
+        eventData.put("organizerDeviceId", facilityId);
 
         String capacity = capacityEditText.getText().toString().trim();
         if (limitWaitlistSwitch.isChecked() && !TextUtils.isEmpty(capacity)) {
@@ -231,6 +241,15 @@ public class CreateEventActivity extends AppCompatActivity {
 
         return eventData;
     }
+
+    private void addEventToFacility(String facilityId, String eventId) {
+        DocumentReference facilityRef = db.collection("facilities").document(facilityId);
+
+        facilityRef.update("events", FieldValue.arrayUnion(eventId))
+                .addOnSuccessListener(aVoid -> Log.d("UpdateFacility", "Event added to facility successfully"))
+                .addOnFailureListener(e -> Log.e("UpdateFacility", "Failed to add event to facility", e));
+    }
+
 
 
     private void saveEventData() {
@@ -258,6 +277,7 @@ public class CreateEventActivity extends AppCompatActivity {
             db.collection("events").document(eventId)
                     .set(eventData)
                     .addOnSuccessListener(aVoid -> {
+                        addEventToFacility(facilityId, eventId);
                         // Upload the QR Code image to Firebase Storage
                         uploadQrCodeToStorage(eventId, qrCodeBitmap);
 
