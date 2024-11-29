@@ -6,6 +6,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -15,6 +17,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
+import com.example.ocelotnovels.MapsActivity;
 import com.example.ocelotnovels.R;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -61,6 +64,55 @@ public class EventDetailsActivity extends AppCompatActivity {
         // Set up the Edit Poster button
         Button editPosterButton = findViewById(R.id.edit_poster_button);
         editPosterButton.setOnClickListener(v -> selectNewPoster());
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.entrant_list_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (eventId == null) {
+            Toast.makeText(this, "Event ID is not available. Cannot navigate.", Toast.LENGTH_SHORT).show();
+            return super.onOptionsItemSelected(item);
+        }
+
+        // Handle menu item clicks
+        if (id == R.id.menu_waiting_list) {
+            Intent waitingListIntent = new Intent(EventDetailsActivity.this, OrganizerWaitingListActivity.class);
+            waitingListIntent.putExtra("eventId", eventId);
+            startActivity(waitingListIntent);
+            return true;
+        }
+
+        if (id == R.id.menu_selected_list) {
+            Intent selectedListIntent = new Intent(EventDetailsActivity.this, OrganiserSelectedListActivity.class);
+            selectedListIntent.putExtra("eventId", eventId);
+            startActivity(selectedListIntent);
+            return true;
+        }
+
+        if (id == R.id.menu_cancelled_list) {
+            Intent cancelledListIntent = new Intent(EventDetailsActivity.this, OrganiserCancelledListActivity.class);
+            cancelledListIntent.putExtra("eventId", eventId);
+            startActivity(cancelledListIntent);
+            return true;
+        }
+
+        if (id == R.id.menu_confirmed_list) {
+            Intent confirmedListIntent = new Intent(EventDetailsActivity.this, OrganiserConfirmedListActivity.class);
+            confirmedListIntent.putExtra("eventId", eventId);
+            startActivity(confirmedListIntent);
+            return true;
+        }
+
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void fetchEventDetails(String eventName) {
