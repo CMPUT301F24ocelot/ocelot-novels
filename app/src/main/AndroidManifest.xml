@@ -78,9 +78,10 @@
         <activity android:name=".InvitedEntrantsActivity" />
         <activity android:name=".CancelledEntrantsActivity" />
         <activity android:name=".ConfirmedEntrantsActivity" />
-        <activity
-            android:name=".view.Organizer.EventDetailsActivity"
-            android:parentActivityName=".view.Organizer.OrganizerMainActivity" />
+
+
+        <activity android:name=".view.Organizer.EventDetailsActivity"  android:parentActivityName=".view.Organizer.OrganizerMainActivity"/>
+        <activity android:name=".QrCodeActivity" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
@@ -91,6 +92,17 @@
         <meta-data
             android:name="com.google.android.gms.maps.MAP_ID"
             android:value="9aad53a4ad71710a" />
+
+
+        <service
+            android:name=".MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+
     </application>
 
 </manifest>
