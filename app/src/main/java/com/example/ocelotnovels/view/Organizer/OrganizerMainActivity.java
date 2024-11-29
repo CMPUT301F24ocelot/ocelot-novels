@@ -116,12 +116,11 @@ public class OrganizerMainActivity extends AppCompatActivity {
             startActivity(facilityProfileActivity);
         }
 
-        if (id == R.id.menu_selected_list) {
+        if (id == R.id.menu_entrant_map) {
             // Navigate to Profile Activity
             Intent mapsActivity = new Intent(OrganizerMainActivity.this, MapsActivity.class);
             startActivity(mapsActivity);
         }
-
 
         return super.onOptionsItemSelected(item);
     }
