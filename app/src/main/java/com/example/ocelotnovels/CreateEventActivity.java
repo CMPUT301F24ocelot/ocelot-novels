@@ -27,6 +27,8 @@ import com.google.zxing.WriterException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -229,46 +231,81 @@ public class CreateEventActivity extends AppCompatActivity {
 
         return eventData;
     }
+
+
     private void saveEventData() {
-        if (!validateInputs()) return;
+        if (!validateInputs()) {
+            return;
+        }
 
-
-
-        String eventId = UUID.randomUUID().toString();
+        String eventId = UUID.randomUUID().toString(); // Generate a unique event ID
         Map<String, Object> eventData = createEventData(eventId); // Prepare event data
 
-        // Save the event to Firestore
-        db.collection("events").document(eventId)
-                .set(eventData)
-                .addOnSuccessListener(aVoid -> {
-                    String qrData = generateQrData(eventId);
-                    try {
-                        // Generate the QR code and navigate to QR code activity
-                        Bitmap qrCodeBitmap = QRCodeUtils.generateQrCode(qrData, 500, 500);
-                        navigateToQrCodeActivity(qrCodeBitmap, qrData);
-                    } catch (WriterException e) {
+        try {
+            // Generate the QR Code
+            Bitmap qrCodeBitmap = QRCodeUtils.generateQrCode(eventId, 500, 500);
+
+            // Compute a hash for the QR Code (optional but useful for verification)
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            qrCodeBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+            byte[] qrCodeBytes = baos.toByteArray();
+            String qrHash = computeHash(qrCodeBytes); // You need a helper function to compute the hash
+
+            // Add the QR Code hash to the event data
+            eventData.put("qrHash", qrHash);
+
+            // Save the event data to Firestore
+            db.collection("events").document(eventId)
+                    .set(eventData)
+                    .addOnSuccessListener(aVoid -> {
+                        // Upload the QR Code image to Firebase Storage
+                        uploadQrCodeToStorage(eventId, qrCodeBitmap);
+
+                        // Navigate to QR Code Activity
+                        navigateToQrCodeActivity(eventId, qrCodeBitmap, qrHash);
+                    })
+                    .addOnFailureListener(e -> {
                         e.printStackTrace();
-                        showToast("Event saved but failed to generate QR Code.");
-                    }
-                })
+                        showToast("Failed to save event to Firestore.");
+                    });
+        } catch (WriterException e) {
+            e.printStackTrace();
+            showToast("Failed to generate QR Code.");
+        }
+    }
+
+    private void uploadQrCodeToStorage(String eventId, Bitmap qrCodeBitmap) {
+        // Reference for storing the QR Code image
+        StorageReference qrCodeRef = storageRef.child("qrCodes/" + eventId + ".png");
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        qrCodeBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        byte[] data = baos.toByteArray();
+
+        qrCodeRef.putBytes(data)
+                .addOnSuccessListener(taskSnapshot -> showToast("QR Code uploaded successfully."))
                 .addOnFailureListener(e -> {
                     e.printStackTrace();
-                    showToast("Failed to save event to the database.");
+                    showToast("Failed to upload QR Code.");
                 });
     }
 
-    private String generateQrData(String eventId) {
-        return String.format(Locale.getDefault(),
-                "Event ID: %s\nName: %s\nDescription: %s\nDate: %s\nLocation: %s",
-                eventId,
-                eventTitleEditText.getText().toString().trim(),
-                eventDescriptionEditText.getText().toString().trim(),
-                selectedEventDate,
-                eventLocationEditText.getText().toString().trim()
-        );
+    private String computeHash(byte[] data) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hashBytes = digest.digest(data);
+            StringBuilder hashBuilder = new StringBuilder();
+            for (byte b : hashBytes) {
+                hashBuilder.append(String.format("%02x", b));
+            }
+            return hashBuilder.toString();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
-    private void navigateToQrCodeActivity(Bitmap qrCodeBitmap, String qrData) {
+    private void navigateToQrCodeActivity(String eventId, Bitmap qrCodeBitmap, String qrHash) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         qrCodeBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
         byte[] byteArray = baos.toByteArray();

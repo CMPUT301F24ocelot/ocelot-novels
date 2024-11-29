@@ -37,6 +37,7 @@ public class EventDetailsActivity extends AppCompatActivity {
     private StorageReference storageRef;
     private String eventId; // To store the ID of the event being displayed
     private String currentPosterUrl;
+    public OrganizerEventAdapter eventAdapter;
 
     private ImageView posterImageView;
 
@@ -236,6 +237,7 @@ public class EventDetailsActivity extends AppCompatActivity {
                         Toast.makeText(this, "Failed to delete event.", Toast.LENGTH_SHORT).show();
                         Log.e(TAG, "Error deleting event", e);
                     });
+            eventAdapter.notifyDataSetChanged();
         } else {
             Toast.makeText(this, "Event ID not found. Cannot delete.", Toast.LENGTH_SHORT).show();
         }
