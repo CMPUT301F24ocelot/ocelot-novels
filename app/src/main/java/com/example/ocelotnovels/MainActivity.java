@@ -1,6 +1,8 @@
 package com.example.ocelotnovels;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -9,9 +11,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 
 import com.example.ocelotnovels.utils.FirebaseUtils;
 import com.example.ocelotnovels.view.Entrant.EventDetailsFragment;
@@ -49,6 +54,18 @@ public class MainActivity extends AppCompatActivity {
     private String deviceId;
     private String getUserEmail;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private static final String POST_NOTIFICATIONS = "android.permission.POST_NOTIFICATIONS";
+
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    // FCM SDK (and your app) can post notifications
+                    Toast.makeText(this, "Notification Permission Granted", Toast.LENGTH_SHORT).show();
+                } else {
+                    // Inform the user that notifications are disabled
+                    Toast.makeText(this, "Notification Permission Denied", Toast.LENGTH_SHORT).show();
+                }
+            });
 
     /**
      * Called when the activity is created. Initializes views, Firebase instances, and
@@ -72,6 +89,27 @@ public class MainActivity extends AppCompatActivity {
 
         // Fetch user data and update the UI accordingly
         fetchUserData();
+        askNotificationPermission();
+    }
+
+    /**
+     * Requests the runtime notification permission for Android 13+.
+     */
+    private void askNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // API level 33
+            if (ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS) ==
+                    PackageManager.PERMISSION_GRANTED) {
+                // Permission already granted
+                Toast.makeText(this, "Notification Permission Already Granted", Toast.LENGTH_SHORT).show();
+            } else if (shouldShowRequestPermissionRationale(POST_NOTIFICATIONS)) {
+                // Show rationale and request permission
+                Toast.makeText(this, "Notification permission is required for better experience", Toast.LENGTH_SHORT).show();
+                requestPermissionLauncher.launch(POST_NOTIFICATIONS);
+            } else {
+                // Directly request the permission
+                requestPermissionLauncher.launch(POST_NOTIFICATIONS);
+            }
+        }
     }
 
     @Override
@@ -104,6 +142,7 @@ public class MainActivity extends AppCompatActivity {
         organizerBtn = findViewById(R.id.user_organizer);
         signUpButton = findViewById(R.id.user_sign_up_button);
         eventViewBtn = findViewById(R.id.user_event_list);
+
 
         GmsBarcodeScannerOptions options = initializeGoogleScanner();
         scanner = GmsBarcodeScanning.getClient(this, options);
