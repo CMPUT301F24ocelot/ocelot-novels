@@ -237,7 +237,7 @@ public class EventDetailsActivity extends AppCompatActivity {
                         Toast.makeText(this, "Failed to delete event.", Toast.LENGTH_SHORT).show();
                         Log.e(TAG, "Error deleting event", e);
                     });
-            eventAdapter.notifyDataSetChanged();
+//            eventAdapter.notifyDataSetChanged();
         } else {
             Toast.makeText(this, "Event ID not found. Cannot delete.", Toast.LENGTH_SHORT).show();
         }

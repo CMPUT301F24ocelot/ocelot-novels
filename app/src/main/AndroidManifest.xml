@@ -80,7 +80,9 @@
         <activity android:name=".ConfirmedEntrantsActivity" />
 
 
-        <activity android:name=".view.Organizer.EventDetailsActivity"  android:parentActivityName=".view.Organizer.OrganizerMainActivity"/>
+        <activity android:name=".view.Organizer.EventDetailsActivity"
+            android:parentActivityName=".view.Organizer.OrganizerMainActivity"
+            android:exported="true"/>
         <activity android:name=".QrCodeActivity" />
 
         <meta-data
