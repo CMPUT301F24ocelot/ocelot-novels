@@ -16,6 +16,7 @@
         android:backgroundTint="@color/slateGray">
 
         <ImageView
+            android:id="@+id/event_details_poster_image"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginVertical="30dp"
@@ -47,12 +48,12 @@
             android:text="Event Description: "
             android:textSize="14sp" />
 
-        <TextView
-            android:id="@+id/user_event_status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Event Status: "
-            android:textSize="14sp" />
+<!--        <TextView-->
+<!--            android:id="@+id/user_event_status"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="Event Status: "-->
+<!--            android:textSize="14sp" />-->
 
         <TextView
             android:id="@+id/user_event_deadline"
