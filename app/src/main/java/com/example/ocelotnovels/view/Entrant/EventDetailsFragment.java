@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,6 +19,7 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 
+import com.bumptech.glide.Glide;
 import com.example.ocelotnovels.MainActivity;
 import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.view.Entrant.WaitingListActivity;
@@ -47,6 +49,7 @@ public class EventDetailsFragment extends DialogFragment {
     private TextView eventDescription;
     private TextView eventStatus;
     private TextView registrationDeadline;
+    private ImageView eventImage;
 
     private TextView geolocationWarning;
 
@@ -72,9 +75,10 @@ public class EventDetailsFragment extends DialogFragment {
         // Initialize UI elements
         eventTitle = view.findViewById(R.id.user_event_title);
         eventDescription = view.findViewById(R.id.user_event_description);
-        eventStatus = view.findViewById(R.id.user_event_status);
+//        eventStatus = view.findViewById(R.id.user_event_status);
         registrationDeadline = view.findViewById(R.id.user_event_deadline);
         geolocationWarning = view.findViewById(R.id.warning_text);
+        eventImage = view.findViewById(R.id.event_details_poster_image);
         // Get event and user IDs from arguments
         if (getArguments() != null) {
             eventId = getArguments().getString(ARG_EVENT_ID);
@@ -108,28 +112,34 @@ public class EventDetailsFragment extends DialogFragment {
                 .get()
                 .addOnSuccessListener(document -> {
                     if (document.exists()) {
-//                        eventTitle.setText(document.getString("title"));
-//                        eventDescription.setText(document.getString("description"));
-//                        //eventCapacity.setText("Capacity: " + document.getLong("eventCapacity"));
-//
-//                        Timestamp deadline = document.getTimestamp("registrationDeadline");
-//                        if (deadline != null) {
-//                            registrationDeadline.setText("Deadline: " + deadline.toDate().toString());
-//                        }
+                        // Get event details
+                        String eventDetailsImage = document.getString("posterUrl");
                         String title = document.getString("name");
                         String description = document.getString("description");
-                        String status = document.getString("status");
+//                        String status = document.getString("status");
                         Boolean geolocationEnabled = document.getBoolean("geolocationEnabled");
-                        // Check if registrationClose is null
-                        String registrationCloseTimestamp = document.getString("regClosed");
-                        String deadline = (registrationCloseTimestamp != null) ? registrationCloseTimestamp.toString() : "No deadline set";
 
+                        // Get registration close timestamp
+                        String registrationCloseTimestamp = document.getString("regClosed");
+                        String deadline = (registrationCloseTimestamp != null) ? registrationCloseTimestamp : "No deadline set";
+
+                        // Set the TextViews with event details
                         eventTitle.setText("Event Title: " + title);
                         eventDescription.setText("Event Description: " + description);
-                        eventStatus.setText("Event Status: " + status);
+//                        eventStatus.setText("Event Status: " + status);
                         registrationDeadline.setText("Event Deadline: " + deadline);
-                        //Log.i("deviceId",deviceId);
-                        if (geolocationEnabled){
+
+                        // Load event poster image using Glide
+                        if (eventDetailsImage != null && !eventDetailsImage.isEmpty()) {
+                            Glide.with(getContext())
+                                    .load(eventDetailsImage) // Load the image URL from Firestore
+                                    .placeholder(R.drawable.ic_image_placeholder) // Placeholder image while loading
+                                    .error(R.drawable.ic_image_placeholder) // Error image if loading fails
+                                    .into(eventImage); // Set the loaded image into the ImageView
+                        }
+
+                        // Handle geolocation setting if applicable
+                        if (geolocationEnabled != null && geolocationEnabled) {
                             geolocationWarning.setVisibility(View.VISIBLE);
                         }
                     }
@@ -139,6 +149,7 @@ public class EventDetailsFragment extends DialogFragment {
                     Log.e("JoinEventFragment", "Error loading event details", e);
                 });
     }
+
 
     private void verifyUserAndJoinEvent() {
         if (!isAdded()) return;
@@ -230,7 +241,7 @@ public class EventDetailsFragment extends DialogFragment {
 
 
 
-    private void checkEventCapacityAndJoin() {
+    /*private void checkEventCapacityAndJoin() {
         eventDocument.get()
                 .addOnSuccessListener(eventDoc -> {
                     if (!eventDoc.exists()) {
@@ -239,27 +250,29 @@ public class EventDetailsFragment extends DialogFragment {
                     }
 
                     Long capacityLong = (eventDoc.get("capacity") == null ? -1 : (long) eventDoc.get("capacity"));
-//                    if (capacityLong == null) {
-//                        Toast.makeText(getContext(), "Invalid event capacity", Toast.LENGTH_SHORT).show();
-//                        return;
-//                    }
 
                     List<String> waitingList = (List<String>) eventDoc.get("waitingList");
                     List<String> cancelledList = (List<String>) eventDoc.get("cancelledList");
-                    waitingList = waitingList != null ? waitingList : new ArrayList<>();
 
+                    // Initialize lists if they are null
+                    waitingList = waitingList != null ? waitingList : new ArrayList<>();
+                    cancelledList = cancelledList != null ? cancelledList : new ArrayList<>();
+
+                    // Check if the user is already registered
                     if (waitingList.contains(userId)) {
                         Toast.makeText(getContext(), "Already registered for this event", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
-
+                    // Check event capacity and join
                     if (capacityLong >= 0 && waitingList.size() < capacityLong || capacityLong == -1) {
                         addUserToEvent();
-                        if (cancelledList.contains(userId)){
-                            cancelledList.remove(userId);
-                            eventDocument.update("cancelledList",cancelledList);
 
+                        // Remove user from cancelled list if present
+                        if (cancelledList.contains(userId)) {
+                            cancelledList.remove(userId);
+                            eventDocument.update("cancelledList", cancelledList)
+                                    .addOnFailureListener(e -> Log.e("JoinEventFragment", "Failed to update cancelled list", e));
                         }
                     } else {
                         Toast.makeText(getContext(), "Event is at full capacity", Toast.LENGTH_SHORT).show();
@@ -269,7 +282,46 @@ public class EventDetailsFragment extends DialogFragment {
                     Toast.makeText(getContext(), "Error checking capacity: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     Log.e("JoinEventFragment", "Error checking capacity", e);
                 });
+    }*/
+
+    private void checkEventCapacityAndJoin() {
+        eventDocument.get()
+                .addOnSuccessListener(eventDoc -> {
+                    if (!eventDoc.exists()) {
+                        Toast.makeText(getContext(), "Event not found", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    List<String> waitingList = (List<String>) eventDoc.get("waitingList");
+                    List<String> cancelledList = (List<String>) eventDoc.get("cancelledList");
+
+                    // Initialize lists if they are null
+                    waitingList = waitingList != null ? waitingList : new ArrayList<>();
+                    cancelledList = cancelledList != null ? cancelledList : new ArrayList<>();
+
+                    // Check if the user is already in the waiting list
+                    if (waitingList.contains(userId)) {
+                        Toast.makeText(getContext(), "Already registered for this event", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    // Add the user to the waiting list
+                    addUserToEvent();
+
+                    // Remove user from cancelled list if present
+                    if (cancelledList.contains(userId)) {
+                        cancelledList.remove(userId);
+                        eventDocument.update("cancelledList", cancelledList)
+                                .addOnFailureListener(e -> Log.e("JoinEventFragment", "Failed to update cancelled list", e));
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Error checking event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Log.e("JoinEventFragment", "Error checking event", e);
+                });
     }
+
+
 
     private void addUserToEvent() {
         // Add event to user's joined events

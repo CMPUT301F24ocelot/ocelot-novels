@@ -52,8 +52,7 @@ public class FacilityProfileActivity extends AppCompatActivity {
         storageRef = FirebaseStorage.getInstance().getReference();
 
         // Assuming ownerId is derived from the current user's ID (replace this with actual logic)
-        ownerId = "sampleOwnerId"; // Replace with actual logic
-        facilityId = FirebaseUtils.getInstance(this).getDeviceId(this); // Unique ID for facility
+        facilityId = FirebaseUtils.getInstance(this).getFacilityId(this); // Unique ID for facility
 
         // Initialize views
         facilityName = findViewById(R.id.organizer_facility_name);
@@ -215,6 +214,7 @@ public class FacilityProfileActivity extends AppCompatActivity {
         String phone = facilityPhone.getText().toString().trim();
         String location = facilityLocation.getText().toString().trim();
         String description = facilityDescription.getText().toString().trim();
+        String currentDeviceId = FirebaseUtils.getInstance(this).getDeviceId(this);
 
         if (TextUtils.isEmpty(name) || name.length() > 100) {
             showToast("Facility name must be between 1 and 100 characters.");
@@ -243,7 +243,7 @@ public class FacilityProfileActivity extends AppCompatActivity {
 
         Map<String, Object> facilityData = new HashMap<>();
         facilityData.put("facilityId", facilityId);
-        facilityData.put("ownerId", ownerId);
+        facilityData.put("ownerId", currentDeviceId);
         facilityData.put("facilityName", name);
         facilityData.put("facilityEmail", email);
         facilityData.put("facilityPhone", phone);

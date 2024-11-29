@@ -1,8 +1,13 @@
 package com.example.ocelotnovels;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+
+import android.os.Build;
+
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -11,9 +16,15 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
+
 import androidx.core.app.ActivityCompat;
+
 import androidx.core.content.ContextCompat;
 
 import com.example.ocelotnovels.utils.FirebaseUtils;
@@ -25,7 +36,11 @@ import com.example.ocelotnovels.view.Organizer.OrganizerMainActivity;
 import com.google.android.gms.common.moduleinstall.ModuleInstall;
 import com.google.android.gms.common.moduleinstall.ModuleInstallClient;
 import com.google.android.gms.common.moduleinstall.ModuleInstallRequest;
+import com.google.android.gms.common.moduleinstall.ModuleInstallResponse;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanner;
@@ -50,6 +65,23 @@ public class MainActivity extends AppCompatActivity {
     private String deviceId;
     private String getUserEmail;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+    private static final String POST_NOTIFICATIONS = "android.permission.POST_NOTIFICATIONS";
+
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    // Notification permission granted, now request location permission
+                    Toast.makeText(this, "Notification Permission Granted", Toast.LENGTH_SHORT).show();
+                    requestLocationPermission();
+                } else {
+                    // Notification permission denied, still proceed to location permission
+                    Toast.makeText(this, "Notification Permission Denied", Toast.LENGTH_SHORT).show();
+                    requestLocationPermission();
+                }
+            });
+
+
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private boolean isUserSignedUp;
 
@@ -76,8 +108,43 @@ public class MainActivity extends AppCompatActivity {
         // Fetch user data and update the UI accordingly
         fetchUserData();
 
-        requestLocationPermission();
+        askNotificationPermission();
     }
+
+    /**
+     * Requests the runtime notification permission for Android 13+.
+     */
+    private void askNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // For Android 13+
+            if (ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                // Notification permission already granted, now request location permission
+                requestLocationPermission();
+            } else if (shouldShowRequestPermissionRationale(POST_NOTIFICATIONS)) {
+                // Show rationale for notification permission
+                new androidx.appcompat.app.AlertDialog.Builder(this)
+                        .setTitle("Notification Permission Required")
+                        .setMessage("This app requires notification permissions for better functionality.")
+                        .setPositiveButton("OK", (dialog, which) -> {
+                            requestPermissionLauncher.launch(POST_NOTIFICATIONS);
+                        })
+                        .setNegativeButton("Cancel", (dialog, which) -> {
+                            Toast.makeText(this, "Notification permission denied.", Toast.LENGTH_SHORT).show();
+                            dialog.dismiss();
+                            // Even if denied, proceed to request location permission
+                            requestLocationPermission();
+                        })
+                        .create()
+                        .show();
+            } else {
+                // Directly request notification permission
+                requestPermissionLauncher.launch(POST_NOTIFICATIONS);
+            }
+        } else {
+            // For Android versions below 13, directly request location permission
+            requestLocationPermission();
+        }
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -117,6 +184,7 @@ public class MainActivity extends AppCompatActivity {
         eventViewBtn = findViewById(R.id.user_event_list);
         adminBtn = findViewById(R.id.user_admin);
 
+
         GmsBarcodeScannerOptions options = initializeGoogleScanner();
         scanner = GmsBarcodeScanning.getClient(this, options);
         firebaseUtils = new FirebaseUtils(this);
@@ -153,6 +221,33 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+    private void checkOrganizerEligibility() {
+        db.collection("facilities")
+                .whereEqualTo("ownerId", deviceId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        // Facility exists, navigate to OrganizerMainActivity
+                        Intent intent = new Intent(this, OrganizerMainActivity.class);
+                        startActivity(intent);
+                    } else {
+                        // No facility, prompt to create one
+                        new AlertDialog.Builder(this)
+                                .setTitle("Create Facility Profile")
+                                .setMessage("You need to create a facility profile to become an organizer.")
+                                .setPositiveButton("Go to Facility Profile", (dialog, which) -> {
+                                    Intent intent = new Intent(this, FacilityProfileActivity.class);
+                                    startActivity(intent);
+                                })
+                                .setNegativeButton("Cancel", null)
+                                .show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Error checking facility: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
     /**
      * Sets up button click listeners for various actions.
      */
@@ -166,8 +261,9 @@ public class MainActivity extends AppCompatActivity {
         });
 
         organizerBtn.setOnClickListener(v -> {
-            Intent organizerIntent = new Intent(MainActivity.this, OrganizerMainActivity.class);
-            startActivity(organizerIntent);
+            checkOrganizerEligibility();
+//            Intent organizerIntent = new Intent(MainActivity.this, OrganizerMainActivity.class);
+//            startActivity(organizerIntent);
         });
 
         adminBtn.setOnClickListener(v -> {

@@ -24,6 +24,7 @@ import com.example.ocelotnovels.WaitingListActivity;
 import com.example.ocelotnovels.model.Event;
 import com.example.ocelotnovels.CreateEventActivity;
 import com.example.ocelotnovels.FacilityProfileActivity;
+import com.example.ocelotnovels.utils.FirebaseUtils;
 import com.example.ocelotnovels.view.Organizer.OrganizerEventAdapter;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -39,6 +40,7 @@ public class OrganizerMainActivity extends AppCompatActivity {
     public OrganizerEventAdapter eventAdapter;
     private List<Map<String, String>> eventDetails;
     public FirebaseFirestore db;
+    public String facilityId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,10 +60,13 @@ public class OrganizerMainActivity extends AppCompatActivity {
         // Load events from Firestore
         loadEventsFromFirestore();
 
+        facilityId = FirebaseUtils.getInstance(this).getFacilityId(this);
+
         // Add Event Button Click
         Button addEventButton = findViewById(R.id.add_events_button);
         addEventButton.setOnClickListener(v -> {
             Intent intent = new Intent(OrganizerMainActivity.this, CreateEventActivity.class);
+            intent.putExtra("facilityId", facilityId);
             startActivity(intent);
         });
 
@@ -116,18 +121,19 @@ public class OrganizerMainActivity extends AppCompatActivity {
             startActivity(facilityProfileActivity);
         }
 
-        if (id == R.id.menu_selected_list) {
+        if (id == R.id.menu_entrant_map) {
             // Navigate to Profile Activity
             Intent mapsActivity = new Intent(OrganizerMainActivity.this, MapsActivity.class);
             startActivity(mapsActivity);
         }
 
-
         return super.onOptionsItemSelected(item);
     }
 
     public void loadEventsFromFirestore() {
+        // Use the facilityId to filter events specific to this facility
         db.collection("events")
+                .whereEqualTo("organizerDeviceId", facilityId)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     eventDetails.clear();
@@ -156,42 +162,10 @@ public class OrganizerMainActivity extends AppCompatActivity {
     }
 
 
-    private void showEntrantListDropdown(View view) {
-        PopupMenu popupMenu = new PopupMenu(this, view);
-
-        // Dynamically add menu items
-        popupMenu.getMenu().add("Waiting List");
-        popupMenu.getMenu().add("Selected Entrants");
-        popupMenu.getMenu().add("Invited Entrants");
-        popupMenu.getMenu().add("Cancelled Entrants");
-        popupMenu.getMenu().add("Confirmed Entrants");
-
-        // Handle click events for each item in the dropdown menu
-        popupMenu.setOnMenuItemClickListener(item -> {
-            String title = item.getTitle().toString();
-            switch (title) {
-                case "Waiting List":
-                    startActivity(new Intent(OrganizerMainActivity.this, WaitingListActivity.class));
-                    break;
-                case "Selected Entrants":
-                    startActivity(new Intent(OrganizerMainActivity.this, SelectedEntrantsActivity.class));
-                    break;
-                case "Invited Entrants":
-                    startActivity(new Intent(OrganizerMainActivity.this, InvitedEntrantsActivity.class));
-                    break;
-                case "Cancelled Entrants":
-                    startActivity(new Intent(OrganizerMainActivity.this, CancelledEntrantsActivity.class));
-                    break;
-                case "Confirmed Entrants":
-                    startActivity(new Intent(OrganizerMainActivity.this, ConfirmedEntrantsActivity.class));
-                    break;
-                default:
-                    return false;
-            }
-            return true;
-        });
-
-        // Show the dropdown menu
-        popupMenu.show();
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadEventsFromFirestore(); // Implement this method to fetch events from Firestore
     }
+
 }

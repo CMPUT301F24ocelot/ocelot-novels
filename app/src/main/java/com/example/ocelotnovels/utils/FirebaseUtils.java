@@ -9,10 +9,13 @@ import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.net.ParseException;
 
+import com.example.ocelotnovels.model.Entrant;
 import com.example.ocelotnovels.model.Event;
 import com.example.ocelotnovels.model.User;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.example.ocelotnovels.model.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -20,6 +23,7 @@ import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -28,10 +32,13 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.io.ByteArrayOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -165,7 +172,6 @@ public class FirebaseUtils {
 
         return facilityId;
     }
-
 
     /**
      * Gets the user's document reference in the Firestore database.
@@ -330,6 +336,212 @@ public class FirebaseUtils {
                 //.addOnCompleteListener(task -> Toast.makeText(this, "Profile picture updated!", Toast.LENGTH_SHORT).show())
         ;
     }
+
+    /**
+     * Performs polling for an event after registration closes.
+     * Users are selected from the waiting list based on event capacity.
+     *
+     * @param eventId   The ID of the event for which polling is performed.
+     * @param onSuccess Callback for success.
+     * @param onFailure Callback for failure.
+     */
+    public void performPolling(String eventId, Runnable onSuccess, OnFailureListener onFailure) {
+        DocumentReference eventRef = db.collection("events").document(eventId);
+
+        eventRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                List<String> waitingList = (List<String>) documentSnapshot.get("waitingList");
+                List<String> selectedList = (List<String>) documentSnapshot.get("selectedList");
+                Long capacity = documentSnapshot.getLong("capacity");
+                // String regClosed = documentSnapshot.getString("regClosed");
+
+                // Ensure waiting list and selected list are not null
+                if (waitingList == null) waitingList = new ArrayList<>();
+                if (selectedList == null) selectedList = new ArrayList<>();
+
+                // Check if registration is closed
+                /* if (!isRegistrationClosed(regClosed)) {
+                    Log.w(TAG, "Registration is still open for event: " + eventId);
+                    if (onFailure != null) {
+                        onFailure.onFailure(new Exception("Registration is still open."));
+                    }
+                    return;
+                } */
+
+                // Determine spots available
+                int spotsAvailable = capacity == null || capacity < 0 ? waitingList.size() : Math.toIntExact(capacity - selectedList.size());
+
+                // Select users from the waiting list
+                List<String> entrantsToSelect = selectEntrants(waitingList, selectedList, spotsAvailable);
+
+                // Update Firestore with selected entrants
+                updateSelectedEntrants(eventId, entrantsToSelect, onSuccess, onFailure);
+            } else {
+                Log.e(TAG, "Event not found: " + eventId);
+                if (onFailure != null) onFailure.onFailure(new Exception("Event not found."));
+            }
+        }).addOnFailureListener(onFailure);
+    }
+
+    /**
+     * Checks if registration is closed based on the provided timestamp.
+     *
+     * @param regClosed The registration close date as a string.
+     * @return True if registration is closed, false otherwise.
+     */
+    private boolean isRegistrationClosed(String regClosed) {
+        if (regClosed == null) return false; // If regClosed is not set, assume it's open
+        try {
+            Date closeDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(regClosed);
+            return closeDate != null && new Date().after(closeDate);
+        } catch (ParseException | java.text.ParseException e) {
+            Log.e(TAG, "Error parsing registration close date", e);
+            return false; // Default to open in case of parsing error
+        }
+    }
+
+    /**
+     * Selects entrants from the waiting list based on available spots.
+     *
+     * @param waitingList     The list of users in the waiting list.
+     * @param selectedList    The list of already selected users.
+     * @param spotsAvailable  The number of spots available for selection.
+     * @return A list of selected entrants.
+     */
+    private List<String> selectEntrants(List<String> waitingList, List<String> selectedList, int spotsAvailable) {
+        List<String> remainingEntrants = new ArrayList<>(waitingList);
+        remainingEntrants.removeAll(selectedList); // Exclude already selected entrants
+
+        Collections.shuffle(remainingEntrants); // Shuffle for randomness
+        return remainingEntrants.subList(0, Math.min(spotsAvailable, remainingEntrants.size()));
+    }
+
+    /**
+     * Updates Firestore with the selected entrants.
+     *
+     * @param eventId         The ID of the event.
+     * @param entrantsToSelect The list of selected entrants.
+     * @param onSuccess       Callback for success.
+     * @param onFailure       Callback for failure.
+     */
+    private void updateSelectedEntrants(String eventId, List<String> entrantsToSelect, Runnable onSuccess, OnFailureListener onFailure) {
+        db.collection("events").document(eventId)
+                .update("selectedList", FieldValue.arrayUnion(entrantsToSelect.toArray()))
+                .addOnSuccessListener(aVoid -> {
+                    Log.i(TAG, "Selected entrants updated for event: " + eventId);
+                    if (onSuccess != null) onSuccess.run();
+                })
+                .addOnFailureListener(onFailure);
+    }
+
+
+
+    public void fetchOrganiserListEntrants(String eventId, String listType, List<User> userList, Runnable onComplete) {
+        if (eventId == null || listType == null) {
+            Log.e(TAG, "Event ID or list type is null");
+            if (onComplete != null) {
+                onComplete.run();
+            }
+            return;
+        }
+
+        db.collection("events").document(eventId).get()
+                .addOnSuccessListener(eventDocumentSnapshot -> {
+                    if (eventDocumentSnapshot.exists()) {
+                        Object listObj = eventDocumentSnapshot.get(listType);
+
+                        Log.d(TAG, listType + " Object: " + listObj);
+                        Log.d(TAG, listType + " Object Type: " + (listObj != null ? listObj.getClass().getName() : "null"));
+
+                        ArrayList<String> userIds;
+                        if (listObj instanceof ArrayList) {
+                            userIds = (ArrayList<String>) listObj;
+                        } else if (listObj instanceof List) {
+                            userIds = new ArrayList<>((List<String>) listObj);
+                        } else {
+                            Log.e(TAG, "Unexpected " + listType + " type");
+                            userIds = new ArrayList<>();
+                        }
+
+                        if (userIds != null && !userIds.isEmpty()) {
+                            Log.d(TAG, "Number of users in " + listType + ": " + userIds.size());
+
+                            List<Task<DocumentSnapshot>> tasks = new ArrayList<>();
+                            for (String userId : userIds) {
+                                Log.d(TAG, "Fetching user ID: " + userId);
+                                tasks.add(db.collection("users").document(userId).get());
+                            }
+
+                            Tasks.whenAllComplete(tasks)
+                                    .addOnSuccessListener(taskSnapshots -> {
+                                        userList.clear();
+                                        for (Task<DocumentSnapshot> task : tasks) {
+                                            try {
+                                                if (task.isSuccessful()) {
+                                                    DocumentSnapshot doc = task.getResult();
+                                                    if (doc != null && doc.exists()) {
+                                                        String fullName = doc.getString("name");
+                                                        Log.d(TAG, "Processing user: " + fullName);
+
+                                                        String firstName = "";
+                                                        String lastName = "";
+                                                        if (fullName != null && !fullName.isEmpty()) {
+                                                            String[] nameParts = fullName.split(" ", 2);
+                                                            firstName = nameParts.length > 0 ? nameParts[0].trim() : "";
+                                                            lastName = nameParts.length > 1 ? nameParts[1].trim() : nameParts[0].trim();
+                                                        }
+
+                                                        Entrant user = new Entrant(
+                                                                firstName,
+                                                                lastName,
+                                                                doc.getString("email")
+                                                        );
+                                                        userList.add(user);
+                                                    } else {
+                                                        Log.w(TAG, "User document does not exist or is null");
+                                                    }
+                                                } else {
+                                                    Log.e(TAG, "Task to fetch user failed", task.getException());
+                                                }
+                                            } catch (Exception e) {
+                                                Log.e(TAG, "Error processing individual user", e);
+                                            }
+                                        }
+
+                                        Log.d(TAG, "Total users processed: " + userList.size());
+
+                                        if (onComplete != null) {
+                                            onComplete.run();
+                                        }
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Log.e(TAG, "Error fetching " + listType + " users", e);
+                                        if (onComplete != null) {
+                                            onComplete.run();
+                                        }
+                                    });
+                        } else {
+                            Log.d(TAG, "No users in " + listType);
+                            userList.clear();
+                            if (onComplete != null) {
+                                onComplete.run();
+                            }
+                        }
+                    } else {
+                        Log.e(TAG, "Event document does not exist");
+                        if (onComplete != null) {
+                            onComplete.run();
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error fetching event document", e);
+                    if (onComplete != null) {
+                        onComplete.run();
+                    }
+                });
+    }
+
 
 
 
