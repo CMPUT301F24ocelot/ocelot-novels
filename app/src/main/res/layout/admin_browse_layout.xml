@@ -1,8 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar_admin"
+        android:layout_width="0dp"
+        android:layout_height="?attr/actionBarSize"
+        android:background="#F4E6FB"
+        android:theme="?attr/actionBarTheme"
+        app:title="Admin"
+        app:titleTextAppearance="@style/TextAppearance.AppCompat.Medium" />
 
     <TextView
         android:id="@+id/welcome_text"
@@ -13,6 +23,18 @@
         android:textStyle="bold"
         android:textColor="@android:color/black"
         android:layout_marginTop="24dp" />
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:hint="Select"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+        <AutoCompleteTextView
+            android:id="@+id/drop_down"
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
 
     <TextView
         android:id="@+id/current_list"
