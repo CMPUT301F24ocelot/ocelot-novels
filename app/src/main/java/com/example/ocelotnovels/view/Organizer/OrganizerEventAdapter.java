@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.content.Intent;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -13,14 +14,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.ocelotnovels.R;
 
 import java.util.List;
+import java.util.Map;
 
 public class OrganizerEventAdapter extends RecyclerView.Adapter<OrganizerEventAdapter.EventViewHolder> {
 
-    public List<String> eventNames;
-    public Context context;
+    private List<Map<String, String>> eventDetails; // Updated list to hold event details
+    private Context context;
 
-    public OrganizerEventAdapter(List<String> eventNames, Context context) {
-        this.eventNames = eventNames;
+    public OrganizerEventAdapter(List<Map<String, String>> eventDetails, Context context) {
+        this.eventDetails = eventDetails;
         this.context = context;
     }
 
@@ -33,29 +35,34 @@ public class OrganizerEventAdapter extends RecyclerView.Adapter<OrganizerEventAd
 
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
-        String eventName = eventNames.get(position);
-        holder.eventNameTextView.setText(eventName);
+        Map<String, String> event = eventDetails.get(position);
+        holder.eventNameTextView.setText(event.get("name"));
+        holder.eventDateTextView.setText("Date: " + event.get("date"));
+        holder.eventLocationTextView.setText("Location: " + event.get("location"));
 
         // Set a click listener on the item
         holder.itemView.setOnClickListener(v -> {
-            // Open EventDetailsActivity when the item is clicked
             Intent intent = new Intent(context, EventDetailsActivity.class);
-            intent.putExtra("eventName", eventName); // Pass the event name to the next activity
+            intent.putExtra("eventName", event.get("name"));
             context.startActivity(intent);
         });
     }
 
     @Override
     public int getItemCount() {
-        return eventNames.size();
+        return eventDetails.size();
     }
 
     public static class EventViewHolder extends RecyclerView.ViewHolder {
         TextView eventNameTextView;
+        TextView eventDateTextView;
+        TextView eventLocationTextView;
 
         public EventViewHolder(View itemView) {
             super(itemView);
             eventNameTextView = itemView.findViewById(R.id.eventNameTextView);
+            eventDateTextView = itemView.findViewById(R.id.eventDateTextView);
+            eventLocationTextView = itemView.findViewById(R.id.eventLocationTextView);
         }
     }
 }

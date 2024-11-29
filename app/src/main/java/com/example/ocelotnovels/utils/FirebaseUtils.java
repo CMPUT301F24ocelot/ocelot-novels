@@ -36,7 +36,7 @@ public class FirebaseUtils {
     private static FirebaseUtils instance;
     private final FirebaseFirestore db;
     private FirebaseStorage storage;
-    private StorageReference storageRef,imagesRef,defaultPics,profilePic;
+    private StorageReference storageRef,imagesRef,defaultPics,profileRef,profilePic;
     private final String deviceId;
 
     /**
@@ -51,8 +51,8 @@ public class FirebaseUtils {
         this.storageRef = storage.getReference();
         this.imagesRef=storageRef.child("images");
         this.defaultPics=imagesRef.child("default");
-        this.profilePic = imagesRef.child((this.deviceId+".jpg"));
-
+        this.profileRef = imagesRef.child("profilePic");
+        this.profilePic = profileRef.child((this.deviceId+".jpg"));
     }
 
     /**
@@ -136,6 +136,27 @@ public class FirebaseUtils {
 
     public void setProfilePic(StorageReference profilePic) {
         this.profilePic = profilePic;
+    }
+
+    /**
+     * Retrieves or generates a unique facility ID.
+     *
+     * @param context The application context.
+     * @return The unique facility ID.
+     */
+    public String getFacilityId(Context context) {
+        SharedPreferences sharedPreferences = context.getApplicationContext()
+                .getSharedPreferences("facility_settings", Context.MODE_PRIVATE);
+        String facilityId = sharedPreferences.getString("FacilityId", null);
+
+        if (facilityId == null) {
+            facilityId = UUID.randomUUID().toString();
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("FacilityId", facilityId);
+            editor.apply();
+        }
+
+        return facilityId;
     }
 
     /**
