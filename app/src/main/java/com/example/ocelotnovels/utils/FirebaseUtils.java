@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import com.example.ocelotnovels.model.Entrant;
 import com.example.ocelotnovels.model.Event;
 import com.example.ocelotnovels.model.User;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -385,7 +386,7 @@ public class FirebaseUtils {
                                                             lastName = nameParts.length > 1 ? nameParts[1] : nameParts[0]; // TO CHANGE FIX LAST FIRST NAME ISSUE
                                                         }
 
-                                                        User user = new User(
+                                                        Entrant user = new Entrant(
                                                                 firstName,
                                                                 lastName,
                                                                 doc.getString("email")
