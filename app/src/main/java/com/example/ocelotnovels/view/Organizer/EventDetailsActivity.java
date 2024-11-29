@@ -90,33 +90,26 @@ public class EventDetailsActivity extends AppCompatActivity {
             return true;
         }
 
-//        if (id == R.id.menu_selected_list) {
-//            Intent selectedListIntent = new Intent(EventDetailsActivity.this, OrganizerWaitingListActivity.class);
-//            selectedListIntent.putExtra("eventId", eventId);
-//            startActivity(selectedListIntent);
-//            return true;
-//        }
-//
-//        if (id == R.id.menu_invited_list) {
-//            Intent invitedListIntent = new Intent(EventDetailsActivity.this, OrganizerWaitingListActivity.class);
-//            invitedListIntent.putExtra("eventId", eventId);
-//            startActivity(invitedListIntent);
-//            return true;
-//        }
-//
-//        if (id == R.id.menu_cancelled_list) {
-//            Intent cancelledListIntent = new Intent(EventDetailsActivity.this, OrganizerWaitingListActivity.class);
-//            cancelledListIntent.putExtra("eventId", eventId);
-//            startActivity(cancelledListIntent);
-//            return true;
-//        }
-//
-//        if (id == R.id.menu_confirmed_list) {
-//            Intent confirmedListIntent = new Intent(EventDetailsActivity.this, OrganizerWaitingListActivity.class);
-//            confirmedListIntent.putExtra("eventId", eventId);
-//            startActivity(confirmedListIntent);
-//            return true;
-//        }
+        if (id == R.id.menu_selected_list) {
+            Intent selectedListIntent = new Intent(EventDetailsActivity.this, OrganiserSelectedListActivity.class);
+            selectedListIntent.putExtra("eventId", eventId);
+            startActivity(selectedListIntent);
+            return true;
+        }
+
+        if (id == R.id.menu_cancelled_list) {
+            Intent cancelledListIntent = new Intent(EventDetailsActivity.this, OrganiserCancelledListActivity.class);
+            cancelledListIntent.putExtra("eventId", eventId);
+            startActivity(cancelledListIntent);
+            return true;
+        }
+
+        if (id == R.id.menu_confirmed_list) {
+            Intent confirmedListIntent = new Intent(EventDetailsActivity.this, OrganiserConfirmedListActivity.class);
+            confirmedListIntent.putExtra("eventId", eventId);
+            startActivity(confirmedListIntent);
+            return true;
+        }
 
 
         return super.onOptionsItemSelected(item);

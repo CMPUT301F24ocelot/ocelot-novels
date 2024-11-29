@@ -6,48 +6,42 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ocelotnovels.R;
-import com.example.ocelotnovels.model.Organizer;
 import com.example.ocelotnovels.model.User;
 import com.example.ocelotnovels.utils.FirebaseUtils;
-import com.example.ocelotnovels.view.Entrant.WaitingListAdapter;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 
-public class OrganizerWaitingListActivity extends AppCompatActivity {
+public class OrganiserSelectedListActivity extends AppCompatActivity {
 
-    private static final String TAG = "OrganizerWaitingListActivity";
-    private RecyclerView waitingListRecyclerView;
-    private OrganizerWaitingListAdapter waitingListAdapter;
-    private List<User> waitingListUsers;
+    private static final String TAG = "OrganiserSelectedListActivity";
+    private RecyclerView selectedListRecyclerView;
+    private OrganizerWaitingListAdapter selectedListAdapter;
+    private List<User> selectedListUsers;
     private FirebaseFirestore db;
     private TextView emptyStateText;
     private String eventId;
     private FirebaseUtils firebaseUtils;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_organizer_waiting_list);
+        setContentView(R.layout.activity_organiser_selected_list);
 
         initializeViews();
         initializeFirebase();
 
         eventId = getIntent().getStringExtra("eventId").toString();
-//        eventId = "7bd81111-6033-4219-acb5-7ee28e0aeccd";
         Log.d("EVENTIDW", eventId);
         if (eventId == null) {
             Toast.makeText(this, "Event ID not provided", Toast.LENGTH_SHORT).show();
@@ -56,15 +50,16 @@ public class OrganizerWaitingListActivity extends AppCompatActivity {
         }
 
         setupRecyclerView();
-        loadOrganiserWaitingList();
+        loadOrganiserSelectedList();
     }
 
+
     private void initializeViews() {
-        waitingListRecyclerView = findViewById(R.id.waiting_list_recycler_view);
-        emptyStateText = findViewById(R.id.empty_state_text);
+        selectedListRecyclerView = findViewById(R.id.selected_list_recycler_view);
+        emptyStateText = findViewById(R.id.selected_empty_state_text);
 
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Event Waiting List");
+            getSupportActionBar().setTitle("Event Selected List");
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
     }
@@ -74,32 +69,32 @@ public class OrganizerWaitingListActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView() {
-        waitingListUsers = new ArrayList<>();
-        waitingListAdapter = new OrganizerWaitingListAdapter(this, waitingListUsers);
+        selectedListUsers = new ArrayList<>();
+        selectedListAdapter = new OrganizerWaitingListAdapter(this, selectedListUsers);
 
-        waitingListRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        waitingListRecyclerView.setAdapter(waitingListAdapter);
+        selectedListRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        selectedListRecyclerView.setAdapter(selectedListAdapter);
     }
 
 
-    private void loadOrganiserWaitingList() {
+    private void loadOrganiserSelectedList() {
         firebaseUtils = new FirebaseUtils(this);
-        String listType = "waitingList";
-        firebaseUtils.fetchOrganiserListEntrants(eventId, listType, waitingListUsers, () -> {
-            waitingListAdapter.notifyDataSetChanged();
+        String listType = "selectedList";
+        firebaseUtils.fetchOrganiserListEntrants(eventId, listType, selectedListUsers, () -> {
+            selectedListAdapter.notifyDataSetChanged();
             updateEmptyState();
         });
     }
 
     private void updateEmptyState() {
         runOnUiThread(() -> {
-            Log.d(TAG, "Updating empty state. Users count: " + waitingListUsers.size());
-            if (waitingListUsers.isEmpty()) {
+            Log.d(TAG, "Updating empty state. Users count: " + selectedListUsers.size());
+            if (selectedListUsers.isEmpty()) {
                 emptyStateText.setVisibility(View.VISIBLE);
-                waitingListRecyclerView.setVisibility(View.GONE);
+                selectedListRecyclerView.setVisibility(View.GONE);
             } else {
                 emptyStateText.setVisibility(View.GONE);
-                waitingListRecyclerView.setVisibility(View.VISIBLE);
+                selectedListRecyclerView.setVisibility(View.VISIBLE);
             }
         });
     }

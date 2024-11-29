@@ -11,43 +11,33 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ocelotnovels.R;
-import com.example.ocelotnovels.model.Organizer;
 import com.example.ocelotnovels.model.User;
 import com.example.ocelotnovels.utils.FirebaseUtils;
-import com.example.ocelotnovels.view.Entrant.WaitingListAdapter;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 
-public class OrganizerWaitingListActivity extends AppCompatActivity {
+public class OrganiserConfirmedListActivity extends AppCompatActivity {
 
-    private static final String TAG = "OrganizerWaitingListActivity";
-    private RecyclerView waitingListRecyclerView;
-    private OrganizerWaitingListAdapter waitingListAdapter;
-    private List<User> waitingListUsers;
+    private static final String TAG = "OrganiserConfirmedListActivity";
+    private RecyclerView confirmedListRecyclerView;
+    private OrganizerWaitingListAdapter confirmedListAdapter;
+    private List<User> confirmedListUsers;
     private FirebaseFirestore db;
     private TextView emptyStateText;
     private String eventId;
     private FirebaseUtils firebaseUtils;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_organizer_waiting_list);
+        setContentView(R.layout.activity_organiser_confirmed_list);
 
         initializeViews();
         initializeFirebase();
 
         eventId = getIntent().getStringExtra("eventId").toString();
-//        eventId = "7bd81111-6033-4219-acb5-7ee28e0aeccd";
         Log.d("EVENTIDW", eventId);
         if (eventId == null) {
             Toast.makeText(this, "Event ID not provided", Toast.LENGTH_SHORT).show();
@@ -56,15 +46,17 @@ public class OrganizerWaitingListActivity extends AppCompatActivity {
         }
 
         setupRecyclerView();
-        loadOrganiserWaitingList();
+        loadOrganiserConfirmedList();
     }
 
+
+
     private void initializeViews() {
-        waitingListRecyclerView = findViewById(R.id.waiting_list_recycler_view);
-        emptyStateText = findViewById(R.id.empty_state_text);
+        confirmedListRecyclerView = findViewById(R.id.confirmed_list_recycler_view);
+        emptyStateText = findViewById(R.id.confirmed_empty_state_text);
 
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Event Waiting List");
+            getSupportActionBar().setTitle("Event Confirmed List");
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
     }
@@ -74,32 +66,32 @@ public class OrganizerWaitingListActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView() {
-        waitingListUsers = new ArrayList<>();
-        waitingListAdapter = new OrganizerWaitingListAdapter(this, waitingListUsers);
+        confirmedListUsers = new ArrayList<>();
+        confirmedListAdapter = new OrganizerWaitingListAdapter(this, confirmedListUsers);
 
-        waitingListRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        waitingListRecyclerView.setAdapter(waitingListAdapter);
+        confirmedListRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        confirmedListRecyclerView.setAdapter(confirmedListAdapter);
     }
 
 
-    private void loadOrganiserWaitingList() {
+    private void loadOrganiserConfirmedList() {
         firebaseUtils = new FirebaseUtils(this);
-        String listType = "waitingList";
-        firebaseUtils.fetchOrganiserListEntrants(eventId, listType, waitingListUsers, () -> {
-            waitingListAdapter.notifyDataSetChanged();
+        String listType = "confirmedList";
+        firebaseUtils.fetchOrganiserListEntrants(eventId, listType, confirmedListUsers, () -> {
+            confirmedListAdapter.notifyDataSetChanged();
             updateEmptyState();
         });
     }
 
     private void updateEmptyState() {
         runOnUiThread(() -> {
-            Log.d(TAG, "Updating empty state. Users count: " + waitingListUsers.size());
-            if (waitingListUsers.isEmpty()) {
+            Log.d(TAG, "Updating empty state. Users count: " + confirmedListUsers.size());
+            if (confirmedListUsers.isEmpty()) {
                 emptyStateText.setVisibility(View.VISIBLE);
-                waitingListRecyclerView.setVisibility(View.GONE);
+                confirmedListRecyclerView.setVisibility(View.GONE);
             } else {
                 emptyStateText.setVisibility(View.GONE);
-                waitingListRecyclerView.setVisibility(View.VISIBLE);
+                confirmedListRecyclerView.setVisibility(View.VISIBLE);
             }
         });
     }

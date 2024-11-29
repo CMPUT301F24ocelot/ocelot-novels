@@ -327,10 +327,9 @@ public class FirebaseUtils {
 
 
 
-    public void fetchOrganiserWaitingListEntrants(String eventId, List<User> userList, Runnable onComplete) {
-        // Add null checks
-        if (eventId == null) {
-            Log.e(TAG, "Event ID is null");
+    public void fetchOrganiserListEntrants(String eventId, String listType, List<User> userList, Runnable onComplete) {
+        if (eventId == null || listType == null) {
+            Log.e(TAG, "Event ID or list type is null");
             if (onComplete != null) {
                 onComplete.run();
             }
@@ -340,29 +339,26 @@ public class FirebaseUtils {
         db.collection("events").document(eventId).get()
                 .addOnSuccessListener(eventDocumentSnapshot -> {
                     if (eventDocumentSnapshot.exists()) {
-                        Object waitingListObj = eventDocumentSnapshot.get("waitingList");
+                        Object listObj = eventDocumentSnapshot.get(listType);
 
-                        // Log the waiting list object for debugging
-                        Log.d(TAG, "Waiting List Object: " + waitingListObj);
-                        Log.d(TAG, "Waiting List Object Type: " + (waitingListObj != null ? waitingListObj.getClass().getName() : "null"));
+                        Log.d(TAG, listType + " Object: " + listObj);
+                        Log.d(TAG, listType + " Object Type: " + (listObj != null ? listObj.getClass().getName() : "null"));
 
-                        // Handle different possible types of waitingList
-                        ArrayList<String> usersInWaitingList;
-                        if (waitingListObj instanceof ArrayList) {
-                            usersInWaitingList = (ArrayList<String>) waitingListObj;
-                        } else if (waitingListObj instanceof List) {
-                            usersInWaitingList = new ArrayList<>((List<String>) waitingListObj);
+                        ArrayList<String> userIds;
+                        if (listObj instanceof ArrayList) {
+                            userIds = (ArrayList<String>) listObj;
+                        } else if (listObj instanceof List) {
+                            userIds = new ArrayList<>((List<String>) listObj);
                         } else {
-                            Log.e(TAG, "Unexpected waitingList type");
-                            usersInWaitingList = new ArrayList<>();
+                            Log.e(TAG, "Unexpected " + listType + " type");
+                            userIds = new ArrayList<>();
                         }
 
-                        if (usersInWaitingList != null && !usersInWaitingList.isEmpty()) {
-                            Log.d(TAG, "Number of users in waiting list: " + usersInWaitingList.size());
+                        if (userIds != null && !userIds.isEmpty()) {
+                            Log.d(TAG, "Number of users in " + listType + ": " + userIds.size());
 
-                            // Use a more robust method to fetch multiple documents
                             List<Task<DocumentSnapshot>> tasks = new ArrayList<>();
-                            for (String userId : usersInWaitingList) {
+                            for (String userId : userIds) {
                                 Log.d(TAG, "Fetching user ID: " + userId);
                                 tasks.add(db.collection("users").document(userId).get());
                             }
@@ -382,8 +378,8 @@ public class FirebaseUtils {
                                                         String lastName = "";
                                                         if (fullName != null && !fullName.isEmpty()) {
                                                             String[] nameParts = fullName.split(" ", 2);
-                                                            firstName = nameParts.length > 0 ? nameParts[0] : "";
-                                                            lastName = nameParts.length > 1 ? nameParts[1] : nameParts[0]; // TO CHANGE FIX LAST FIRST NAME ISSUE
+                                                            firstName = nameParts.length > 0 ? nameParts[0].trim() : "";
+                                                            lastName = nameParts.length > 1 ? nameParts[1].trim() : nameParts[0].trim();
                                                         }
 
                                                         Entrant user = new Entrant(
@@ -410,13 +406,13 @@ public class FirebaseUtils {
                                         }
                                     })
                                     .addOnFailureListener(e -> {
-                                        Log.e(TAG, "Error fetching waiting list users", e);
+                                        Log.e(TAG, "Error fetching " + listType + " users", e);
                                         if (onComplete != null) {
                                             onComplete.run();
                                         }
                                     });
                         } else {
-                            Log.d(TAG, "No users in waiting list");
+                            Log.d(TAG, "No users in " + listType);
                             userList.clear();
                             if (onComplete != null) {
                                 onComplete.run();
