@@ -239,27 +239,29 @@ public class EventDetailsFragment extends DialogFragment {
                     }
 
                     Long capacityLong = (eventDoc.get("capacity") == null ? -1 : (long) eventDoc.get("capacity"));
-//                    if (capacityLong == null) {
-//                        Toast.makeText(getContext(), "Invalid event capacity", Toast.LENGTH_SHORT).show();
-//                        return;
-//                    }
 
                     List<String> waitingList = (List<String>) eventDoc.get("waitingList");
                     List<String> cancelledList = (List<String>) eventDoc.get("cancelledList");
-                    waitingList = waitingList != null ? waitingList : new ArrayList<>();
 
+                    // Initialize lists if they are null
+                    waitingList = waitingList != null ? waitingList : new ArrayList<>();
+                    cancelledList = cancelledList != null ? cancelledList : new ArrayList<>();
+
+                    // Check if the user is already registered
                     if (waitingList.contains(userId)) {
                         Toast.makeText(getContext(), "Already registered for this event", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
-
+                    // Check event capacity and join
                     if (capacityLong >= 0 && waitingList.size() < capacityLong || capacityLong == -1) {
                         addUserToEvent();
-                        if (cancelledList.contains(userId)){
-                            cancelledList.remove(userId);
-                            eventDocument.update("cancelledList",cancelledList);
 
+                        // Remove user from cancelled list if present
+                        if (cancelledList.contains(userId)) {
+                            cancelledList.remove(userId);
+                            eventDocument.update("cancelledList", cancelledList)
+                                    .addOnFailureListener(e -> Log.e("JoinEventFragment", "Failed to update cancelled list", e));
                         }
                     } else {
                         Toast.makeText(getContext(), "Event is at full capacity", Toast.LENGTH_SHORT).show();
@@ -270,6 +272,7 @@ public class EventDetailsFragment extends DialogFragment {
                     Log.e("JoinEventFragment", "Error checking capacity", e);
                 });
     }
+
 
     private void addUserToEvent() {
         // Add event to user's joined events
