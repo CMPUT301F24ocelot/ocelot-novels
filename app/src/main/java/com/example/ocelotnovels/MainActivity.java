@@ -68,13 +68,16 @@ public class MainActivity extends AppCompatActivity {
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted) {
-                    // FCM SDK (and your app) can post notifications
+                    // Notification permission granted, now request location permission
                     Toast.makeText(this, "Notification Permission Granted", Toast.LENGTH_SHORT).show();
+                    requestLocationPermission();
                 } else {
-                    // Inform the user that notifications are disabled
+                    // Notification permission denied, still proceed to location permission
                     Toast.makeText(this, "Notification Permission Denied", Toast.LENGTH_SHORT).show();
+                    requestLocationPermission();
                 }
             });
+
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private boolean isUserSignedUp;
@@ -110,25 +113,36 @@ public class MainActivity extends AppCompatActivity {
      * Requests the runtime notification permission for Android 13+.
      */
     private void askNotificationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // API level 33
-            if (ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS) ==
-                    PackageManager.PERMISSION_GRANTED) {
-                // Permission already granted
-                Toast.makeText(this, "Notification Permission Already Granted", Toast.LENGTH_SHORT).show();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // For Android 13+
+            if (ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                // Notification permission already granted, now request location permission
+                requestLocationPermission();
             } else if (shouldShowRequestPermissionRationale(POST_NOTIFICATIONS)) {
-                // Show rationale and request permission
-                Toast.makeText(this, "Notification permission is required for better experience", Toast.LENGTH_SHORT).show();
-                requestPermissionLauncher.launch(POST_NOTIFICATIONS);
+                // Show rationale for notification permission
+                new androidx.appcompat.app.AlertDialog.Builder(this)
+                        .setTitle("Notification Permission Required")
+                        .setMessage("This app requires notification permissions for better functionality.")
+                        .setPositiveButton("OK", (dialog, which) -> {
+                            requestPermissionLauncher.launch(POST_NOTIFICATIONS);
+                        })
+                        .setNegativeButton("Cancel", (dialog, which) -> {
+                            Toast.makeText(this, "Notification permission denied.", Toast.LENGTH_SHORT).show();
+                            dialog.dismiss();
+                            // Even if denied, proceed to request location permission
+                            requestLocationPermission();
+                        })
+                        .create()
+                        .show();
             } else {
-                // Directly request the permission
+                // Directly request notification permission
                 requestPermissionLauncher.launch(POST_NOTIFICATIONS);
             }
+        } else {
+            // For Android versions below 13, directly request location permission
+            requestLocationPermission();
         }
-
-
-        requestLocationPermission();
-
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
