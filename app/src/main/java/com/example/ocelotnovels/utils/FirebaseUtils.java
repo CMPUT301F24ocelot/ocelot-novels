@@ -10,7 +10,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import com.example.ocelotnovels.model.Entrant;
 import com.example.ocelotnovels.model.Event;
+import com.example.ocelotnovels.model.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -36,7 +38,7 @@ public class FirebaseUtils {
     private static FirebaseUtils instance;
     private final FirebaseFirestore db;
     private FirebaseStorage storage;
-    private StorageReference storageRef,imagesRef,defaultPics,profilePic;
+    private StorageReference storageRef,imagesRef,defaultPics,profileRef,profilePic;
     private final String deviceId;
 
     /**
@@ -51,8 +53,8 @@ public class FirebaseUtils {
         this.storageRef = storage.getReference();
         this.imagesRef=storageRef.child("images");
         this.defaultPics=imagesRef.child("default");
-        this.profilePic = imagesRef.child((this.deviceId+".jpg"));
-
+        this.profileRef = imagesRef.child("profilePic");
+        this.profilePic = profileRef.child((this.deviceId+".jpg"));
     }
 
     /**
@@ -136,6 +138,27 @@ public class FirebaseUtils {
 
     public void setProfilePic(StorageReference profilePic) {
         this.profilePic = profilePic;
+    }
+
+    /**
+     * Retrieves or generates a unique facility ID.
+     *
+     * @param context The application context.
+     * @return The unique facility ID.
+     */
+    public String getFacilityId(Context context) {
+        SharedPreferences sharedPreferences = context.getApplicationContext()
+                .getSharedPreferences("facility_settings", Context.MODE_PRIVATE);
+        String facilityId = sharedPreferences.getString("FacilityId", null);
+
+        if (facilityId == null) {
+            facilityId = UUID.randomUUID().toString();
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("FacilityId", facilityId);
+            editor.apply();
+        }
+
+        return facilityId;
     }
 
     /**
@@ -301,6 +324,115 @@ public class FirebaseUtils {
                 //.addOnCompleteListener(task -> Toast.makeText(this, "Profile picture updated!", Toast.LENGTH_SHORT).show())
         ;
     }
+
+
+
+    public void fetchOrganiserListEntrants(String eventId, String listType, List<User> userList, Runnable onComplete) {
+        if (eventId == null || listType == null) {
+            Log.e(TAG, "Event ID or list type is null");
+            if (onComplete != null) {
+                onComplete.run();
+            }
+            return;
+        }
+
+        db.collection("events").document(eventId).get()
+                .addOnSuccessListener(eventDocumentSnapshot -> {
+                    if (eventDocumentSnapshot.exists()) {
+                        Object listObj = eventDocumentSnapshot.get(listType);
+
+                        Log.d(TAG, listType + " Object: " + listObj);
+                        Log.d(TAG, listType + " Object Type: " + (listObj != null ? listObj.getClass().getName() : "null"));
+
+                        ArrayList<String> userIds;
+                        if (listObj instanceof ArrayList) {
+                            userIds = (ArrayList<String>) listObj;
+                        } else if (listObj instanceof List) {
+                            userIds = new ArrayList<>((List<String>) listObj);
+                        } else {
+                            Log.e(TAG, "Unexpected " + listType + " type");
+                            userIds = new ArrayList<>();
+                        }
+
+                        if (userIds != null && !userIds.isEmpty()) {
+                            Log.d(TAG, "Number of users in " + listType + ": " + userIds.size());
+
+                            List<Task<DocumentSnapshot>> tasks = new ArrayList<>();
+                            for (String userId : userIds) {
+                                Log.d(TAG, "Fetching user ID: " + userId);
+                                tasks.add(db.collection("users").document(userId).get());
+                            }
+
+                            Tasks.whenAllComplete(tasks)
+                                    .addOnSuccessListener(taskSnapshots -> {
+                                        userList.clear();
+                                        for (Task<DocumentSnapshot> task : tasks) {
+                                            try {
+                                                if (task.isSuccessful()) {
+                                                    DocumentSnapshot doc = task.getResult();
+                                                    if (doc != null && doc.exists()) {
+                                                        String fullName = doc.getString("name");
+                                                        Log.d(TAG, "Processing user: " + fullName);
+
+                                                        String firstName = "";
+                                                        String lastName = "";
+                                                        if (fullName != null && !fullName.isEmpty()) {
+                                                            String[] nameParts = fullName.split(" ", 2);
+                                                            firstName = nameParts.length > 0 ? nameParts[0].trim() : "";
+                                                            lastName = nameParts.length > 1 ? nameParts[1].trim() : nameParts[0].trim();
+                                                        }
+
+                                                        Entrant user = new Entrant(
+                                                                firstName,
+                                                                lastName,
+                                                                doc.getString("email")
+                                                        );
+                                                        userList.add(user);
+                                                    } else {
+                                                        Log.w(TAG, "User document does not exist or is null");
+                                                    }
+                                                } else {
+                                                    Log.e(TAG, "Task to fetch user failed", task.getException());
+                                                }
+                                            } catch (Exception e) {
+                                                Log.e(TAG, "Error processing individual user", e);
+                                            }
+                                        }
+
+                                        Log.d(TAG, "Total users processed: " + userList.size());
+
+                                        if (onComplete != null) {
+                                            onComplete.run();
+                                        }
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Log.e(TAG, "Error fetching " + listType + " users", e);
+                                        if (onComplete != null) {
+                                            onComplete.run();
+                                        }
+                                    });
+                        } else {
+                            Log.d(TAG, "No users in " + listType);
+                            userList.clear();
+                            if (onComplete != null) {
+                                onComplete.run();
+                            }
+                        }
+                    } else {
+                        Log.e(TAG, "Event document does not exist");
+                        if (onComplete != null) {
+                            onComplete.run();
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error fetching event document", e);
+                    if (onComplete != null) {
+                        onComplete.run();
+                    }
+                });
+    }
+
 
 
 }

@@ -7,9 +7,6 @@
         android:id="@+id/menu_selected_list"
         android:title="Selected Entrants" />
     <item
-        android:id="@+id/menu_invited_list"
-        android:title="Invited Entrants" />
-    <item
         android:id="@+id/menu_cancelled_list"
         android:title="Cancelled Entrants" />
     <item
