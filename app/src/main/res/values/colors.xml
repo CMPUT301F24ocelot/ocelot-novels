@@ -4,4 +4,14 @@
     <color name="white">#FFFFFFFF</color>
     <color name="eventPurpleLight">#D8C8EB</color>
     <color name="slateGray">#D9D9D9</color>
+    <color name="md_theme_light_primary">#6750A4</color>
+    <color name="md_theme_light_onPrimary">#FFFFFF</color>
+    <color name="md_theme_light_surface">#FFFFFF</color>
+    <color name="md_theme_light_onSurface">#1C1B1F</color>
+    <color name="md_theme_light_background">#FFFBFE</color>
+    <color name="md_theme_light_outline">#D1D1D1</color>
+    <color name="md_theme_light_secondaryContainer">#EDE7F6</color>
+    <color name="md_theme_light_surfaceVariant">#EDEDED</color>
 </resources>
+
+
