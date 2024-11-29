@@ -9,6 +9,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.net.ParseException;
 
 import com.example.ocelotnovels.model.Entrant;
 import com.example.ocelotnovels.model.Event;
@@ -19,15 +20,19 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -323,6 +328,103 @@ public class FirebaseUtils {
         db.collection("users").document(deviceId).update("profilePicUrl", url)
                 //.addOnCompleteListener(task -> Toast.makeText(this, "Profile picture updated!", Toast.LENGTH_SHORT).show())
         ;
+    }
+
+    /**
+     * Performs polling for an event after registration closes.
+     * Users are selected from the waiting list based on event capacity.
+     *
+     * @param eventId   The ID of the event for which polling is performed.
+     * @param onSuccess Callback for success.
+     * @param onFailure Callback for failure.
+     */
+    public void performPolling(String eventId, Runnable onSuccess, OnFailureListener onFailure) {
+        DocumentReference eventRef = db.collection("events").document(eventId);
+
+        eventRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                List<String> waitingList = (List<String>) documentSnapshot.get("waitingList");
+                List<String> selectedList = (List<String>) documentSnapshot.get("selectedList");
+                Long capacity = documentSnapshot.getLong("capacity");
+                // String regClosed = documentSnapshot.getString("regClosed");
+
+                // Ensure waiting list and selected list are not null
+                if (waitingList == null) waitingList = new ArrayList<>();
+                if (selectedList == null) selectedList = new ArrayList<>();
+
+                // Check if registration is closed
+                /* if (!isRegistrationClosed(regClosed)) {
+                    Log.w(TAG, "Registration is still open for event: " + eventId);
+                    if (onFailure != null) {
+                        onFailure.onFailure(new Exception("Registration is still open."));
+                    }
+                    return;
+                } */
+
+                // Determine spots available
+                int spotsAvailable = capacity == null || capacity < 0 ? waitingList.size() : Math.toIntExact(capacity - selectedList.size());
+
+                // Select users from the waiting list
+                List<String> entrantsToSelect = selectEntrants(waitingList, selectedList, spotsAvailable);
+
+                // Update Firestore with selected entrants
+                updateSelectedEntrants(eventId, entrantsToSelect, onSuccess, onFailure);
+            } else {
+                Log.e(TAG, "Event not found: " + eventId);
+                if (onFailure != null) onFailure.onFailure(new Exception("Event not found."));
+            }
+        }).addOnFailureListener(onFailure);
+    }
+
+    /**
+     * Checks if registration is closed based on the provided timestamp.
+     *
+     * @param regClosed The registration close date as a string.
+     * @return True if registration is closed, false otherwise.
+     */
+    private boolean isRegistrationClosed(String regClosed) {
+        if (regClosed == null) return false; // If regClosed is not set, assume it's open
+        try {
+            Date closeDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(regClosed);
+            return closeDate != null && new Date().after(closeDate);
+        } catch (ParseException | java.text.ParseException e) {
+            Log.e(TAG, "Error parsing registration close date", e);
+            return false; // Default to open in case of parsing error
+        }
+    }
+
+    /**
+     * Selects entrants from the waiting list based on available spots.
+     *
+     * @param waitingList     The list of users in the waiting list.
+     * @param selectedList    The list of already selected users.
+     * @param spotsAvailable  The number of spots available for selection.
+     * @return A list of selected entrants.
+     */
+    private List<String> selectEntrants(List<String> waitingList, List<String> selectedList, int spotsAvailable) {
+        List<String> remainingEntrants = new ArrayList<>(waitingList);
+        remainingEntrants.removeAll(selectedList); // Exclude already selected entrants
+
+        Collections.shuffle(remainingEntrants); // Shuffle for randomness
+        return remainingEntrants.subList(0, Math.min(spotsAvailable, remainingEntrants.size()));
+    }
+
+    /**
+     * Updates Firestore with the selected entrants.
+     *
+     * @param eventId         The ID of the event.
+     * @param entrantsToSelect The list of selected entrants.
+     * @param onSuccess       Callback for success.
+     * @param onFailure       Callback for failure.
+     */
+    private void updateSelectedEntrants(String eventId, List<String> entrantsToSelect, Runnable onSuccess, OnFailureListener onFailure) {
+        db.collection("events").document(eventId)
+                .update("selectedList", FieldValue.arrayUnion(entrantsToSelect.toArray()))
+                .addOnSuccessListener(aVoid -> {
+                    Log.i(TAG, "Selected entrants updated for event: " + eventId);
+                    if (onSuccess != null) onSuccess.run();
+                })
+                .addOnFailureListener(onFailure);
     }
 
 
