@@ -3,6 +3,7 @@ package com.example.ocelotnovels.view.Organizer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -11,20 +12,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ocelotnovels.R;
-import com.example.ocelotnovels.model.Organizer;
 import com.example.ocelotnovels.model.User;
 import com.example.ocelotnovels.utils.FirebaseUtils;
-import com.example.ocelotnovels.view.Entrant.WaitingListAdapter;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class OrganizerWaitingListActivity extends AppCompatActivity {
 
@@ -32,11 +24,10 @@ public class OrganizerWaitingListActivity extends AppCompatActivity {
     private RecyclerView waitingListRecyclerView;
     private OrganizerWaitingListAdapter waitingListAdapter;
     private List<User> waitingListUsers;
-    private FirebaseFirestore db;
-    private TextView emptyStateText;
-    private String eventId;
     private FirebaseUtils firebaseUtils;
-
+    private TextView emptyStateText;
+    private Button sampleButton;
+    private String eventId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,9 +37,7 @@ public class OrganizerWaitingListActivity extends AppCompatActivity {
         initializeViews();
         initializeFirebase();
 
-        eventId = getIntent().getStringExtra("eventId").toString();
-//        eventId = "7bd81111-6033-4219-acb5-7ee28e0aeccd";
-        Log.d("EVENTIDW", eventId);
+        eventId = getIntent().getStringExtra("eventId");
         if (eventId == null) {
             Toast.makeText(this, "Event ID not provided", Toast.LENGTH_SHORT).show();
             finish();
@@ -57,11 +46,15 @@ public class OrganizerWaitingListActivity extends AppCompatActivity {
 
         setupRecyclerView();
         loadOrganiserWaitingList();
+
+        // Set up button click listener for sampling
+        setupSampleButton();
     }
 
     private void initializeViews() {
         waitingListRecyclerView = findViewById(R.id.waiting_list_recycler_view);
         emptyStateText = findViewById(R.id.empty_state_text);
+        sampleButton = findViewById(R.id.sample_users_button);
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Event Waiting List");
@@ -70,7 +63,7 @@ public class OrganizerWaitingListActivity extends AppCompatActivity {
     }
 
     private void initializeFirebase() {
-        db = FirebaseFirestore.getInstance();
+        firebaseUtils = FirebaseUtils.getInstance(this);
     }
 
     private void setupRecyclerView() {
@@ -81,13 +74,28 @@ public class OrganizerWaitingListActivity extends AppCompatActivity {
         waitingListRecyclerView.setAdapter(waitingListAdapter);
     }
 
-
     private void loadOrganiserWaitingList() {
-        firebaseUtils = new FirebaseUtils(this);
         String listType = "waitingList";
         firebaseUtils.fetchOrganiserListEntrants(eventId, listType, waitingListUsers, () -> {
             waitingListAdapter.notifyDataSetChanged();
             updateEmptyState();
+        });
+    }
+
+    private void setupSampleButton() {
+        sampleButton.setOnClickListener(v -> {
+            // Trigger the sampling process
+            firebaseUtils.performPolling(
+                    eventId,
+                    () -> runOnUiThread(() -> {
+                        Toast.makeText(this, "Sampling completed successfully.", Toast.LENGTH_SHORT).show();
+                        loadOrganiserWaitingList(); // Reload the waiting list to reflect changes
+                    }),
+                    e -> runOnUiThread(() -> {
+                        Toast.makeText(this, "Sampling failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "Error during sampling", e);
+                    })
+            );
         });
     }
 
