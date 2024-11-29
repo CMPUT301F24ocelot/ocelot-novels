@@ -73,6 +73,7 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-storage")
     implementation("com.firebaseui:firebase-ui-storage:7.2.0")
+    implementation("com.google.firebase:firebase-messaging:24.1.0")
     // https://mvnrepository.com/artifact/com.google.zxing/javase
     implementation("com.google.zxing:javase:3.5.3")
     // https://mvnrepository.com/artifact/com.google.zxing/core

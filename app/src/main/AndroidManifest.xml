@@ -93,6 +93,17 @@
         <meta-data
             android:name="com.google.android.gms.maps.MAP_ID"
             android:value="9aad53a4ad71710a" />
+
+
+        <service
+            android:name=".MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+
     </application>
 
 </manifest>
