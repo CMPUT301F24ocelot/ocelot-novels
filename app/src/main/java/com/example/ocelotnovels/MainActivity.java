@@ -1,6 +1,7 @@
 package com.example.ocelotnovels;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 
@@ -204,6 +205,33 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+    private void checkOrganizerEligibility() {
+        db.collection("facilities")
+                .whereEqualTo("ownerId", deviceId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        // Facility exists, navigate to OrganizerMainActivity
+                        Intent intent = new Intent(this, OrganizerMainActivity.class);
+                        startActivity(intent);
+                    } else {
+                        // No facility, prompt to create one
+                        new AlertDialog.Builder(this)
+                                .setTitle("Create Facility Profile")
+                                .setMessage("You need to create a facility profile to become an organizer.")
+                                .setPositiveButton("Go to Facility Profile", (dialog, which) -> {
+                                    Intent intent = new Intent(this, FacilityProfileActivity.class);
+                                    startActivity(intent);
+                                })
+                                .setNegativeButton("Cancel", null)
+                                .show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Error checking facility: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
     /**
      * Sets up button click listeners for various actions.
      */
@@ -217,8 +245,9 @@ public class MainActivity extends AppCompatActivity {
         });
 
         organizerBtn.setOnClickListener(v -> {
-            Intent organizerIntent = new Intent(MainActivity.this, OrganizerMainActivity.class);
-            startActivity(organizerIntent);
+            checkOrganizerEligibility();
+//            Intent organizerIntent = new Intent(MainActivity.this, OrganizerMainActivity.class);
+//            startActivity(organizerIntent);
         });
     }
 
