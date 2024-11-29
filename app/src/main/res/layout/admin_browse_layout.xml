@@ -5,15 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar_admin"
-        android:layout_width="0dp"
-        android:layout_height="?attr/actionBarSize"
-        android:background="#F4E6FB"
-        android:theme="?attr/actionBarTheme"
-        app:title="Admin"
-        app:titleTextAppearance="@style/TextAppearance.AppCompat.Medium" />
-
     <TextView
         android:id="@+id/welcome_text"
         android:layout_width="match_parent"
