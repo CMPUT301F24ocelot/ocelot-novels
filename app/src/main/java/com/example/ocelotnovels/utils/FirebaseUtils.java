@@ -338,7 +338,7 @@ public class FirebaseUtils {
      * @param onSuccess Callback for success.
      * @param onFailure Callback for failure.
      */
-    public void performPolling(String eventId, Runnable onSuccess, OnFailureListener onFailure) {
+    public void performPolling(String eventId, Integer newLimit, Runnable onSuccess, OnFailureListener onFailure) {
         DocumentReference eventRef = db.collection("events").document(eventId);
 
         eventRef.get().addOnSuccessListener(documentSnapshot -> {
@@ -346,34 +346,59 @@ public class FirebaseUtils {
                 List<String> waitingList = (List<String>) documentSnapshot.get("waitingList");
                 List<String> selectedList = (List<String>) documentSnapshot.get("selectedList");
                 Long capacity = documentSnapshot.getLong("capacity");
-                // String regClosed = documentSnapshot.getString("regClosed");
+                String regClosed = documentSnapshot.getString("regClosed");
 
                 // Ensure waiting list and selected list are not null
                 if (waitingList == null) waitingList = new ArrayList<>();
                 if (selectedList == null) selectedList = new ArrayList<>();
 
                 // Check if registration is closed
-                /* if (!isRegistrationClosed(regClosed)) {
+                if (!isRegistrationClosed(regClosed)) {
                     Log.w(TAG, "Registration is still open for event: " + eventId);
                     if (onFailure != null) {
                         onFailure.onFailure(new Exception("Registration is still open."));
                     }
                     return;
-                } */
+                }
 
-                // Determine spots available
-                int spotsAvailable = capacity == null || capacity < 0 ? waitingList.size() : Math.toIntExact(capacity - selectedList.size());
+                // Calculate the updated capacity
+                int newCapacity = newLimit != null
+                        ? newLimit // Use the new limit if provided
+                        : (capacity == null || capacity < 0 ? waitingList.size() : Math.toIntExact(capacity));
 
-                // Select users from the waiting list
-                List<String> entrantsToSelect = selectEntrants(waitingList, selectedList, spotsAvailable);
+                if (newCapacity <= 0) {
+                    Log.w(TAG, "No spots available for sampling.");
+                    if (onSuccess != null) onSuccess.run(); // Nothing to do, so consider it successful
+                    return;
+                }
 
-                // Update Firestore with selected entrants
-                updateSelectedEntrants(eventId, entrantsToSelect, onSuccess, onFailure);
+                // Determine the new list of selected entrants
+                List<String> newSelectedList = sampleEntrants(waitingList, newCapacity);
+
+                // Update Firestore with the new selected entrants
+                eventRef.update("selectedList", newSelectedList)
+                        .addOnSuccessListener(aVoid -> {
+                            Log.i(TAG, "Selected entrants updated for event: " + eventId);
+                            if (onSuccess != null) onSuccess.run();
+                        })
+                        .addOnFailureListener(onFailure);
             } else {
                 Log.e(TAG, "Event not found: " + eventId);
                 if (onFailure != null) onFailure.onFailure(new Exception("Event not found."));
             }
         }).addOnFailureListener(onFailure);
+    }
+
+    /**
+     * Samples entrants from the waiting list up to the specified limit.
+     *
+     * @param waitingList The list of users in the waiting list.
+     * @param limit       The maximum number of users to select.
+     * @return A new list of selected entrants.
+     */
+    private List<String> sampleEntrants(List<String> waitingList, int limit) {
+        Collections.shuffle(waitingList); // Shuffle for randomness
+        return new ArrayList<>(waitingList.subList(0, Math.min(limit, waitingList.size())));
     }
 
     /**
