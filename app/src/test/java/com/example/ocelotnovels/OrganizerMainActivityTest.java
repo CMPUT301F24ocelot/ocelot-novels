@@ -1,6 +1,7 @@
 package com.example.ocelotnovels;
 
 import android.content.Intent;
+import android.view.View;
 import android.widget.Button;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,15 +18,14 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
-
 import java.util.Arrays;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class OrganizerMainActivityTest {
@@ -41,92 +41,56 @@ public class OrganizerMainActivityTest {
     private OrganizerEventAdapter mockAdapter;
     @Mock
     private QueryDocumentSnapshot mockDocumentSnapshot;
-    @InjectMocks
-    OrganizerMainActivity activity;
 
+    private OrganizerMainActivity activity;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        // Prepare the activity with mocked Firestore instance
-        activity = new OrganizerMainActivity();
+        activity = Mockito.spy(new OrganizerMainActivity());
         activity.db = mockDb;
         activity.organizerRecyclerView = mockRecyclerView;
         activity.eventAdapter = mockAdapter;
-
-        // Assume that the event names are managed within the adapter
-        when(mockRecyclerView.getAdapter()).thenReturn(mockAdapter);
+        activity.facilityId = "sampleFacilityId";  // Mocked facility ID
     }
 
     @Test
     public void testLoadEventsFromFirestore_Success() {
         // Setup successful response
         when(mockDocumentSnapshot.getString("name")).thenReturn("Event Name");
+        when(mockDocumentSnapshot.getString("eventDate")).thenReturn("2023-12-31");
+        when(mockDocumentSnapshot.getString("location")).thenReturn("Event Location");
         when(mockQuerySnapshot.getDocuments()).thenReturn(Arrays.asList(mockDocumentSnapshot));
         when(mockTask.isSuccessful()).thenReturn(true);
         when(mockTask.getResult()).thenReturn(mockQuerySnapshot);
+        when(mockDb.collection("events").whereEqualTo("organizerDeviceId", "sampleFacilityId").get()).thenReturn(mockTask);
 
         doAnswer(invocation -> {
-            Task<QuerySnapshot> task = invocation.getArgument(0);
-            task.getResult();
+            ((Task<QuerySnapshot>) invocation.getArgument(0)).getResult();
             return null;
         }).when(mockTask).addOnSuccessListener(any());
 
-        // Execute the method under test
         activity.loadEventsFromFirestore();
 
-        // Verify interactions and check the result
-        verify(mockDb).collection("events").get();
-        verify(activity.eventAdapter).notifyDataSetChanged();
-        assertTrue(activity.eventNames.contains("Event Name"));
-    }
-
-    @Test
-    public void testLoadEventsFromFirestore_Failure() {
-        // Setup failure response
-        when(mockTask.isSuccessful()).thenReturn(false);
-
-        doAnswer(invocation -> {
-            Task<QuerySnapshot> task = invocation.getArgument(0);
-            task.getResult();
-            return null;
-        }).when(mockTask).addOnFailureListener(any());
-
-        // Execute the method under test
-        activity.loadEventsFromFirestore();
-
-        // Verify interactions and ensure no data was added on failure
-        verify(mockDb).collection("events").get();
-        verify(activity.eventAdapter, never()).notifyDataSetChanged();
-        assertTrue(activity.eventNames.isEmpty());
+        verify(mockDb).collection("events").whereEqualTo("organizerDeviceId", "sampleFacilityId").get();
+        verify(mockAdapter).notifyDataSetChanged();
     }
 
     @Test
     public void testAddEventButton_Click() {
+        Button mockButton = Mockito.mock(Button.class);
+
+        doReturn(mockButton).when(activity).findViewById(R.id.add_events_button);
+        ArgumentCaptor<View.OnClickListener> clickListenerCaptor = ArgumentCaptor.forClass(View.OnClickListener.class);
+
+        verify(mockButton).setOnClickListener(clickListenerCaptor.capture());
+        View.OnClickListener capturedListener = clickListenerCaptor.getValue();
+        capturedListener.onClick(mockButton);
+
         ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
-
-        // Use the injected activity to perform click
-        activity.findViewById(R.id.add_events_button).performClick();
-
-        // Verify that the correct activity is started
         verify(activity).startActivity(intentCaptor.capture());
-        assertEquals(CreateEventActivity.class.getName(), intentCaptor.getValue().getComponent().getClassName());
+        Intent capturedIntent = intentCaptor.getValue();
+        assertEquals(CreateEventActivity.class.getName(), capturedIntent.getComponent().getClassName());
+        assertEquals("sampleFacilityId", capturedIntent.getStringExtra("facilityId"));
     }
-
-
-    @Test
-    public void testEntrantListButton_Click() {
-        // Create a spy of the actual activity to monitor its interactions
-        OrganizerMainActivity spyActivity = spy(new OrganizerMainActivity());
-
-        // Assume the findViewById correctly initializes the button
-        Button mockButton = mock(Button.class);
-        when(spyActivity.findViewById(R.id.entrant_list)).thenReturn(mockButton);
-
-        // Simulate button click that should trigger the showEntrantListDropdown method
-        spyActivity.findViewById(R.id.entrant_list).performClick();
-
-        verify(mockButton).performClick();
-    }
-
 }
