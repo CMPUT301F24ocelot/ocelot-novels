@@ -30,6 +30,7 @@ import androidx.core.content.ContextCompat;
 import com.example.ocelotnovels.utils.FirebaseUtils;
 import com.example.ocelotnovels.view.Entrant.EventDetailsFragment;
 import com.example.ocelotnovels.view.Entrant.ProfileActivity;
+import com.example.ocelotnovels.view.Entrant.SelectedEventsActivity;
 import com.example.ocelotnovels.view.Entrant.WaitingListActivity;
 import com.example.ocelotnovels.view.Organizer.OrganizerMainActivity;
 import com.google.android.gms.common.moduleinstall.ModuleInstall;
@@ -168,6 +169,11 @@ public class MainActivity extends AppCompatActivity {
             // Navigate to Profile Activity
             Intent profileActivity = new Intent(MainActivity.this, ProfileActivity.class);
             startActivity(profileActivity);
+        }
+        else if (id == R.id.selected_events) {
+            // Navigate to Profile Activity
+            Intent selectedEventsActivity = new Intent(MainActivity.this, SelectedEventsActivity.class);
+            startActivity(selectedEventsActivity);
         }
 
         return super.onOptionsItemSelected(item);

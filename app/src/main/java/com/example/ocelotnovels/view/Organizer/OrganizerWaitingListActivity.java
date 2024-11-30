@@ -96,6 +96,18 @@ public class OrganizerWaitingListActivity extends AppCompatActivity {
                         Log.e(TAG, "Error during sampling", e);
                     })
             );
+
+            firebaseUtils.addSelectedEvent(eventId, success -> {
+                        // Event added to selectedEventsJoined
+//                        Toast.makeText(this, "Sampling completed successfully.", Toast.LENGTH_SHORT).show();
+                        Log.d("addSelectedEvent", "Added user successfully");
+
+                    },
+                    failure -> {
+                        // Handle error
+                        Log.d("addSelectedEvent", "Error adding user to selected list");
+                    });
+
         });
     }
 
