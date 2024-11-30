@@ -340,14 +340,64 @@ public class CreateEventActivity extends AppCompatActivity {
     }
 
     private boolean validateInputs() {
-        if (TextUtils.isEmpty(eventTitleEditText.getText().toString().trim())
-                || TextUtils.isEmpty(eventDescriptionEditText.getText().toString().trim())
-                || TextUtils.isEmpty(eventLocationEditText.getText().toString().trim())
-                || TextUtils.isEmpty(selectedEventDate)) {
+        String eventTitle = eventTitleEditText.getText().toString().trim();
+        String eventDescription = eventDescriptionEditText.getText().toString().trim();
+        String eventLocation = eventLocationEditText.getText().toString().trim();
+
+        if (TextUtils.isEmpty(eventTitle) || TextUtils.isEmpty(eventDescription) ||
+                TextUtils.isEmpty(eventLocation) || TextUtils.isEmpty(selectedEventDate)) {
             showToast("Please fill in all required fields.");
             return false;
         }
+
+        if (TextUtils.isEmpty(selectedRegistrationOpenDate)) {
+            showToast("Please set the registration open date.");
+            return false;
+        }
+
+        if (TextUtils.isEmpty(selectedDueDate)) {
+            showToast("Please set the due date.");
+            return false;
+        }
+
+        // Parse dates for validation
+        long eventDateMillis = parseDate(selectedEventDate);
+        long registrationOpenDateMillis = parseDate(selectedRegistrationOpenDate);
+        long dueDateMillis = parseDate(selectedDueDate);
+
+        if (registrationOpenDateMillis == -1 || dueDateMillis == -1 || eventDateMillis == -1) {
+            showToast("Please ensure all dates are properly formatted.");
+            return false;
+        }
+
+        // Validation: Registration open date must be before or on the due date
+        if (registrationOpenDateMillis > dueDateMillis) {
+            showToast("Registration open date cannot be after the due date.");
+            return false;
+        }
+
+        // Validation: Event date must be after or on the due date
+        if (eventDateMillis < dueDateMillis) {
+            showToast("Event date cannot be before the due date.");
+            return false;
+        }
+
+        // Validation: Event date must be after registration open date
+        if (eventDateMillis < registrationOpenDateMillis) {
+            showToast("Event date cannot be before the registration open date.");
+            return false;
+        }
+
         return true;
+    }
+
+    private long parseDate(String dateString) {
+        try {
+            return new java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(dateString).getTime();
+        } catch (Exception e) {
+            Log.e("Date Parsing", "Error parsing date: " + dateString, e);
+            return -1; // Return -1 if the date cannot be parsed
+        }
     }
 
     private void showToast(String message) {

@@ -29,6 +29,7 @@ import androidx.core.content.ContextCompat;
 
 import com.example.ocelotnovels.utils.FirebaseUtils;
 import com.example.ocelotnovels.view.Entrant.ConfirmedEventsActivity;
+import com.example.ocelotnovels.view.Admin.AdminBrowseActivity;
 import com.example.ocelotnovels.view.Entrant.EventDetailsFragment;
 import com.example.ocelotnovels.view.Entrant.ProfileActivity;
 import com.example.ocelotnovels.view.Entrant.SelectedEventsActivity;
@@ -59,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
     private Boolean isScannerInstalled = false;
     private Button scanQrBtn;
     private Button organizerBtn;
+    private Button adminBtn;
     private GmsBarcodeScanner scanner;
     private FirebaseAuth mAuth;
     private Button signUpButton, eventViewBtn;
@@ -84,7 +86,6 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private boolean isUserSignedUp;
-
 
     /**
      * Called when the activity is created. Initializes views, Firebase instances, and
@@ -193,6 +194,7 @@ public class MainActivity extends AppCompatActivity {
         organizerBtn = findViewById(R.id.user_organizer);
         signUpButton = findViewById(R.id.user_sign_up_button);
         eventViewBtn = findViewById(R.id.user_event_list);
+        adminBtn = findViewById(R.id.user_admin);
 
 
         GmsBarcodeScannerOptions options = initializeGoogleScanner();
@@ -275,6 +277,13 @@ public class MainActivity extends AppCompatActivity {
 //            Intent organizerIntent = new Intent(MainActivity.this, OrganizerMainActivity.class);
 //            startActivity(organizerIntent);
         });
+
+        adminBtn.setOnClickListener(v -> {
+            Intent adminIntent = new Intent(MainActivity.this, AdminBrowseActivity.class);
+            startActivity(adminIntent);
+        });
+
+
     }
 
     /**
