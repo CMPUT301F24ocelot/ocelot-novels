@@ -66,11 +66,11 @@ public class ProfileAdapterAdmin extends ArrayAdapter<User> {
         detailsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d("Admin","clicked");
                 Intent toProfile = new Intent(ProfileAdapterAdmin.this.getContext(), EntrantProfileAdminView.class);
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("User", profile);
-                startActivity(ProfileAdapterAdmin.this.getContext(),toProfile,bundle);
+                toProfile.putExtra("User",profile);
+                //Bundle bundle = new Bundle();
+                //bundle.putSerializable("User", profile);
+                startActivity(ProfileAdapterAdmin.this.getContext(),toProfile,null);
             }
         });
 

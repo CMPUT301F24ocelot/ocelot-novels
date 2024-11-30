@@ -33,7 +33,7 @@ import java.util.ArrayList;
 /**
  * This is the class used to create the activity for the Admin(s) to browse the all of the different things in the app
  */
-public class AdminBrowseActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
+public class AdminBrowseActivity extends AppCompatActivity {
     private TextView results;
     private ListView resultsList;
     private Button detailsButton;
@@ -62,7 +62,6 @@ public class AdminBrowseActivity extends AppCompatActivity implements AdapterVie
 
         initializeFirebase();
 
-        resultsList.setOnItemClickListener(this);
     }
 
     /**
@@ -124,7 +123,6 @@ public class AdminBrowseActivity extends AppCompatActivity implements AdapterVie
                 if (task.isSuccessful()) {
                     for(QueryDocumentSnapshot document : task.getResult()) {
                         String name = document.getString("name");
-                        Log.d("Admin", name);
                         String[] nameParts = name.split(" ", 2);
                         String firstName = nameParts[0];
                         String lastName;
@@ -156,14 +154,13 @@ public class AdminBrowseActivity extends AppCompatActivity implements AdapterVie
                         profilesAdapter.notifyDataSetChanged();
                     }
                 } else {
+                    Toast.makeText(AdminBrowseActivity.this,"failed to load profiles",Toast.LENGTH_SHORT).show();
                     Log.d("Admin", "is empty");
                 }
             }
         });
         //Log.d("Admin",profiles.get(1).toString());
         resultsList.setAdapter(profilesAdapter);
-        resultsList.setOnItemClickListener(this);
-
     }
 
     /**
@@ -178,14 +175,5 @@ public class AdminBrowseActivity extends AppCompatActivity implements AdapterVie
      */
     private void loadFacilities(){
 
-    }
-
-    @Override
-    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        view.getId();
-        Log.d("Admin","clicked");
-        Intent toProfile = new Intent(AdminBrowseActivity.this, EntrantProfileAdminView.class);
-        toProfile.putExtra("User", profiles.get(i));
-        startActivity(toProfile);
     }
 }
