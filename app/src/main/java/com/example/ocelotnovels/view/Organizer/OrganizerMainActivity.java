@@ -59,7 +59,6 @@ public class OrganizerMainActivity extends AppCompatActivity {
 
         // Load events from Firestore
         loadEventsFromFirestore();
-
         facilityId = FirebaseUtils.getInstance(this).getFacilityId(this);
 
         // Add Event Button Click
