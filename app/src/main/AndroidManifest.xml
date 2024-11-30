@@ -30,8 +30,7 @@
             android:exported="true" />
         <activity
             android:name=".view.Entrant.WaitingListActivity"
-            android:exported="false"
-            android:parentActivityName=".MainActivity">
+            android:exported="false">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
