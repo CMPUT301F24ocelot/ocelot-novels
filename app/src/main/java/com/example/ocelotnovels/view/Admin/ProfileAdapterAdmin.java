@@ -1,7 +1,12 @@
 package com.example.ocelotnovels.view.Admin;
 
+import static androidx.core.content.ContextCompat.startActivity;
+
 import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
 import android.telecom.Call;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,8 +18,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.bumptech.glide.Glide;
 import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.model.User;
+import com.google.firebase.storage.StorageReference;
+
 import java.util.ArrayList;
 
 /**
@@ -42,14 +50,29 @@ public class ProfileAdapterAdmin extends ArrayAdapter<User> {
             view = convertView;
         }
         User profile = getItem(position);
-
-        ImageView profilePicture = view.findViewById(R.id.iv_user_icon);
-
-        TextView name = view.findViewById(R.id.tv_username);
         assert profile != null;
+        ImageView profilePicture = view.findViewById(R.id.iv_user_icon);
+        String profilePicUrl = profile.getProfilePicture();
+        Glide.with(this.getContext())
+                    .load(profilePicUrl)
+                    .placeholder(R.drawable.ic_image_placeholder) // Optional
+                    .error(R.drawable.ic_image_placeholder) // Optional
+                    .into(profilePicture);
+        profilePicture.setImageResource(R.drawable.ic_image_placeholder);
+        TextView name = view.findViewById(R.id.tv_username);
         String nameString = profile.getFirstName()+ " " + profile.getLastName();
         name.setText(nameString);
         Button detailsButton = view.findViewById(R.id.btn_details);
+        detailsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d("Admin","clicked");
+                Intent toProfile = new Intent(ProfileAdapterAdmin.this.getContext(), EntrantProfileAdminView.class);
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("User", profile);
+                startActivity(ProfileAdapterAdmin.this.getContext(),toProfile,bundle);
+            }
+        });
 
         return view;
     }

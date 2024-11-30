@@ -2,12 +2,14 @@ package com.example.ocelotnovels.view.Admin;
 
 import static android.content.ContentValues.TAG;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,6 +17,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
 import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.model.Event;
 import com.example.ocelotnovels.model.User;
@@ -23,19 +26,23 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 
 /**
  * This is the class used to create the activity for the Admin(s) to browse the all of the different things in the app
  */
-public class AdminBrowseActivity extends AppCompatActivity {
+public class AdminBrowseActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
     private TextView results;
     private ListView resultsList;
+    private Button detailsButton;
     private AutoCompleteTextView dropDownMenu;
     private FirebaseUtils firebaseUtils;
 
     ArrayAdapter<User> profilesAdapter;//Will only be used if the admin wants to look at the profiles
+    ArrayList<User> profiles = new ArrayList<User>();
+
     ArrayAdapter<Event> eventsAdapter;//Will only be used if the admin wants to browse the events
 
 
@@ -54,6 +61,8 @@ public class AdminBrowseActivity extends AppCompatActivity {
         initializeView();
 
         initializeFirebase();
+
+        resultsList.setOnItemClickListener(this);
     }
 
     /**
@@ -66,6 +75,7 @@ public class AdminBrowseActivity extends AppCompatActivity {
         }
         results = findViewById(R.id.current_list);
         resultsList = findViewById(R.id.list);
+
 
         dropDownMenu = findViewById(R.id.drop_down);
         dropDownAdapter = new ArrayAdapter<String>(this,R.layout.admin_dropdown,options);
@@ -107,7 +117,6 @@ public class AdminBrowseActivity extends AppCompatActivity {
      */
     private void loadProfiles(){
         results.setText("Results: Profiles");
-        ArrayList<User> profiles = new ArrayList<User>();
         profilesAdapter = new ProfileAdapterAdmin(this, profiles);
         firebaseUtils.getDb().collection("users").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -119,12 +128,12 @@ public class AdminBrowseActivity extends AppCompatActivity {
                         String[] nameParts = name.split(" ", 2);
                         String firstName = nameParts[0];
                         String lastName;
-                        if(nameParts.length == 2){
+                        if (nameParts.length == 2) {
                             lastName = nameParts[1];
-                        }else{
+                        } else {
                             lastName = "nobody";
                         }
-                        if(lastName == null || lastName.trim().isEmpty() || lastName.length() > 100){
+                        if (lastName == null || lastName.trim().isEmpty() || lastName.length() > 100) {
                             lastName = "nobody";
                         }
                         String email = document.getString("email");
@@ -134,6 +143,14 @@ public class AdminBrowseActivity extends AppCompatActivity {
                             user = new User(firstName, lastName, email, phone);
                         } else {
                             user = new User(firstName, lastName, email);
+                        }
+                        user.setDevice_ID(document.getId());
+                        String profilePicUrl = document.getString("profilePicUrl");
+                        if (profilePicUrl != null && !profilePicUrl.isEmpty()) {
+                            user.setProfilePicture(profilePicUrl);
+                        } else {
+                            // Use default profile picture logic
+                            StorageReference defaultPicRef = firebaseUtils.getDefaultPics().child(firstName.charAt(0) + ".jpg");
                         }
                         profiles.add(user);
                         profilesAdapter.notifyDataSetChanged();
@@ -145,6 +162,7 @@ public class AdminBrowseActivity extends AppCompatActivity {
         });
         //Log.d("Admin",profiles.get(1).toString());
         resultsList.setAdapter(profilesAdapter);
+        resultsList.setOnItemClickListener(this);
 
     }
 
@@ -160,5 +178,14 @@ public class AdminBrowseActivity extends AppCompatActivity {
      */
     private void loadFacilities(){
 
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+        view.getId();
+        Log.d("Admin","clicked");
+        Intent toProfile = new Intent(AdminBrowseActivity.this, EntrantProfileAdminView.class);
+        toProfile.putExtra("User", profiles.get(i));
+        startActivity(toProfile);
     }
 }

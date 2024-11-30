@@ -1,5 +1,6 @@
 package com.example.ocelotnovels.model;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -9,7 +10,7 @@ import java.util.Objects;
  * and an optional phone number. This class is intended to be extended by specific user roles
  * such as Entrant, Organizer, and Admin.
  */
-public class User {
+public class User implements Serializable {
     private String[] roles = {"entrant"};
 
     private String firstName;
@@ -18,6 +19,7 @@ public class User {
     private String phoneNumber; // Optional
 
     private String device_ID;
+    private String profilePicture;
 
     /**
      * Constructs a User with the specified first name, last name, and email.
@@ -152,6 +154,22 @@ public class User {
      */
     public String getDevice_ID(){
         return device_ID;
+    }
+
+    /**
+     * this will set the profile Picture for the user and will be used when admin is viewing the user profile
+     * @param profilePicture
+     */
+    public void setProfilePicture(String profilePicture) {
+        this.profilePicture = profilePicture;
+    }
+
+    /**
+     * This is used when the admin is going to view the profile of an entrant
+     * @return
+     */
+    public String getProfilePicture(){
+        return profilePicture;
     }
 
     /**
