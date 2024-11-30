@@ -78,7 +78,8 @@
         <activity android:name=".InvitedEntrantsActivity" />
         <activity android:name=".CancelledEntrantsActivity" />
         <activity android:name=".ConfirmedEntrantsActivity" />
-
+        <activity android:name=".view.Admin.AdminBrowseActivity"/>
+        <activity android:name=".view.Admin.EntrantProfileAdminView"/>
 
         <activity android:name=".view.Organizer.EventDetailsActivity"
             android:parentActivityName=".view.Organizer.OrganizerMainActivity"

@@ -14,16 +14,22 @@ import androidx.core.net.ParseException;
 import com.example.ocelotnovels.model.Entrant;
 import com.example.ocelotnovels.model.Event;
 import com.example.ocelotnovels.model.User;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.example.ocelotnovels.model.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
@@ -35,6 +41,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Utility class to manage Firebase Firestore operations for the application.
@@ -536,5 +543,53 @@ public class FirebaseUtils {
     }
 
 
+    /**
+     * This method will get all of the user profiles for the admin to be able to browse them and then delete them if they have to.
+     * @return ArrayList<User> return a list of users for the admin to be able to browse
+     * @author Nathan Barrett
+     */
+    public ArrayList<User> getProfilesCollection() {
+        ArrayList<User> userArray = new ArrayList<User>();
+        db.collection("users").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for(QueryDocumentSnapshot document : task.getResult()) {
+                        String name = document.getString("name");
+                        Log.d("Admin", name);
+                        String[] nameParts = name.split(" ", 2);
+                        String firstName = nameParts[0];
+                        String lastName = nameParts[1];
+                        String email = document.getString("email");
+                        String phone = document.getString("phone");
+                        User user;
+                        if (phone != null && !phone.equals("")) {
+                            user = new User(firstName, lastName, email, phone);
+                        } else {
+                            user = new User(firstName, lastName, email);
+                        }
+                        Log.d("Admin", user.toString());
+                        userArray.add(user);
+                    }
+                } else {
+                    Log.d("Admin", "is empty");
+                }
+            }
+        });
+        return userArray;
+    }
 
+    public void getAllEvent(){
+        db.collection("users").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if(task.isSuccessful()){
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        Log.d("Admin", document.getId() + " => " + document.getData());
+                    }
+                }
+            }
+        });
+    }
 }
+
