@@ -128,6 +128,8 @@ public class Event {
         this.eventId = eventId;
     }
 
+
+
     public Event(String eventId, String eventName, String eventDescription, String registrationClose, String eventLocation) {
         this.eventId = eventId;
         this.eventName = eventName;

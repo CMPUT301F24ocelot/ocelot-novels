@@ -5,6 +5,16 @@
     <item
         android:id="@+id/action_profile"
         android:title="Profile" />
+
+    <item
+        android:id="@+id/selected_events"
+        android:title="Selected Event" />
+
+    <item
+        android:id="@+id/confirmed_events"
+        android:title="Confirmed Event" />
+
     </group>
+
 
 </menu>
