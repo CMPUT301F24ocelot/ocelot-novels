@@ -740,5 +740,65 @@ public class FirebaseUtils {
     }
 
 
+    public void fetchUserConfirmedEvents(String userId, String listType, List<Event> eventList, Runnable onComplete) {
+        db.collection("users").document(userId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        ArrayList<String> confirmedEvents = (ArrayList<String>) documentSnapshot.get(listType);
+
+                        if (confirmedEvents != null && !confirmedEvents.isEmpty()) {
+                            List<Task<DocumentSnapshot>> tasks = new ArrayList<>();
+                            for (String eventId : confirmedEvents) {
+                                tasks.add(db.collection("events").document(eventId).get());
+                            }
+
+                            Tasks.whenAllComplete(tasks)
+                                    .addOnSuccessListener(taskSnapshots -> {
+                                        eventList.clear();
+                                        for (Task<DocumentSnapshot> task : tasks) {
+                                            if (task.isSuccessful()) {
+                                                DocumentSnapshot doc = task.getResult();
+                                                if (doc != null && doc.exists()) {
+                                                    Event event = new Event(
+                                                            doc.getId(),
+                                                            doc.getString("name"),
+                                                            doc.getString("description"),
+                                                            doc.getString("eventDate"),
+                                                            doc.getString("location")
+                                                    );
+                                                    event.setGeolocationEnabled(doc.getBoolean("geolocationEnabled"));
+                                                    event.setWaitList((ArrayList<String>) doc.get("waitingList"));
+                                                    event.setSelectedParticipants((ArrayList<String>) doc.get("selectedList"));
+                                                    event.setCancelledParticipants((ArrayList<String>) doc.get("cancelledList"));
+                                                    eventList.add(event);
+                                                }
+                                            }
+                                        }
+                                        if (onComplete != null) {
+                                            onComplete.run();
+                                        }
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Log.e(TAG, "Error fetching confirmed events", e);
+                                        if (onComplete != null) {
+                                            onComplete.run();
+                                        }
+                                    });
+                        } else {
+                            eventList.clear();
+                            if (onComplete != null) {
+                                onComplete.run();
+                            }
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error fetching user document", e);
+                    if (onComplete != null) {
+                        onComplete.run();
+                    }
+                });
+    }
+
 
 }

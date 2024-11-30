@@ -17,6 +17,9 @@
         android:theme="@style/Theme.Material3.Light"
         tools:targetApi="31">
         <activity
+            android:name=".view.Entrant.ConfirmedEventsActivity"
+            android:exported="false" />
+        <activity
             android:name=".view.Entrant.SelectedEventsActivity"
             android:exported="false" />
         <activity
