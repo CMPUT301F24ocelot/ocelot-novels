@@ -249,8 +249,6 @@ public class EventDetailsFragment extends DialogFragment {
                         return;
                     }
 
-                    Long capacityLong = (eventDoc.get("capacity") == null ? -1 : (long) eventDoc.get("capacity"));
-
                     List<String> waitingList = (List<String>) eventDoc.get("waitingList");
                     List<String> cancelledList = (List<String>) eventDoc.get("cancelledList");
 
@@ -258,29 +256,25 @@ public class EventDetailsFragment extends DialogFragment {
                     waitingList = waitingList != null ? waitingList : new ArrayList<>();
                     cancelledList = cancelledList != null ? cancelledList : new ArrayList<>();
 
-                    // Check if the user is already registered
+                    // Check if the user is already in the waiting list
                     if (waitingList.contains(userId)) {
                         Toast.makeText(getContext(), "Already registered for this event", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
-                    // Check event capacity and join
-                    if (capacityLong >= 0 && waitingList.size() < capacityLong || capacityLong == -1) {
-                        addUserToEvent();
+                    // Add the user to the waiting list
+                    addUserToEvent();
 
-                        // Remove user from cancelled list if present
-                        if (cancelledList.contains(userId)) {
-                            cancelledList.remove(userId);
-                            eventDocument.update("cancelledList", cancelledList)
-                                    .addOnFailureListener(e -> Log.e("JoinEventFragment", "Failed to update cancelled list", e));
-                        }
-                    } else {
-                        Toast.makeText(getContext(), "Event is at full capacity", Toast.LENGTH_SHORT).show();
+                    // Remove user from cancelled list if present
+                    if (cancelledList.contains(userId)) {
+                        cancelledList.remove(userId);
+                        eventDocument.update("cancelledList", cancelledList)
+                                .addOnFailureListener(e -> Log.e("JoinEventFragment", "Failed to update cancelled list", e));
                     }
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(getContext(), "Error checking capacity: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    Log.e("JoinEventFragment", "Error checking capacity", e);
+                    Toast.makeText(getContext(), "Error checking event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Log.e("JoinEventFragment", "Error checking event", e);
                 });
     }
 
