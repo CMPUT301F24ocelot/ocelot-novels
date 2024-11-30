@@ -1,5 +1,6 @@
 package com.example.ocelotnovels.model;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -9,11 +10,16 @@ import java.util.Objects;
  * and an optional phone number. This class is intended to be extended by specific user roles
  * such as Entrant, Organizer, and Admin.
  */
-public abstract class User {
+public class User implements Serializable {
+    private String[] roles = {"entrant"};
+
     private String firstName;
     private String lastName;
     private String email;
     private String phoneNumber; // Optional
+
+    private String device_ID;
+    private String profilePicture;
 
     /**
      * Constructs a User with the specified first name, last name, and email.
@@ -131,6 +137,39 @@ public abstract class User {
             throw new IllegalArgumentException("Invalid phone number format!");
         }
         this.phoneNumber = phoneNumber;
+    }
+
+    /**
+     * this is used to get the device ID so that when the admin deletes a user from the  database they have the device ID to find their profile
+     * it will be set when admin retrieves the user from the database
+     * @param device_ID the device ID from a given user
+     */
+    public void setDevice_ID(String device_ID){
+        this.device_ID = device_ID;
+    }
+
+    /**
+     * this will return the device ID and will be called on when an admin has to delete a user from the database
+     * @return device_ID
+     */
+    public String getDevice_ID(){
+        return device_ID;
+    }
+
+    /**
+     * this will set the profile Picture for the user and will be used when admin is viewing the user profile
+     * @param profilePicture
+     */
+    public void setProfilePicture(String profilePicture) {
+        this.profilePicture = profilePicture;
+    }
+
+    /**
+     * This is used when the admin is going to view the profile of an entrant
+     * @return
+     */
+    public String getProfilePicture(){
+        return profilePicture;
     }
 
     /**
