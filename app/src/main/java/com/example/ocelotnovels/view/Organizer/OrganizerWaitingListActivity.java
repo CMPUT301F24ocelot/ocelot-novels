@@ -1,15 +1,12 @@
 package com.example.ocelotnovels.view.Organizer;
 
 import android.os.Bundle;
-import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -87,74 +84,32 @@ public class OrganizerWaitingListActivity extends AppCompatActivity {
 
     private void setupSampleButton() {
         sampleButton.setOnClickListener(v -> {
-            // Show options for sampling (use capacity or set custom capacity)
-            showPollingOptions();
+            // Trigger the sampling process
+            firebaseUtils.performPolling(
+                    eventId,
+                    () -> runOnUiThread(() -> {
+                        Toast.makeText(this, "Sampling completed successfully.", Toast.LENGTH_SHORT).show();
+                        loadOrganiserWaitingList(); // Reload the waiting list to reflect changes
+                    }),
+                    e -> runOnUiThread(() -> {
+                        Toast.makeText(this, "Sampling failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "Error during sampling", e);
+                    })
+            );
+
+            firebaseUtils.addSelectedEvent(eventId, success -> {
+                        // Event added to selectedEventsJoined
+//                        Toast.makeText(this, "Sampling completed successfully.", Toast.LENGTH_SHORT).show();
+                        Log.d("addSelectedEvent", "Added user successfully");
+
+                    },
+                    failure -> {
+                        // Handle error
+                        Log.d("addSelectedEvent", "Error adding user to selected list");
+                    });
+
         });
     }
-
-    private void showPollingOptions() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Sampling Options");
-
-        String[] options = {"Use Event Capacity", "Set Custom Capacity"};
-        builder.setItems(options, (dialog, which) -> {
-            if (which == 0) {
-                // Use event capacity
-                performSamplingWithCapacity(null);
-            } else if (which == 1) {
-                // Show input dialog for custom capacity
-                showCustomCapacityInput();
-            }
-        });
-
-        AlertDialog dialog = builder.create();
-        dialog.show();
-    }
-
-    private void showCustomCapacityInput() {
-        AlertDialog.Builder inputDialog = new AlertDialog.Builder(this);
-        inputDialog.setTitle("Set Custom Capacity");
-
-        // Input field for custom capacity
-        EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_NUMBER); // Only numbers allowed
-        input.setHint("Enter number of participants");
-        inputDialog.setView(input);
-
-        inputDialog.setPositiveButton("Confirm", (dialog, which) -> {
-            String inputValue = input.getText().toString().trim();
-            if (!inputValue.isEmpty()) {
-                try {
-                    int customCapacity = Integer.parseInt(inputValue);
-                    performSamplingWithCapacity(customCapacity);
-                } catch (NumberFormatException e) {
-                    Toast.makeText(this, "Invalid number entered. Try again.", Toast.LENGTH_SHORT).show();
-                }
-            } else {
-                Toast.makeText(this, "Capacity cannot be empty.", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        inputDialog.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
-
-        inputDialog.show();
-    }
-
-    private void performSamplingWithCapacity(Integer customCapacity) {
-        firebaseUtils.performPolling(
-                eventId,
-                customCapacity,
-                () -> runOnUiThread(() -> {
-                    Toast.makeText(this, "Sampling completed successfully.", Toast.LENGTH_SHORT).show();
-                    loadOrganiserWaitingList(); // Reload the waiting list to reflect changes
-                }),
-                e -> runOnUiThread(() -> {
-                    Toast.makeText(this, "Sampling failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    Log.e(TAG, "Error during sampling", e);
-                })
-        );
-    }
-
 
     private void updateEmptyState() {
         runOnUiThread(() -> {

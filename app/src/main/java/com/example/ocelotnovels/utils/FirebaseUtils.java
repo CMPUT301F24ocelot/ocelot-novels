@@ -14,16 +14,22 @@ import androidx.core.net.ParseException;
 import com.example.ocelotnovels.model.Entrant;
 import com.example.ocelotnovels.model.Event;
 import com.example.ocelotnovels.model.User;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.example.ocelotnovels.model.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
@@ -35,6 +41,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Utility class to manage Firebase Firestore operations for the application.
@@ -338,7 +345,7 @@ public class FirebaseUtils {
      * @param onSuccess Callback for success.
      * @param onFailure Callback for failure.
      */
-    public void performPolling(String eventId, Integer newLimit, Runnable onSuccess, OnFailureListener onFailure) {
+    public void performPolling(String eventId, Runnable onSuccess, OnFailureListener onFailure) {
         DocumentReference eventRef = db.collection("events").document(eventId);
 
         eventRef.get().addOnSuccessListener(documentSnapshot -> {
@@ -346,59 +353,35 @@ public class FirebaseUtils {
                 List<String> waitingList = (List<String>) documentSnapshot.get("waitingList");
                 List<String> selectedList = (List<String>) documentSnapshot.get("selectedList");
                 Long capacity = documentSnapshot.getLong("capacity");
-                String regClosed = documentSnapshot.getString("regClosed");
+                // String regClosed = documentSnapshot.getString("regClosed");
 
                 // Ensure waiting list and selected list are not null
                 if (waitingList == null) waitingList = new ArrayList<>();
                 if (selectedList == null) selectedList = new ArrayList<>();
 
                 // Check if registration is closed
-                if (!isRegistrationClosed(regClosed)) {
+                /* if (!isRegistrationClosed(regClosed)) {
                     Log.w(TAG, "Registration is still open for event: " + eventId);
                     if (onFailure != null) {
                         onFailure.onFailure(new Exception("Registration is still open."));
                     }
                     return;
-                }
+                } */
 
-                // Calculate the updated capacity
-                int newCapacity = newLimit != null
-                        ? newLimit // Use the new limit if provided
-                        : (capacity == null || capacity < 0 ? waitingList.size() : Math.toIntExact(capacity));
+                // Determine spots available
+                int spotsAvailable = capacity == null || capacity < 0 ? waitingList.size() : Math.toIntExact(capacity - selectedList.size());
 
-                if (newCapacity <= 0) {
-                    Log.w(TAG, "No spots available for sampling.");
-                    if (onSuccess != null) onSuccess.run(); // Nothing to do, so consider it successful
-                    return;
-                }
+                // Select users from the waiting list
+                List<String> entrantsToSelect = selectEntrants(waitingList, selectedList, spotsAvailable);
 
-                // Determine the new list of selected entrants
-                List<String> newSelectedList = sampleEntrants(waitingList, newCapacity);
+                // Update Firestore with selected entrants
+                updateSelectedEntrants(eventId, entrantsToSelect, onSuccess, onFailure);
 
-                // Update Firestore with the new selected entrants
-                eventRef.update("selectedList", newSelectedList)
-                        .addOnSuccessListener(aVoid -> {
-                            Log.i(TAG, "Selected entrants updated for event: " + eventId);
-                            if (onSuccess != null) onSuccess.run();
-                        })
-                        .addOnFailureListener(onFailure);
             } else {
                 Log.e(TAG, "Event not found: " + eventId);
                 if (onFailure != null) onFailure.onFailure(new Exception("Event not found."));
             }
         }).addOnFailureListener(onFailure);
-    }
-
-    /**
-     * Samples entrants from the waiting list up to the specified limit.
-     *
-     * @param waitingList The list of users in the waiting list.
-     * @param limit       The maximum number of users to select.
-     * @return A new list of selected entrants.
-     */
-    private List<String> sampleEntrants(List<String> waitingList, int limit) {
-        Collections.shuffle(waitingList); // Shuffle for randomness
-        return new ArrayList<>(waitingList.subList(0, Math.min(limit, waitingList.size())));
     }
 
     /**
@@ -444,7 +427,8 @@ public class FirebaseUtils {
      */
     private void updateSelectedEntrants(String eventId, List<String> entrantsToSelect, Runnable onSuccess, OnFailureListener onFailure) {
         db.collection("events").document(eventId)
-                .update("selectedList", FieldValue.arrayUnion(entrantsToSelect.toArray()))
+                .update("selectedList", FieldValue.arrayUnion(entrantsToSelect.toArray()),
+                        "waitingList", FieldValue.arrayRemove(entrantsToSelect.toArray()))
                 .addOnSuccessListener(aVoid -> {
                     Log.i(TAG, "Selected entrants updated for event: " + eventId);
                     if (onSuccess != null) onSuccess.run();
@@ -561,5 +545,316 @@ public class FirebaseUtils {
     }
 
 
+    /**
+<<<<<<< HEAD
+     * Add selected event to user's selectedEventsJoined
+     * @param eventId Event to be added to selected events
+     * @param onSuccess Success callback
+     * @param onFailure Failure callback
+     */
+    public void addSelectedEvent(String eventId, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+        DocumentReference userRef = getUserDocument();
 
+        db.runTransaction(transaction -> {
+            DocumentSnapshot userSnapshot = transaction.get(userRef);
+            ArrayList<String> selectedEventsJoined = (ArrayList<String>) userSnapshot.get("selectedEventsJoined");
+            ArrayList<String> eventJoinedByUser = (ArrayList<String>) userSnapshot.get("eventsJoined");
+
+            if (selectedEventsJoined == null) {
+                selectedEventsJoined = new ArrayList<>();
+            }
+
+
+            if (!selectedEventsJoined.contains(eventId)) {
+                selectedEventsJoined.add(eventId);
+                transaction.update(userRef, "selectedEventsJoined", selectedEventsJoined);
+
+                if (eventJoinedByUser.contains(eventId)) {
+                    eventJoinedByUser.remove(eventId);
+                    transaction.update(userRef, "eventsJoined", eventJoinedByUser);
+                }
+
+
+            }
+
+            return null;
+        }).addOnSuccessListener(result -> {
+            if (onSuccess != null) onSuccess.onSuccess(null);
+        }).addOnFailureListener(e -> {
+            if (onFailure != null) onFailure.onFailure(e);
+        });
+    }
+
+    /**
+     * Handle user's response to event invitation
+     * @param eventId Event being responded to
+     * @param response Accept (true) or Reject (false)
+     * @param onSuccess Success callback
+     * @param onFailure Failure callback
+     */
+    public void respondToEventInvitation(String eventId, boolean response, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+        DocumentReference eventRef = db.collection("events").document(eventId);
+        DocumentReference userRef = getUserDocument();
+
+        db.runTransaction(transaction -> {
+            DocumentSnapshot eventSnapshot = transaction.get(eventRef);
+            DocumentSnapshot userSnapshot = transaction.get(userRef);
+
+            // Remove from selected list
+            ArrayList<String> selectedList = (ArrayList<String>) eventSnapshot.get("selectedList");
+            // Remove from user's selected events
+            ArrayList<String> selectedEventsJoined = (ArrayList<String>) userSnapshot.get("selectedEventsJoined");
+
+            if (response) {
+                // User accepts - move to confirmed list
+                ArrayList<String> confirmedList = (ArrayList<String>) eventSnapshot.get("confirmedList");
+                if (confirmedList == null) confirmedList = new ArrayList<>();
+
+                if (selectedList != null) selectedList.remove(deviceId);
+                if (!confirmedList.contains(deviceId)) confirmedList.add(deviceId);
+
+                transaction.update(eventRef, "selectedList", selectedList);
+                transaction.update(eventRef, "confirmedList", confirmedList);
+
+            } else {
+                // User rejects - move to cancelled list
+                ArrayList<String> cancelledList = (ArrayList<String>) eventSnapshot.get("cancelledList");
+                ArrayList<String> waitingList = (ArrayList<String>) eventSnapshot.get("waitingList");
+
+                if (selectedList != null) selectedList.remove(deviceId);
+                if (cancelledList == null) cancelledList = new ArrayList<>();
+                if (!cancelledList.contains(deviceId)) cancelledList.add(deviceId);
+
+                // Add back to waiting list for another chance
+//                if (waitingList == null) waitingList = new ArrayList<>();
+//                if (!waitingList.contains(deviceId)) waitingList.add(deviceId);
+
+                transaction.update(eventRef, "selectedList", selectedList);
+                transaction.update(eventRef, "cancelledList", cancelledList);
+                transaction.update(eventRef, "waitingList", waitingList);
+            }
+
+            // Remove from user's selected events
+            if (selectedEventsJoined != null) selectedEventsJoined.remove(eventId);
+            transaction.update(userRef, "selectedEventsJoined", selectedEventsJoined);
+
+            return null;
+        }).addOnSuccessListener(result -> {
+            if (onSuccess != null) onSuccess.onSuccess(null);
+        }).addOnFailureListener(e -> {
+            if (onFailure != null) onFailure.onFailure(e);
+        });
+    }
+
+    /**
+     * Fetch user's selected events
+     * @param eventList List to populate with selected events
+     * @param onComplete Callback when fetching is complete
+     */
+    public void fetchUserSelectedEvents(List<Event> eventList, Runnable onComplete) {
+        getUserDocument().get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        ArrayList<String> selectedEventsJoined = (ArrayList<String>) documentSnapshot.get("selectedEventsJoined");
+
+                        Log.d("SelectedEvents", "Selected events fetched: " + selectedEventsJoined);
+
+
+                        if (selectedEventsJoined != null && !selectedEventsJoined.isEmpty()) {
+                            List<Task<DocumentSnapshot>> tasks = new ArrayList<>();
+                            for (String eventId : selectedEventsJoined) {
+                                tasks.add(db.collection("events").document(eventId).get());
+                            }
+
+                            Log.d("SelectedEvents", "Selected events fetched: " + selectedEventsJoined);
+
+                            Tasks.whenAllComplete(tasks)
+                                    .addOnSuccessListener(taskSnapshots -> {
+                                        eventList.clear();
+                                        for (Task<DocumentSnapshot> task : tasks) {
+                                            if (task.isSuccessful()) {
+                                                DocumentSnapshot doc = task.getResult();
+
+                                                Log.d("DOC", doc.getId());
+                                                if (doc.exists()) {
+                                                    Event event = new Event(
+                                                            doc.getId(),
+                                                            doc.getString("name"),
+                                                            doc.getString("description"),
+                                                            doc.getString("eventDate"),
+                                                            doc.getString("location")
+                                                    );
+//                                                    event.setGeolocationEnabled(doc.getBoolean("geolocationEnabled"));
+//                                                    event.setWaitList((ArrayList<String>) doc.get("waitingList"));
+//                                                    event.setSelectedParticipants((ArrayList<String>) doc.get("selectedList"));
+//                                                    event.setCancelledParticipants((ArrayList<String>) doc.get("cancelledList"));
+                                                    eventList.add(event);
+                                                }
+
+                                                Log.d("SelectedEvents", "Selected events fetched: " + eventList.size());
+
+                                            }
+                                        }
+
+                                        if (onComplete != null) {
+                                            onComplete.run();
+                                        }
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Log.e(TAG, "Error fetching selected events", e);
+                                        if (onComplete != null) {
+                                            onComplete.run();
+                                        }
+                                    });
+                        } else {
+                            eventList.clear();
+                            if (onComplete != null) {
+                                onComplete.run();
+                            }
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error fetching user document", e);
+                    if (onComplete != null) {
+                        onComplete.run();
+                    }
+                });
+    }
+
+
+    public void addConfirmedEvent(String eventId, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+        DocumentReference userRef = getUserDocument();
+
+        db.runTransaction(transaction -> {
+            DocumentSnapshot userSnapshot = transaction.get(userRef);
+            ArrayList<String> confirmedEventsJoined = (ArrayList<String>) userSnapshot.get("confirmedEventsJoined");
+
+            if (confirmedEventsJoined == null) {
+                confirmedEventsJoined = new ArrayList<>();
+            }
+
+            if (!confirmedEventsJoined.contains(eventId)) {
+                confirmedEventsJoined.add(eventId);
+                transaction.update(userRef, "confirmedEventsJoined", confirmedEventsJoined);
+            }
+
+            return null;
+        }).addOnSuccessListener(result -> {
+            if (onSuccess != null) onSuccess.onSuccess(null);
+        }).addOnFailureListener(e -> {
+            if (onFailure != null) onFailure.onFailure(e);
+        });
+    }
+
+
+    public void fetchUserConfirmedEvents(String userId, String listType, List<Event> eventList, Runnable onComplete) {
+        db.collection("users").document(userId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        ArrayList<String> confirmedEvents = (ArrayList<String>) documentSnapshot.get(listType);
+
+                        if (confirmedEvents != null && !confirmedEvents.isEmpty()) {
+                            List<Task<DocumentSnapshot>> tasks = new ArrayList<>();
+                            for (String eventId : confirmedEvents) {
+                                tasks.add(db.collection("events").document(eventId).get());
+                            }
+
+                            Tasks.whenAllComplete(tasks)
+                                    .addOnSuccessListener(taskSnapshots -> {
+                                        eventList.clear();
+                                        for (Task<DocumentSnapshot> task : tasks) {
+                                            if (task.isSuccessful()) {
+                                                DocumentSnapshot doc = task.getResult();
+                                                if (doc != null && doc.exists()) {
+                                                    Event event = new Event(
+                                                            doc.getId(),
+                                                            doc.getString("name"),
+                                                            doc.getString("description"),
+                                                            doc.getString("eventDate"),
+                                                            doc.getString("location")
+                                                    );
+                                                    event.setGeolocationEnabled(doc.getBoolean("geolocationEnabled"));
+                                                    event.setWaitList((ArrayList<String>) doc.get("waitingList"));
+                                                    event.setSelectedParticipants((ArrayList<String>) doc.get("selectedList"));
+                                                    event.setCancelledParticipants((ArrayList<String>) doc.get("cancelledList"));
+                                                    eventList.add(event);
+                                                }
+                                            }
+                                        }
+                                        if (onComplete != null) {
+                                            onComplete.run();
+                                        }
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Log.e(TAG, "Error fetching confirmed events", e);
+                                        if (onComplete != null) {
+                                            onComplete.run();
+                                        }
+                                    });
+                        } else {
+                            eventList.clear();
+                            if (onComplete != null) {
+                                onComplete.run();
+                            }
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error fetching user document", e);
+                    if (onComplete != null) {
+                        onComplete.run();
+                    }
+                });
+    }
+
+
+     /* This method will get all of the user profiles for the admin to be able to browse them and then delete them if they have to.
+     * @return ArrayList<User> return a list of users for the admin to be able to browse
+     * @author Nathan Barrett
+     */
+    public ArrayList<User> getProfilesCollection() {
+        ArrayList<User> userArray = new ArrayList<User>();
+        db.collection("users").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for(QueryDocumentSnapshot document : task.getResult()) {
+                        String name = document.getString("name");
+                        Log.d("Admin", name);
+                        String[] nameParts = name.split(" ", 2);
+                        String firstName = nameParts[0];
+                        String lastName = nameParts[1];
+                        String email = document.getString("email");
+                        String phone = document.getString("phone");
+                        User user;
+                        if (phone != null && !phone.equals("")) {
+                            user = new User(firstName, lastName, email, phone);
+                        } else {
+                            user = new User(firstName, lastName, email);
+                        }
+                        Log.d("Admin", user.toString());
+                        userArray.add(user);
+                    }
+                } else {
+                    Log.d("Admin", "is empty");
+                }
+            }
+        });
+        return userArray;
+    }
+
+    public void getAllEvent(){
+        db.collection("users").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if(task.isSuccessful()){
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        Log.d("Admin", document.getId() + " => " + document.getData());
+                    }
+                }
+            }
+        });
+    }
 }
+

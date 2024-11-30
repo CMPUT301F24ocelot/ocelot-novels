@@ -17,6 +17,12 @@
         android:theme="@style/Theme.Material3.Light"
         tools:targetApi="31">
         <activity
+            android:name=".view.Entrant.ConfirmedEventsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.Entrant.SelectedEventsActivity"
+            android:exported="false" />
+        <activity
             android:name=".view.Organizer.OrganiserConfirmedListActivity"
             android:exported="false" />
         <activity
@@ -30,8 +36,7 @@
             android:exported="true" />
         <activity
             android:name=".view.Entrant.WaitingListActivity"
-            android:exported="false"
-            android:parentActivityName=".MainActivity">
+            android:exported="false">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
@@ -47,7 +52,8 @@
             android:exported="false" />
         <activity
             android:name=".view.Organizer.OrganizerMainActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:parentActivityName=".MainActivity"/>
         <activity
             android:name=".CreateEventActivity"
             android:parentActivityName=".view.Organizer.OrganizerMainActivity" />
@@ -79,10 +85,13 @@
         <activity android:name=".CancelledEntrantsActivity" />
         <activity android:name=".ConfirmedEntrantsActivity" />
 
+        <activity android:name=".view.Admin.AdminBrowseActivity"/>
+        <activity android:name=".view.Admin.EntrantProfileAdminView"/>
 
         <activity android:name=".view.Organizer.EventDetailsActivity"
             android:parentActivityName=".view.Organizer.OrganizerMainActivity"
             android:exported="true"/>
+
         <activity android:name=".QrCodeActivity" />
 
         <meta-data
@@ -95,7 +104,6 @@
             android:name="com.google.android.gms.maps.MAP_ID"
             android:value="9aad53a4ad71710a" />
 
-
         <service
             android:name=".MyFirebaseMessagingService"
             android:exported="false">
@@ -103,8 +111,6 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-
-
     </application>
 
 </manifest>

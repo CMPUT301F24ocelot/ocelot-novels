@@ -12,6 +12,7 @@
     <color name="md_theme_light_outline">#D1D1D1</color>
     <color name="md_theme_light_secondaryContainer">#EDE7F6</color>
     <color name="md_theme_light_surfaceVariant">#EDEDED</color>
+    <color name="darkGray">#626262</color>
 </resources>
 
 
