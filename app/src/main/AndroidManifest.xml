@@ -30,8 +30,7 @@
             android:exported="true" />
         <activity
             android:name=".view.Entrant.WaitingListActivity"
-            android:exported="false"
-            android:parentActivityName=".MainActivity">
+            android:exported="false">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
@@ -47,7 +46,8 @@
             android:exported="false" />
         <activity
             android:name=".view.Organizer.OrganizerMainActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:parentActivityName=".MainActivity"/>
         <activity
             android:name=".CreateEventActivity"
             android:parentActivityName=".view.Organizer.OrganizerMainActivity" />

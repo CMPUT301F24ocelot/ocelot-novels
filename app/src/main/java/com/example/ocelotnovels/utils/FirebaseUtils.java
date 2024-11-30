@@ -543,8 +543,6 @@ public class FirebaseUtils {
     }
 
 
-
-
     /**
      * This method will get all of the user profiles for the admin to be able to browse them and then delete them if they have to.
      * @return ArrayList<User> return a list of users for the admin to be able to browse
@@ -594,3 +592,4 @@ public class FirebaseUtils {
         });
     }
 }
+
