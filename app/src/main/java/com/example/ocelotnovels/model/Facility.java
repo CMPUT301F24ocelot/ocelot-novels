@@ -1,9 +1,10 @@
 package com.example.ocelotnovels.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.UUID;
 
-public class Facility {
+public class Facility implements Serializable {
     private final String facilityId; // Unique ID for the facility
     private String ownerId; // ID of the owner of the facility
     private String facilityName; // Name of the facility
@@ -12,6 +13,7 @@ public class Facility {
     private String facilityLocation; // Physical location of the facility
     private String facilityDescription; // Description of the facility
     private ArrayList<String> members; // List of member IDs associated with the facility
+    private ArrayList<String> eventIds; // A list of all the events that a facility is hosting
 
     /**
      * Default constructor for Firebase or other ORM systems
@@ -39,6 +41,28 @@ public class Facility {
         this.facilityLocation = facilityLocation;
         this.facilityDescription = facilityDescription;
         this.members = new ArrayList<>();
+    }
+
+    /**
+     * Used by Admin when getting the list of facilities so that they have their specified Id in the class
+     * @param facilityId        The Id of the facility as found in Firestore
+     * @param ownerId           ID of the facility owner
+     * @param facilityName      Name of the facility
+     * @param facilityEmail     Contact email for the facility
+     * @param facilityPhone     Contact phone for the facility
+     * @param facilityLocation  Physical location of the facility
+     * @param facilityDescription Description of the facility
+     * @param
+     */
+    public Facility(String facilityId, String ownerId, String facilityName, String facilityEmail, String facilityPhone, String facilityLocation, String facilityDescription, ArrayList<String> events) {
+        this.facilityId = facilityId;
+        this.ownerId = ownerId;
+        this.facilityName = facilityName;
+        this.facilityEmail = facilityEmail;
+        this.facilityPhone = facilityPhone;
+        this.facilityLocation = facilityLocation;
+        this.facilityDescription = facilityDescription;
+        this.eventIds = events;
     }
 
     // Getters and Setters

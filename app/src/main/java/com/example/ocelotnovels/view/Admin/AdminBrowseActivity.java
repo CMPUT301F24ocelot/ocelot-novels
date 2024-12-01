@@ -20,6 +20,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.model.Event;
+import com.example.ocelotnovels.model.Facility;
 import com.example.ocelotnovels.model.User;
 import com.example.ocelotnovels.utils.FirebaseUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -45,6 +46,9 @@ public class AdminBrowseActivity extends AppCompatActivity {
 
     ArrayAdapter<Event> eventsAdapter;//Will only be used if the admin wants to browse the events
     ArrayList<Event> events = new ArrayList<Event>();
+
+    ArrayAdapter<Facility> facilitiesAdapter;//Will only be used if the admin wants to browse the facilities
+    ArrayList<Facility> facilities = new ArrayList<Facility>();
 
     String[] options = {"Profiles", "Events", "Facilities", "Images"};
     ArrayAdapter<String> dropDownAdapter;
@@ -87,6 +91,8 @@ public class AdminBrowseActivity extends AppCompatActivity {
                     loadProfiles();
                 } else if (item.equals("Events")) {
                     loadEvents();
+                } else if (item.equals("Facilities")) {
+                    loadFacilities();
                 }
             }
         });
@@ -129,32 +135,7 @@ public class AdminBrowseActivity extends AppCompatActivity {
         results.setText("Results: Events");
         eventsAdapter = new EventAdapterAdmin(this, events);
         events.clear();
-        firebaseUtils.getDb().collection("events").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()) {
-                    for(QueryDocumentSnapshot document : task.getResult()) {
-                        Event event = new Event(document.getId());
-                        event.setEventName(document.getString("name"));
-                        event.setEventDescription(document.getString("description"));
-                        event.setWaitList((ArrayList<String>) document.get("waitingList"));
-                        event.setSelectedParticipants((ArrayList<String>) document.get("selectedList"));
-                        event.setQrHash(document.getString("qrHash"));
-                        String posterUrl = document.getString("posterUrl");
-                        if (posterUrl != null && !posterUrl.isEmpty()) {
-                            event.setEventPosterUrl(posterUrl);
-                        }else{
-                            event.setEventPosterUrl(null);
-                        }
-                        events.add(event);
-                        eventsAdapter.notifyDataSetChanged();
-                    }
-                } else {
-                    Toast.makeText(AdminBrowseActivity.this,"failed to load profiles",Toast.LENGTH_SHORT).show();
-                    Log.d("Admin", "is empty");
-                }
-            }
-        });
+        firebaseUtils.getAllEvents(this,eventsAdapter,events);
         //Log.d("Admin",profiles.get(1).toString());
         resultsList.setAdapter(eventsAdapter);
     }
@@ -163,6 +144,11 @@ public class AdminBrowseActivity extends AppCompatActivity {
      * This will load all of the facilities for the admin to be able to browse
      */
     private void loadFacilities(){
-
+        results.setText("Results: Facilities");
+        facilitiesAdapter = new FacilityAdapterAdmin(this, facilities);
+        facilities.clear();
+        firebaseUtils.getAllFacilities(this,facilitiesAdapter,facilities);
+        //Log.d("Admin",profiles.get(1).toString());
+        resultsList.setAdapter(facilitiesAdapter);
     }
 }

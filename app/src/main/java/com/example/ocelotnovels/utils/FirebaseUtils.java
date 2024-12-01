@@ -14,6 +14,7 @@ import androidx.core.net.ParseException;
 
 import com.example.ocelotnovels.model.Entrant;
 import com.example.ocelotnovels.model.Event;
+import com.example.ocelotnovels.model.Facility;
 import com.example.ocelotnovels.model.User;
 import com.example.ocelotnovels.view.Admin.AdminBrowseActivity;
 import com.example.ocelotnovels.view.Admin.ProfileAdapterAdmin;
@@ -936,6 +937,73 @@ public class FirebaseUtils {
             }
         });
 
+    }
+
+    public void getAllEvents(Context context, ArrayAdapter<Event> eventsAdapter, ArrayList<Event> events){
+        db.collection("events").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for(QueryDocumentSnapshot document : task.getResult()) {
+                        Event event = new Event(document.getId());
+                        event.setEventName(document.getString("name"));
+                        event.setEventDescription(document.getString("description"));
+                        event.setWaitList((ArrayList<String>) document.get("waitingList"));
+                        event.setSelectedParticipants((ArrayList<String>) document.get("selectedList"));
+                        event.setQrHash(document.getString("qrHash"));
+                        String posterUrl = document.getString("posterUrl");
+                        if (posterUrl != null && !posterUrl.isEmpty()) {
+                            event.setEventPosterUrl(posterUrl);
+                        }else{
+                            event.setEventPosterUrl(null);
+                        }
+                        events.add(event);
+                        eventsAdapter.notifyDataSetChanged();
+                    }
+                } else {
+                    Toast.makeText(context,"failed to load events",Toast.LENGTH_SHORT).show();
+                    Log.d("Admin", "is empty");
+                }
+            }
+        });
+    }
+
+    public void getAllFacilities(Context context, ArrayAdapter<Facility> facilitiesAdapter,ArrayList<Facility> facilities){
+        db.collection("facilities").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for(QueryDocumentSnapshot document : task.getResult()) {
+                        // set up all the parameters for the Facility to be initialized
+                        String facilityId = document.getId();
+                        String name = document.getString("facilityName");
+                        String description = document.getString("facilityDescription");
+                        ArrayList<String> events = (ArrayList<String>)document.get("events"); // This will be used when deleting facility
+                        String location = document.getString("facilityLocation");
+                        String phone = document.getString("facilityPhone");
+                        String email = document.getString("facilityEmail");
+                        final String[] owner = {document.getString("ownerId")};
+                        db.collection("users").document(owner[0]).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                if(task.isSuccessful()){
+                                    owner[0] = document.getString("name");
+                                    Facility facility = new Facility(facilityId, owner[0], name, email, phone, location, description, events);
+                                    facilities.add(facility);
+                                    facilitiesAdapter.notifyDataSetChanged();
+                                }
+                            }
+                        });
+                        /*Facility facility = new Facility(facilityId, owner[0], name, email, phone, location, description, events);
+                        facilities.add(facility);
+                        facilitiesAdapter.notifyDataSetChanged();*/
+                    }
+                } else {
+                    Toast.makeText(context,"failed to load events",Toast.LENGTH_SHORT).show();
+                    Log.d("Admin", "is empty");
+                }
+            }
+        });
     }
 
     public void deleteEventQRHash(Context context, String eventId){

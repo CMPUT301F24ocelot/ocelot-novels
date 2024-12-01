@@ -16,21 +16,22 @@ import androidx.annotation.Nullable;
 
 import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.model.Event;
+import com.example.ocelotnovels.model.Facility;
 
 import java.util.ArrayList;
 
 /**
  * This is the class that is used to display the events in the admin browser
  */
-public class FacilityAdapterAdmin extends ArrayAdapter<Event> {
+public class FacilityAdapterAdmin extends ArrayAdapter<Facility> {
 
     /**
      * This will create the view for the listView in the admin browser
      * @param context
-     * @param events
+     * @param facilities  The facilities that are going to be displayed in the list
      */
-    public FacilityAdapterAdmin(@NonNull Context context, ArrayList<Event> events) {
-        super(context, 0, events);
+    public FacilityAdapterAdmin(@NonNull Context context, ArrayList<Facility> facilities) {
+        super(context, 0, facilities);
     }
     @NonNull
     @Override
@@ -42,17 +43,17 @@ public class FacilityAdapterAdmin extends ArrayAdapter<Event> {
         }else{
             view = convertView;
         }
-        Event event = getItem(position);
-        if(event != null){
+        Facility facility = getItem(position);
+        if(facility != null){
             TextView name = view.findViewById(R.id.event_name);
-            name.setText(event.getEventName());
+            name.setText(facility.getFacilityName());
         }
         Button detailsButton = view.findViewById(R.id.btn_details);
         detailsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent toProfile = new Intent(FacilityAdapterAdmin.this.getContext(), EventDetailsAdminView.class);
-                toProfile.putExtra("Event", event);
+                toProfile.putExtra("Facility", facility);
                 startActivity(FacilityAdapterAdmin.this.getContext(),toProfile,null);
             }
         });
