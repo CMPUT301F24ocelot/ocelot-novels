@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.util.Log;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -14,6 +15,8 @@ import androidx.core.net.ParseException;
 import com.example.ocelotnovels.model.Entrant;
 import com.example.ocelotnovels.model.Event;
 import com.example.ocelotnovels.model.User;
+import com.example.ocelotnovels.view.Admin.AdminBrowseActivity;
+import com.example.ocelotnovels.view.Admin.ProfileAdapterAdmin;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -888,6 +891,53 @@ public class FirebaseUtils {
                     }
                 });
     }
+
+    public void getAllUsers(Context context, ArrayAdapter<User> profilesAdapter, ArrayList<User> profiles){
+        db.collection("users").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for(QueryDocumentSnapshot document : task.getResult()) {
+                        String name = document.getString("name");
+                        String[] nameParts = name.split(" ", 2);
+                        String firstName = nameParts[0];
+                        String lastName;
+                        if (nameParts.length == 2) {
+                            lastName = nameParts[1];
+                        } else {
+                            lastName = "nobody";
+                        }
+                        if (lastName == null || lastName.trim().isEmpty() || lastName.length() > 100) {
+                            lastName = "nobody";
+                        }
+                        String email = document.getString("email");
+                        String phone = document.getString("phone");
+                        User user;
+                        if (phone != null && !phone.equals("")) {
+                            user = new User(firstName, lastName, email, phone);
+                        } else {
+                            user = new User(firstName, lastName, email);
+                        }
+                        user.setDevice_ID(document.getId());
+                        String profilePicUrl = document.getString("profilePicUrl");
+                        if (profilePicUrl != null && !profilePicUrl.isEmpty()) {
+                            user.setProfilePicture(profilePicUrl);
+                        } else {
+                            // Use default profile picture logic
+                            StorageReference defaultPicRef = getDefaultPics().child(firstName.charAt(0) + ".jpg");
+                        }
+                        profiles.add(user);
+                        profilesAdapter.notifyDataSetChanged();
+                    }
+                } else {
+                    Toast.makeText(context,"failed to load profiles",Toast.LENGTH_SHORT).show();
+                    Log.d("Admin", "is empty");
+                }
+            }
+        });
+
+    }
+
     public void deleteEventQRHash(Context context, String eventId){
         Log.d("Admin","runningDelete");
         db.collection("events").document(eventId).update("qrHash","").addOnCompleteListener(task -> {

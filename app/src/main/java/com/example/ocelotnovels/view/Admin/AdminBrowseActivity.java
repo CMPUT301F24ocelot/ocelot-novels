@@ -118,49 +118,7 @@ public class AdminBrowseActivity extends AppCompatActivity {
         results.setText("Results: Profiles");
         profiles.clear();
         profilesAdapter = new ProfileAdapterAdmin(this, profiles);
-        firebaseUtils.getDb().collection("users").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()) {
-                    for(QueryDocumentSnapshot document : task.getResult()) {
-                        String name = document.getString("name");
-                        String[] nameParts = name.split(" ", 2);
-                        String firstName = nameParts[0];
-                        String lastName;
-                        if (nameParts.length == 2) {
-                            lastName = nameParts[1];
-                        } else {
-                            lastName = "nobody";
-                        }
-                        if (lastName == null || lastName.trim().isEmpty() || lastName.length() > 100) {
-                            lastName = "nobody";
-                        }
-                        String email = document.getString("email");
-                        String phone = document.getString("phone");
-                        User user;
-                        if (phone != null && !phone.equals("")) {
-                            user = new User(firstName, lastName, email, phone);
-                        } else {
-                            user = new User(firstName, lastName, email);
-                        }
-                        user.setDevice_ID(document.getId());
-                        String profilePicUrl = document.getString("profilePicUrl");
-                        if (profilePicUrl != null && !profilePicUrl.isEmpty()) {
-                            user.setProfilePicture(profilePicUrl);
-                        } else {
-                            // Use default profile picture logic
-                            StorageReference defaultPicRef = firebaseUtils.getDefaultPics().child(firstName.charAt(0) + ".jpg");
-                        }
-                        profiles.add(user);
-                        profilesAdapter.notifyDataSetChanged();
-                    }
-                } else {
-                    Toast.makeText(AdminBrowseActivity.this,"failed to load profiles",Toast.LENGTH_SHORT).show();
-                    Log.d("Admin", "is empty");
-                }
-            }
-        });
-        //Log.d("Admin",profiles.get(1).toString());
+        firebaseUtils.getAllUsers(this,profilesAdapter,profiles);
         resultsList.setAdapter(profilesAdapter);
     }
 
