@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.net.ParseException;
@@ -15,19 +14,16 @@ import com.example.ocelotnovels.model.Entrant;
 import com.example.ocelotnovels.model.Event;
 import com.example.ocelotnovels.model.User;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.example.ocelotnovels.model.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -36,15 +32,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
 
 /**
  * Utility class to manage Firebase Firestore operations for the application.
@@ -356,13 +349,14 @@ public class FirebaseUtils {
             if (documentSnapshot.exists()) {
                 List<String> waitingList = (List<String>) documentSnapshot.get("waitingList");
                 List<String> selectedList = (List<String>) documentSnapshot.get("selectedList");
+                List<String> cancelledList = (List<String>) documentSnapshot.get("cancelledList");
                 Long capacity = documentSnapshot.getLong("capacity");
                 String regClosed = documentSnapshot.getString("regClosed");
 
                 // Ensure waiting list and selected list are not null
                 if (waitingList == null) waitingList = new ArrayList<>();
                 if (selectedList == null) selectedList = new ArrayList<>();
-
+                if (cancelledList==null) cancelledList= new ArrayList<>();
                 // Check if registration is closed
                 if (!isRegistrationClosed(regClosed)) {
                     Log.w(TAG, "Registration is still open for event: " + eventId);
@@ -374,7 +368,7 @@ public class FirebaseUtils {
 
                 // Calculate the updated capacity
                 int newCapacity = newLimit != null
-                        ? newLimit-selectedList.size() // Use the new limit if provided
+                        ? newLimit==-2? 1:newLimit-selectedList.size() // Use the new limit if provided
                         : (capacity == null || capacity < 0 ? waitingList.size() : Math.toIntExact(capacity))- selectedList.size();
 
                 if (newCapacity <= 0) {
@@ -385,12 +379,13 @@ public class FirebaseUtils {
 
                 // Determine the new list of selected entrants
                 List<String> newSelectedList = sampleEntrants(waitingList, newCapacity);
+                newSelectedList.removeAll(cancelledList);
                 List<String> finalSelectedList = new ArrayList<String>(selectedList);
                 finalSelectedList.addAll(newSelectedList);
 
 
                 // Update Firestore with the new selected entrants
-                eventRef.update("selectedList", finalSelectedList)
+                eventRef.update("selectedList", finalSelectedList,"waitingList", FieldValue.arrayRemove(finalSelectedList.toArray()))
                         .addOnSuccessListener(aVoid -> {
                             Log.i(TAG, "Selected entrants updated for event: " + eventId);
 
@@ -675,7 +670,8 @@ public class FirebaseUtils {
 
             // Remove from selected list
             ArrayList<String> selectedList = (ArrayList<String>) eventSnapshot.get("selectedList");
-            // Remove from user's selected events
+
+                    // Remove from user's selected events
             ArrayList<String> selectedEventsJoined = (ArrayList<String>) userSnapshot.get("selectedEventsJoined");
 
             if (response) {
@@ -705,20 +701,25 @@ public class FirebaseUtils {
                 transaction.update(eventRef, "selectedList", selectedList);
                 transaction.update(eventRef, "cancelledList", cancelledList);
 
+
+
             }
 
             // Remove from user's selected events
             if (selectedEventsJoined != null) selectedEventsJoined.remove(eventId);
             transaction.update(userRef, "selectedEventsJoined", selectedEventsJoined);
 
-            // Perform polling to sample another user
-            performPolling(eventId, null,
-                    () -> Log.i(TAG, "Another user sampled after rejection for event: " + eventId),
-                    e -> Log.e(TAG, "Failed to sample another user: " + e.getMessage())
-            );
+
 
             return null;
         }).addOnSuccessListener(result -> {
+            if (!response){
+                // Perform polling to sample another user
+                performPolling(eventId, -2,
+                        () -> Log.i(TAG, "Another user sampled after rejection for event: " + eventId),
+                        e -> Log.e(TAG, "Failed to sample another user: " + e.getMessage())
+                );
+            }
             if (onSuccess != null) onSuccess.onSuccess(null);
         }).addOnFailureListener(e -> {
             if (onFailure != null) onFailure.onFailure(e);
