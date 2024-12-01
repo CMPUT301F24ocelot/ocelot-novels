@@ -329,7 +329,7 @@ public class FirebaseUtils {
 
     public void updateUserProfilePicUrl(String url) {
         db.collection("users").document(deviceId).update("profilePicUrl", url)
-        //.addOnCompleteListener(task -> Toast.makeText(this, "Profile picture updated!", Toast.LENGTH_SHORT).show())
+                //.addOnCompleteListener(task -> Toast.makeText(this, "Profile picture updated!", Toast.LENGTH_SHORT).show())
         ;
     }
 
@@ -671,7 +671,7 @@ public class FirebaseUtils {
             // Remove from selected list
             ArrayList<String> selectedList = (ArrayList<String>) eventSnapshot.get("selectedList");
 
-            // Remove from user's selected events
+                    // Remove from user's selected events
             ArrayList<String> selectedEventsJoined = (ArrayList<String>) userSnapshot.get("selectedEventsJoined");
 
             if (response) {
@@ -889,7 +889,7 @@ public class FirebaseUtils {
     }
 
 
-    /* This method will get all of the user profiles for the admin to be able to browse them and then delete them if they have to.
+     /* This method will get all of the user profiles for the admin to be able to browse them and then delete them if they have to.
      * @return ArrayList<User> return a list of users for the admin to be able to browse
      * @author Nathan Barrett
      */
@@ -937,3 +937,4 @@ public class FirebaseUtils {
         });
     }
 }
+
