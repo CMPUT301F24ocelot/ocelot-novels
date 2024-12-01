@@ -52,8 +52,7 @@
             android:exported="false" />
         <activity
             android:name=".view.Organizer.OrganizerMainActivity"
-            android:exported="true"
-            android:parentActivityName=".MainActivity"/>
+            android:exported="false" />
         <activity
             android:name=".CreateEventActivity"
             android:parentActivityName=".view.Organizer.OrganizerMainActivity" />

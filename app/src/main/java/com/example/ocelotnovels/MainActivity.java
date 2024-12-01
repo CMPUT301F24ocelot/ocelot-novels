@@ -322,31 +322,50 @@ public class MainActivity extends AppCompatActivity {
      * Fetches user data from Firestore and updates the UI.
      */
     private void fetchUserData() {
-        db.collection("users").document(deviceId).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists() && documentSnapshot.contains("email")) {
-                        getUserEmail = documentSnapshot.getString("email");
-                        isUserSignedUp = true;
-                        signUpButton.setVisibility(View.GONE);
-                        eventViewBtn.setOnClickListener(v -> {
-                            Intent intent = new Intent(getApplicationContext(), WaitingListActivity.class);
-                            startActivity(intent);
-                        });
-                    } else {
-                        isUserSignedUp = false;
-                        signUpButton.setVisibility(View.VISIBLE);
-                        signUpButton.setOnClickListener(view -> {
-                            Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
-                            startActivity(intent);
-                            finish();
-                        });
+        db.collection("facilities")
+                .whereEqualTo("ownerId", deviceId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        // This device is an organizer, directly go to OrganizerMainActivity
+                        Intent intent = new Intent(MainActivity.this, OrganizerMainActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                        finish(); // Finish MainActivity so it can't be accessed
+                        return;
                     }
-                    invalidateOptionsMenu();
+
+                    // If not an organizer, proceed with normal user data fetch
+                    db.collection("users").document(deviceId).get()
+                            .addOnSuccessListener(documentSnapshot -> {
+                                if (documentSnapshot.exists() && documentSnapshot.contains("email")) {
+                                    getUserEmail = documentSnapshot.getString("email");
+                                    isUserSignedUp = true;
+                                    signUpButton.setVisibility(View.GONE);
+                                    eventViewBtn.setOnClickListener(v -> {
+                                        Intent intent = new Intent(getApplicationContext(), WaitingListActivity.class);
+                                        startActivity(intent);
+                                    });
+                                } else {
+                                    isUserSignedUp = false;
+                                    signUpButton.setVisibility(View.VISIBLE);
+                                    signUpButton.setOnClickListener(view -> {
+                                        Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
+                                        startActivity(intent);
+                                        finish();
+                                    });
+                                }
+                                invalidateOptionsMenu();
+                            })
+                            .addOnFailureListener(e -> {
+                                isUserSignedUp = false;
+                                Toast.makeText(MainActivity.this, "Error fetching user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                invalidateOptionsMenu();
+                            });
                 })
                 .addOnFailureListener(e -> {
-                    isUserSignedUp = false; // Default to not signed up in case of error
-                    Toast.makeText(MainActivity.this, "Error fetching user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    invalidateOptionsMenu(); // Refresh the menu
+                    // Handle failure in checking facilities
+                    Toast.makeText(MainActivity.this, "Error checking facilities: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 
@@ -370,5 +389,33 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "Location permission denied. Some features may be limited.", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        // If the current activity is MainActivity and user is an organizer, do nothing
+        if (isFinishing()) {
+            return;
+        }
+
+        db.collection("facilities")
+                .whereEqualTo("ownerId", deviceId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        // Organizer trying to go back, redirect to OrganizerMainActivity
+                        Intent intent = new Intent(MainActivity.this, OrganizerMainActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        // Normal user, allow default back button behavior
+                        super.onBackPressed();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    // If there's an error, default to normal back button behavior
+                    super.onBackPressed();
+                });
     }
 }
