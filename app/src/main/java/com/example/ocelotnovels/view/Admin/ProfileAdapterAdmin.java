@@ -68,8 +68,6 @@ public class ProfileAdapterAdmin extends ArrayAdapter<User> {
             public void onClick(View view) {
                 Intent toProfile = new Intent(ProfileAdapterAdmin.this.getContext(), EntrantProfileAdminView.class);
                 toProfile.putExtra("User",profile);
-                //Bundle bundle = new Bundle();
-                //bundle.putSerializable("User", profile);
                 startActivity(ProfileAdapterAdmin.this.getContext(),toProfile,null);
             }
         });

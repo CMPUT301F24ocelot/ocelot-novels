@@ -44,7 +44,7 @@ public class AdminBrowseActivity extends AppCompatActivity {
     ArrayList<User> profiles = new ArrayList<User>();
 
     ArrayAdapter<Event> eventsAdapter;//Will only be used if the admin wants to browse the events
-
+    ArrayList<Event> events = new ArrayList<Event>();
 
     String[] options = {"Profiles", "Events", "Facilities", "Images"};
     ArrayAdapter<String> dropDownAdapter;
@@ -116,6 +116,7 @@ public class AdminBrowseActivity extends AppCompatActivity {
      */
     private void loadProfiles(){
         results.setText("Results: Profiles");
+        profiles.clear();
         profilesAdapter = new ProfileAdapterAdmin(this, profiles);
         firebaseUtils.getDb().collection("users").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -167,7 +168,37 @@ public class AdminBrowseActivity extends AppCompatActivity {
      * This will load all of the events for the admin to be able to browse
      */
     private void loadEvents(){
-        firebaseUtils.getAllEvent();
+        results.setText("Results: Events");
+        eventsAdapter = new EventAdapterAdmin(this, events);
+        events.clear();
+        firebaseUtils.getDb().collection("events").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for(QueryDocumentSnapshot document : task.getResult()) {
+                        Event event = new Event(document.getId());
+                        event.setEventName(document.getString("name"));
+                        event.setEventDescription(document.getString("description"));
+                        event.setWaitList((ArrayList<String>) document.get("waitingList"));
+                        event.setSelectedParticipants((ArrayList<String>) document.get("selectedList"));
+                        event.setQrHash(document.getString("qrHash"));
+                        String posterUrl = document.getString("posterUrl");
+                        if (posterUrl != null && !posterUrl.isEmpty()) {
+                            event.setEventPosterUrl(posterUrl);
+                        }else{
+                            event.setEventPosterUrl(null);
+                        }
+                        events.add(event);
+                        eventsAdapter.notifyDataSetChanged();
+                    }
+                } else {
+                    Toast.makeText(AdminBrowseActivity.this,"failed to load profiles",Toast.LENGTH_SHORT).show();
+                    Log.d("Admin", "is empty");
+                }
+            }
+        });
+        //Log.d("Admin",profiles.get(1).toString());
+        resultsList.setAdapter(eventsAdapter);
     }
 
     /**

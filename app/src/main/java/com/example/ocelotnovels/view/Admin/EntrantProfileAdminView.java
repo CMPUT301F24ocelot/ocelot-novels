@@ -1,6 +1,7 @@
 package com.example.ocelotnovels.view.Admin;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -29,6 +30,9 @@ public class EntrantProfileAdminView extends AppCompatActivity {
         initializeView();
     }
 
+    /**
+     * intiializes all of the setting for the view of this activity
+     */
     private void initializeView() {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Admin");
@@ -52,6 +56,14 @@ public class EntrantProfileAdminView extends AppCompatActivity {
                 .error(R.drawable.ic_image_placeholder) // Optional
                 .into(profilePicture);
         profilePicture.setImageResource(R.drawable.ic_image_placeholder);
+
+        deleteButton = findViewById(R.id.delete_button);
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
     }
 
     /**

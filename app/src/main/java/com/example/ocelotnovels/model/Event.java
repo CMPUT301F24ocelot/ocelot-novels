@@ -1,12 +1,13 @@
 package com.example.ocelotnovels.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 
 /**
  * Represents an event with various details and participant lists.
  */
-public class Event {
+public class Event implements Serializable {
     /** The id of the event **/
     private  String eventId;
     /** The name of the event. */
