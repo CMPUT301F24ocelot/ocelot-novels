@@ -110,13 +110,14 @@ public class SelectedEventsActivity extends AppCompatActivity {
                         Log.e(TAG, "Error responding to invitation", e);
                     })
             );
-
-            firebaseUtils.addConfirmedEvent(event.getEventId(), success -> {
-                        Log.d("addConfirmedEvent", "Added user successfully to confirmed list in users");
-                    },
-                    failure -> {
-                        Log.d("addConfirmedEvent", "Error adding user to confirmed list in users");
-                    });
+            if (accept) {
+                firebaseUtils.addConfirmedEvent(event.getEventId(), success -> {
+                            Log.d("addConfirmedEvent", "Added user successfully to confirmed list in users");
+                        },
+                        failure -> {
+                            Log.d("addConfirmedEvent", "Error adding user to confirmed list in users");
+                        });
+            }
         }
     }
 
