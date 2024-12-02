@@ -147,6 +147,7 @@ public class AdminBrowseActivity extends AppCompatActivity {
     @Override
     public boolean onSupportNavigateUp() {
         Intent homePage = new Intent(AdminBrowseActivity.this, MainActivity.class);
+        startActivity(homePage);
         return true;
     }
 
