@@ -27,8 +27,11 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
+import com.example.ocelotnovels.MainActivity;
 import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.model.Event;
+import com.example.ocelotnovels.model.Facility;
+import com.example.ocelotnovels.model.Image;
 import com.example.ocelotnovels.model.User;
 import com.example.ocelotnovels.utils.FirebaseUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -53,7 +56,13 @@ public class AdminBrowseActivity extends AppCompatActivity {
     ArrayList<User> profiles = new ArrayList<User>();
 
     ArrayAdapter<Event> eventsAdapter;//Will only be used if the admin wants to browse the events
+    ArrayList<Event> events = new ArrayList<Event>();
 
+    ArrayAdapter<Facility> facilitiesAdapter;//Will only be used if the admin wants to browse the facilities
+    ArrayList<Facility> facilities = new ArrayList<Facility>();
+
+    ArrayAdapter<Image> imageAdapter;//Will only be used if the admin wants to browse the facilities
+    ArrayList<Image> images = new ArrayList<Image>();
 
     String[] options = {"Profiles", "Events", "Facilities", "Images"};
     ArrayAdapter<String> dropDownAdapter;
@@ -66,10 +75,22 @@ public class AdminBrowseActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstance){
         super.onCreate(savedInstance);
         setContentView(R.layout.admin_browse_layout);
+        Bundle item = getIntent().getExtras();
 
         initializeView();
 
         initializeFirebase();
+
+        if(item != null){
+            String from = item.getString("from");
+            if(from.equals("Profiles")){
+                loadProfiles();
+            } else if (from.equals("Events")) {
+                loadEvents();
+            } else if (from.equals("Facilities")){
+                loadFacilities();
+            }
+        }
 
     }
 
@@ -96,6 +117,10 @@ public class AdminBrowseActivity extends AppCompatActivity {
                     loadProfiles();
                 } else if (item.equals("Events")) {
                     loadEvents();
+                } else if (item.equals("Facilities")) {
+                    loadFacilities();
+                } else if (item.equals("Images")){
+                    loadAllImages();
                 }
             }
         });
@@ -121,7 +146,7 @@ public class AdminBrowseActivity extends AppCompatActivity {
      */
     @Override
     public boolean onSupportNavigateUp() {
-        super.onBackPressed(); // This navigates back to the parent activity.
+        Intent homePage = new Intent(AdminBrowseActivity.this, MainActivity.class);
         return true;
     }
 
@@ -130,51 +155,9 @@ public class AdminBrowseActivity extends AppCompatActivity {
      */
     private void loadProfiles(){
         results.setText("Results: Profiles");
+        profiles.clear();
         profilesAdapter = new ProfileAdapterAdmin(this, profiles);
-        firebaseUtils.getDb().collection("users").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()) {
-                    for(QueryDocumentSnapshot document : task.getResult()) {
-                        String name = document.getString("name");
-                        String[] nameParts = name.split(" ", 2);
-                        String firstName = nameParts[0];
-                        String lastName;
-                        if (nameParts.length == 2) {
-                            lastName = nameParts[1];
-                        } else {
-                            lastName = "nobody";
-                        }
-                        if (lastName == null || lastName.trim().isEmpty() || lastName.length() > 100) {
-                            lastName = "nobody";
-                        }
-                        String email = document.getString("email");
-                        String phone = document.getString("phone");
-                        String deviceId = document.getId();
-                        User user;
-                        if (phone != null && !phone.equals("")) {
-                            user = new User(firstName, lastName, email, phone, deviceId);
-                        } else {
-                            user = new User(firstName, lastName, email, deviceId);
-                        }
-                        user.setDevice_ID(document.getId());
-                        String profilePicUrl = document.getString("profilePicUrl");
-                        if (profilePicUrl != null && !profilePicUrl.isEmpty()) {
-                            user.setProfilePicture(profilePicUrl);
-                        } else {
-                            // Use default profile picture logic
-                            StorageReference defaultPicRef = firebaseUtils.getDefaultPics().child(firstName.charAt(0) + ".jpg");
-                        }
-                        profiles.add(user);
-                        profilesAdapter.notifyDataSetChanged();
-                    }
-                } else {
-                    Toast.makeText(AdminBrowseActivity.this,"failed to load profiles",Toast.LENGTH_SHORT).show();
-                    Log.d("Admin", "is empty");
-                }
-            }
-        });
-        //Log.d("Admin",profiles.get(1).toString());
+        firebaseUtils.getAllUsers(this,profilesAdapter,profiles);
         resultsList.setAdapter(profilesAdapter);
     }
 
@@ -182,13 +165,32 @@ public class AdminBrowseActivity extends AppCompatActivity {
      * This will load all of the events for the admin to be able to browse
      */
     private void loadEvents(){
-        firebaseUtils.getAllEvent();
+        results.setText("Results: Events");
+        eventsAdapter = new EventAdapterAdmin(this, events);
+        events.clear();
+        firebaseUtils.getAllEvents(this,eventsAdapter,events);
+        resultsList.setAdapter(eventsAdapter);
     }
 
     /**
      * This will load all of the facilities for the admin to be able to browse
      */
     private void loadFacilities(){
+        results.setText("Results: Facilities");
+        facilitiesAdapter = new FacilityAdapterAdmin(this, facilities);
+        facilities.clear();
+        firebaseUtils.getAllFacilities(this,facilitiesAdapter,facilities);
+        resultsList.setAdapter(facilitiesAdapter);
+    }
 
+    /**
+     * This is a method that will load and show all the images for the admin to browse
+     */
+    private void loadAllImages(){
+        results.setText("Results: Images");
+        imageAdapter = new ImageAdapterAdmin(this, images);
+        images.clear();
+        firebaseUtils.getAllImages(this,imageAdapter, images);
+        resultsList.setAdapter(imageAdapter);
     }
 }

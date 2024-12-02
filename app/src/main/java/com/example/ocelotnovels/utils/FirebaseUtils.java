@@ -20,13 +20,21 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.net.ParseException;
 
+import com.bumptech.glide.Glide;
+import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.model.Entrant;
 import com.example.ocelotnovels.model.Event;
+import com.example.ocelotnovels.model.Facility;
+import com.example.ocelotnovels.model.Image;
 import com.example.ocelotnovels.model.User;
+import com.example.ocelotnovels.view.Admin.AdminBrowseActivity;
+import com.example.ocelotnovels.view.Admin.ProfileAdapterAdmin;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -40,6 +48,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firestore.v1.Document;
 
 import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
@@ -905,23 +914,84 @@ public class FirebaseUtils {
                 });
     }
 
-
-     /* This method will get all of the user profiles for the admin to be able to browse them and then delete them if they have to.
-     * @return ArrayList<User> return a list of users for the admin to be able to browse
-     * @author Nathan Barrett
+    /**
+     * This gets all of the images from all of the collections so that they can be browsed by the admin
+     * @param context
+     * @param imageAdapter
+     * @param images
      */
-    public ArrayList<User> getProfilesCollection() {
-        ArrayList<User> userArray = new ArrayList<User>();
+    public void getAllImages(Context context, ArrayAdapter<Image> imageAdapter, ArrayList<Image> images){
+        //get all of the images from the users collection
+        db.collection("users").whereNotEqualTo("profilePicUrl",null).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if(task.isSuccessful()){
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        if (document.get("profilePicUrl") != ""){
+                            Image image = new Image("users",document.getId(),document.getString("profilePicUrl"));
+                            images.add(image);
+                            imageAdapter.notifyDataSetChanged();
+                        }
+                    }
+                }
+            }
+        });
+        //get all of the images from the events collection
+        db.collection("events").whereNotEqualTo("posterUrl",null).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if(task.isSuccessful()){
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        if (document.get("posterUrl") != ""){
+                            Image image = new Image("events",document.getId(),document.getString("posterUrl"));
+                            images.add(image);
+                            imageAdapter.notifyDataSetChanged();
+                        }
+                    }
+                }
+            }
+        });
+        //get all of the images from the facilities collection
+        db.collection("facilities").whereNotEqualTo("facilityPicUrl",null).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if(task.isSuccessful()){
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        if (document.get("facilityPicUrl") != ""){
+                            Image image = new Image("facilities",document.getId(),document.getString("facilityPicUrl"));
+                            images.add(image);
+                            imageAdapter.notifyDataSetChanged();
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * This will get all of the users from the firestore database to be viewed by the admin
+     * @param context
+     * @param profilesAdapter
+     * @param profiles
+     */
+    public void getAllUsers(Context context, ArrayAdapter<User> profilesAdapter, ArrayList<User> profiles){
         db.collection("users").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
                     for(QueryDocumentSnapshot document : task.getResult()) {
                         String name = document.getString("name");
-                        Log.d("Admin", name);
                         String[] nameParts = name.split(" ", 2);
                         String firstName = nameParts[0];
-                        String lastName = nameParts[1];
+                        String lastName;
+                        if (nameParts.length == 2) {
+                            lastName = nameParts[1];
+                        } else {
+                            lastName = "nobody";
+                        }
+                        if (lastName == null || lastName.trim().isEmpty() || lastName.length() > 100) {
+                            lastName = "nobody";
+                        }
                         String email = document.getString("email");
                         String phone = document.getString("phone");
                         String deviceId = document.getId();
@@ -931,28 +1001,208 @@ public class FirebaseUtils {
                         } else {
                             user = new User(firstName, lastName, email, deviceId);
                         }
-                        Log.d("Admin", user.toString());
-                        userArray.add(user);
+                        user.setDevice_ID(document.getId());
+                        String profilePicUrl = document.getString("profilePicUrl");
+                        if (profilePicUrl != null && !profilePicUrl.isEmpty()) {
+                            user.setProfilePicture(profilePicUrl);
+                        } else {
+                            // Use default profile picture logic
+                            StorageReference defaultPicRef = getDefaultPics().child(firstName.charAt(0) + ".jpg");
+                        }
+                        db.collection("facilities").whereEqualTo("ownerId", user.getDevice_ID()).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                if (task.isSuccessful()) {
+                                    for (QueryDocumentSnapshot document : task.getResult()) {
+                                        Facility facility = new Facility(document.getId(),(ArrayList<String>) document.get("events"));
+                                        user.setFacility(facility);
+                                        Log.d("Admin", document.getId() + " => " + document.getData());
+                                    }
+                                } else {
+                                    Log.d("Admin", "Error getting documents: ", task.getException());
+                                }
+                            }
+                        });
+
+                        profiles.add(user);
+                        profilesAdapter.notifyDataSetChanged();
                     }
                 } else {
+                    Toast.makeText(context,"failed to load profiles",Toast.LENGTH_SHORT).show();
                     Log.d("Admin", "is empty");
                 }
             }
         });
-        return userArray;
+
     }
 
-    public void getAllEvent(){
-        db.collection("users").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+    /**
+     * This will get all of the events from the firestore database to be viewed by the admin
+     * @param context
+     * @param eventsAdapter
+     * @param events
+     */
+    public void getAllEvents(Context context, ArrayAdapter<Event> eventsAdapter, ArrayList<Event> events){
+        db.collection("events").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if(task.isSuccessful()){
-                    for (QueryDocumentSnapshot document : task.getResult()) {
-                        Log.d("Admin", document.getId() + " => " + document.getData());
+                if (task.isSuccessful()) {
+                    for(QueryDocumentSnapshot document : task.getResult()) {
+                        Event event = new Event(document.getId());
+                        event.setEventName(document.getString("name"));
+                        event.setEventDescription(document.getString("description"));
+                        event.setWaitList((ArrayList<String>) document.get("waitingList"));
+                        event.setSelectedParticipants((ArrayList<String>) document.get("selectedList"));
+                        event.setQrHash(document.getString("qrHash"));
+                        String posterUrl = document.getString("posterUrl");
+                        if (posterUrl != null && !posterUrl.isEmpty()) {
+                            event.setEventPosterUrl(posterUrl);
+                        }else{
+                            event.setEventPosterUrl(null);
+                        }
+                        events.add(event);
+                        eventsAdapter.notifyDataSetChanged();
                     }
+                } else {
+                    Toast.makeText(context,"failed to load events",Toast.LENGTH_SHORT).show();
+                    Log.d("Admin", "is empty");
                 }
             }
         });
+    }
+
+    /**
+     * This will get all of the facilities from the firestore database to be viewed by the admin
+     * @param context
+     * @param facilitiesAdapter
+     * @param facilities
+     */
+    public void getAllFacilities(Context context, ArrayAdapter<Facility> facilitiesAdapter,ArrayList<Facility> facilities){
+        db.collection("facilities").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for(QueryDocumentSnapshot document : task.getResult()) {
+                        // set up all the parameters for the Facility to be initialized
+                        String facilityId = document.getId();
+                        String name = document.getString("facilityName");
+                        String description = document.getString("facilityDescription");
+                        ArrayList<String> events = (ArrayList<String>)document.get("events");// This will be used when deleting facility
+                        Log.d("Admin",events.toString());
+                        String location = document.getString("facilityLocation");
+                        String phone = document.getString("facilityPhone");
+                        String email = document.getString("facilityEmail");
+                        String profilePicUrl = document.getString("facilityPicUrl");
+                        final String[] owner = {document.getString("ownerId")};
+                        db.collection("users").document(owner[0]).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                if(task.isSuccessful()){
+                                    owner[0] = document.getString("name");
+                                    Facility facility = new Facility(facilityId, owner[0], name, email, phone, location, description, events);
+                                    facility.setFacilityPicUrl(profilePicUrl);
+                                    facilities.add(facility);
+                                    facilitiesAdapter.notifyDataSetChanged();
+                                }
+                            }
+                        });
+                    }
+                } else {
+                    Toast.makeText(context,"failed to load events",Toast.LENGTH_SHORT).show();
+                    Log.d("Admin", "is empty");
+                }
+            }
+        });
+    }
+
+    /**
+     * This deletes the Qr hash from the event document
+     * @param context
+     * @param eventId
+     */
+    public void deleteEventQRHash(Context context, String eventId){
+        Log.d("Admin","runningDelete");
+        db.collection("events").document(eventId).update("qrHash","").addOnCompleteListener(task -> {
+            if(task.isSuccessful()){
+                Toast.makeText(context,"The QR has been removed",Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    /**
+     * This method deletes a user from the database
+     * @param context where the toast is meant to appear
+     * @param user the user that is being deleted
+     */
+    public void deleteUser(Context context, User user){
+        deleteFacility(context, user.getFacility());
+        db.collection("users").document(user.getDevice_ID()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isSuccessful()){
+                    Toast.makeText(context,"The user has succesfully been deleted",Toast.LENGTH_SHORT).show();
+                }else{
+                    Toast.makeText(context,"Failed to delete user",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    /**
+     * This method deletes an event from the database
+     * @param context where the toast is meant to appear
+     * @param eventId the id of the event that is being deleted
+     */
+    public void deleteEvent(Context context, String eventId){
+        db.collection("events").document(eventId).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isSuccessful()){
+                    Toast.makeText(context,"The event has succesfully been deleted",Toast.LENGTH_SHORT).show();
+                }else{
+                    Toast.makeText(context,"Failed to delete event",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    /**
+     * This method deletes a facility from the database
+     * @param context where the toast is meant to appear
+     * @param facility the id of the event that is being deleted
+     */
+    public void deleteFacility(Context context, Facility facility){
+        for (int i = 0; i < facility.getEventIds().size(); i++){
+            db.collection("events").document(facility.getEventIds().get(i)).delete();
+        }
+        db.collection("facilities").document(facility.getFacilityId()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isSuccessful()){
+                    Toast.makeText(context,"The facility has successfully been deleted",Toast.LENGTH_SHORT).show();
+                }else{
+                    Toast.makeText(context,"Failed to delete event",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    /**
+     * This method deletes an image from the database
+     * @param context where the toast is meant to appear
+     * @param image the id of the event that is being deleted
+     */
+    public void deleteImage(Context context, Image image){
+        if(image.getCollection() == "users"){
+            db.collection(image.getCollection()).document(image.getDocument()).update("profilePicUrl",null);
+            Toast.makeText(context,"Image deleted",Toast.LENGTH_SHORT).show();
+        }else if(image.getCollection() == "events"){
+            db.collection(image.getCollection()).document(image.getDocument()).update("posterUrl",null);
+            Toast.makeText(context,"Image deleted",Toast.LENGTH_SHORT).show();
+        }else if (image.getCollection() == "facilities"){
+            db.collection(image.getCollection()).document(image.getDocument()).update("facilityPicUrl",null);
+            Toast.makeText(context,"Image deleted",Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void removeEntrantFromEvent(String eventId, String userId,

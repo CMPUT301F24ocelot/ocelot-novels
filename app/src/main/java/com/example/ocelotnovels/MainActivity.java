@@ -81,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
     private String deviceId;
     private String getUserEmail;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private boolean isAdmin;
 
     private static final String POST_NOTIFICATIONS = "android.permission.POST_NOTIFICATIONS";
 
