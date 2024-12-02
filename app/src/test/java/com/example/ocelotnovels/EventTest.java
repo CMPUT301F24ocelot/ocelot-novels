@@ -70,11 +70,19 @@ public class EventTest {
 
     @Test
     public void addEntrantToWaitList_whenFull() {
-        event.setEventCapacity(30L);
-        String mockEntrant = "user2@example.com";
-        assertFalse(event.addEntrantToWaitList(mockEntrant));
-        assertFalse(event.getWaitList().contains(mockEntrant));
+        // Set the capacity and fill it to the limit
+        event.setEventCapacity(30L);  // Assuming 30 is the full capacity
+        for (int i = 0; i < 30; i++) {
+            event.addEntrantToWaitList("user" + i + "@example.com");
+        }
+
+        String mockEntrant = "user31@example.com";
+        boolean result = event.addEntrantToWaitList(mockEntrant);
+
+        assertFalse("Should not add more entrants when full", result);
+        assertFalse("Waitlist should not contain the new entrant", event.getWaitList().contains(mockEntrant));
     }
+
 
     @Test
     public void removeEntrantFromWaitList_whenPresent() {
