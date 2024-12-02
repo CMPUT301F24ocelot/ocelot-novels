@@ -306,7 +306,7 @@ public class MainActivity extends AppCompatActivity {
                             Intent adminIntent = new Intent(MainActivity.this, AdminBrowseActivity.class);
                             startActivity(adminIntent);
                         } else {
-                            Toast.makeText(MainActivity.this, "You don't have the appropriate permissions!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this,"You don't have the required permissions!",Toast.LENGTH_SHORT).show();
                         }
                     }
                 }
@@ -352,7 +352,7 @@ public class MainActivity extends AppCompatActivity {
      * Fetches user data from Firestore and updates the UI.
      */
     private void fetchUserData() {
-        /*db.collection("facilities")
+        db.collection("facilities")
                 .whereEqualTo("ownerId", deviceId)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -363,39 +363,40 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(intent);
                         finish(); // Finish MainActivity so it can't be accessed
                         return;
-                    }*/
+                    }
 
                     // If not an organizer, proceed with normal user data fetch
-                db.collection("users").document(deviceId).get()
-                        .addOnSuccessListener(documentSnapshot -> {
-                            if (documentSnapshot.exists() && documentSnapshot.contains("email")) {
-                                getUserEmail = documentSnapshot.getString("email");
-                                isUserSignedUp = true;
-                                signUpButton.setVisibility(View.GONE);
-                                eventViewBtn.setOnClickListener(v -> {
-                                    Intent intent = new Intent(getApplicationContext(), WaitingListActivity.class);
-                                    startActivity(intent);
-                                });
-                            } else {
+                    db.collection("users").document(deviceId).get()
+                            .addOnSuccessListener(documentSnapshot -> {
+                                if (documentSnapshot.exists() && documentSnapshot.contains("email")) {
+                                    getUserEmail = documentSnapshot.getString("email");
+                                    isUserSignedUp = true;
+                                    signUpButton.setVisibility(View.GONE);
+                                    eventViewBtn.setOnClickListener(v -> {
+                                        Intent intent = new Intent(getApplicationContext(), WaitingListActivity.class);
+                                        startActivity(intent);
+                                    });
+                                } else {
+                                    isUserSignedUp = false;
+                                    signUpButton.setVisibility(View.VISIBLE);
+                                    signUpButton.setOnClickListener(view -> {
+                                        Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
+                                        startActivity(intent);
+                                        finish();
+                                    });
+                                }
+                                invalidateOptionsMenu();
+                            })
+                            .addOnFailureListener(e -> {
                                 isUserSignedUp = false;
-                                signUpButton.setVisibility(View.VISIBLE);
-                                signUpButton.setOnClickListener(view -> {
-                                    Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
-                                    startActivity(intent);
-                                    finish();
-                                });
-                            }
-                            invalidateOptionsMenu();
-                        })
-                        .addOnFailureListener(e -> {
-                            isUserSignedUp = false;
-                            Toast.makeText(MainActivity.this, "Error fetching user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                            invalidateOptionsMenu();
-                        });
-                /*.addOnFailureListener(e -> {
+                                Toast.makeText(MainActivity.this, "Error fetching user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                invalidateOptionsMenu();
+                            });
+                })
+                .addOnFailureListener(e -> {
                     // Handle failure in checking facilities
                     Toast.makeText(MainActivity.this, "Error checking facilities: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });*/
+                });
     }
 
     /**
@@ -440,7 +441,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        /*db.collection("facilities")
+        db.collection("facilities")
                 .whereEqualTo("ownerId", deviceId)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -458,6 +459,6 @@ public class MainActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> {
                     // If there's an error, default to normal back button behavior
                     super.onBackPressed();
-                });*/
+                });
     }
 }
