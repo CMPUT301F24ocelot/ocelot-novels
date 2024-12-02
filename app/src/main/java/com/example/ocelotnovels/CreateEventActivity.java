@@ -1,3 +1,19 @@
+/**
+ * CreateEventActivity is responsible for creating new events in the application.
+ * This activity allows the user to:
+ * - Input event details such as title, description, location, and dates.
+ * - Upload and manage event posters.
+ * - Generate and upload QR codes for event registration.
+ * - Save event details to Firestore and associate them with a facility.
+ * - Validate input fields to ensure data integrity.
+ *
+ * Key features include:
+ * - Date picker dialogs for event date, registration open date, and due date.
+ * - Image picker for uploading event posters.
+ * - QR code generation and storage in Firebase.
+ * - Dynamic visibility and input validation for event capacity fields.
+ * - Navigation to a QR code display activity after successful event creation.
+ */
 package com.example.ocelotnovels;
 
 import android.app.DatePickerDialog;
@@ -42,6 +58,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * CreateEventActivity is responsible for creating and managing events in the application.
+ * Users can input event details, upload posters, generate QR codes, and save the data to Firestore.
+ * The activity also validates inputs and facilitates navigation to a QR code display screen after event creation.
+ */
 public class CreateEventActivity extends AppCompatActivity {
 
     private static final int PICK_POSTER_REQUEST = 1;
@@ -78,6 +99,11 @@ public class CreateEventActivity extends AppCompatActivity {
     private List<String> selectedList;
     private List<String> cancelledList;
 
+    /**
+     * Initializes the activity. Sets up the UI elements, Firebase instances, and listeners.
+     *
+     * @param savedInstanceState A Bundle object containing the activity's previously saved state.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,6 +124,9 @@ public class CreateEventActivity extends AppCompatActivity {
         Log.d("FACILITYID", facilityId);
     }
 
+    /**
+     * Initializes the views and UI components used in the activity.
+     */
     private void initializeViews() {
         eventTitleEditText = findViewById(R.id.event_title);
         eventDescriptionEditText = findViewById(R.id.event_description);
@@ -119,6 +148,10 @@ public class CreateEventActivity extends AppCompatActivity {
         posterImageView = findViewById(R.id.event_poster_image);
     }
 
+    /**
+     * Sets up listeners for the UI components such as buttons and switches.
+     * Defines their behaviors when interacted with by the user.
+     */
     private void setupListeners() {
         eventDateButton.setOnClickListener(v -> showDatePickerDialog(eventDateButton, "eventDate"));
         dueDateButton.setOnClickListener(v -> showDatePickerDialog(dueDateButton, "dueDate"));
@@ -147,6 +180,12 @@ public class CreateEventActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Displays a DatePickerDialog for selecting a date. Updates the corresponding field upon selection.
+     *
+     * @param button   The button triggering the date picker dialog.
+     * @param dateType The type of date being selected (e.g., eventDate, dueDate, registrationOpen).
+     */
     private void showDatePickerDialog(Button button, String dateType) {
         Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);
@@ -176,12 +215,22 @@ public class CreateEventActivity extends AppCompatActivity {
         datePickerDialog.show();
     }
 
+    /**
+     * Opens the device's image picker to allow the user to select a poster for the event.
+     */
     private void selectPoster() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         intent.setType("image/*");
         startActivityForResult(intent, PICK_POSTER_REQUEST);
     }
 
+    /**
+     * Handles the result of an activity. Used to process the selected poster image.
+     *
+     * @param requestCode The request code identifying the activity result.
+     * @param resultCode  The result code indicating the outcome of the activity.
+     * @param data        The Intent data containing the result, if any.
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -198,6 +247,11 @@ public class CreateEventActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Uploads the selected poster image to Firebase Storage.
+     *
+     * @param bitmap The Bitmap representation of the poster image.
+     */
     private void uploadPosterToStorage(Bitmap bitmap) {
         String posterId = UUID.randomUUID().toString(); // Unique ID for the poster
         StorageReference posterRef = storageRef.child("images/events/" + posterId + ".jpg");
@@ -227,13 +281,21 @@ public class CreateEventActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Resets the poster ImageView to the placeholder and clears the poster URL.
+     */
     private void removePoster() {
         posterImageView.setImageResource(R.drawable.ic_image_placeholder); // Reset to placeholder
         eventPosterUrl = null; // Clear the poster URL
         Toast.makeText(this, "Poster removed!", Toast.LENGTH_SHORT).show();
     }
 
-
+    /**
+     * Creates a map of event data to be saved to Firestore.
+     *
+     * @param eventId The unique ID for the event.
+     * @return A Map containing the event data.
+     */
     private Map<String, Object> createEventData(String eventId) {
         Map<String, Object> eventData = new HashMap<>();
         eventData.put("eventId", eventId);
@@ -272,7 +334,9 @@ public class CreateEventActivity extends AppCompatActivity {
     }
 
 
-
+    /**
+     * Saves the event data to Firestore and generates the QR code for the event.
+     */
     private void saveEventData() {
         if (!validateInputs()) {
             return;
@@ -315,6 +379,12 @@ public class CreateEventActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Uploads the generated QR code to Firebase Storage.
+     *
+     * @param eventId       The unique ID for the event.
+     * @param qrCodeBitmap  The Bitmap representation of the QR code.
+     */
     private void uploadQrCodeToStorage(String eventId, Bitmap qrCodeBitmap) {
         // Reference for storing the QR Code image
         StorageReference qrCodeRef = storageRef.child("qrCodes/" + eventId + ".png");
@@ -360,6 +430,11 @@ public class CreateEventActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    /**
+     * Validates the user inputs to ensure all required fields are filled and dates are valid.
+     *
+     * @return true if all inputs are valid, false otherwise.
+     */
     private boolean validateInputs() {
         String eventTitle = eventTitleEditText.getText().toString().trim();
         String eventDescription = eventDescriptionEditText.getText().toString().trim();
@@ -412,6 +487,12 @@ public class CreateEventActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Parses a date string into milliseconds since the epoch.
+     *
+     * @param dateString The date string in yyyy-MM-dd format.
+     * @return The parsed date in milliseconds, or -1 if parsing fails.
+     */
     private long parseDate(String dateString) {
         try {
             return new java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(dateString).getTime();
@@ -420,6 +501,12 @@ public class CreateEventActivity extends AppCompatActivity {
             return -1; // Return -1 if the date cannot be parsed
         }
     }
+
+    /**
+     * Displays a toast message.
+     *
+     * @param message The message to display.
+     */
 
     private void showToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();

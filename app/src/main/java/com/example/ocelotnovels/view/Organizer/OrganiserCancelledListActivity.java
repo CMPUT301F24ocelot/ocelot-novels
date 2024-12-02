@@ -1,3 +1,18 @@
+/**
+ * OrganiserCancelledListActivity
+ *
+ * This activity is responsible for displaying the list of users who have been
+ * cancelled from an event. It retrieves data from Firestore using FirebaseUtils
+ * and updates the UI based on the fetched data. The activity includes functionality
+ * to initialize views, configure a RecyclerView for the list, and handle empty states.
+ *
+ * Key Features:
+ * - Fetch and display the cancelled list of users for a specific event.
+ * - Show an empty state message if no users are found.
+ * - Use Firebase Firestore for data storage and retrieval.
+ * - Back navigation support using the action bar.
+ */
+
 package com.example.ocelotnovels.view.Organizer;
 
 import android.os.Bundle;
@@ -33,6 +48,13 @@ public class OrganiserCancelledListActivity extends AppCompatActivity {
     private String eventId;
     private FirebaseUtils firebaseUtils;
 
+    /**
+     * Called when the activity is created.
+     * Initializes views, Firebase, and sets up the RecyclerView.
+     * Fetches the cancelled list data for the provided event ID.
+     *
+     * @param savedInstanceState Bundle containing the activity's previously saved state.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,7 +75,9 @@ public class OrganiserCancelledListActivity extends AppCompatActivity {
         loadOrganiserSelectedList();
     }
 
-
+    /**
+     * Initializes the views for the activity, including setting the title for the action bar.
+     */
     private void initializeViews() {
         cancelledListRecyclerView = findViewById(R.id.cancelled_list_recycler_view);
         emptyStateText = findViewById(R.id.cancelled_empty_state_text);
@@ -64,10 +88,16 @@ public class OrganiserCancelledListActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Initializes the Firebase Firestore database instance.
+     */
     private void initializeFirebase() {
         db = FirebaseFirestore.getInstance();
     }
 
+    /**
+     * Configures the RecyclerView with an adapter and layout manager for displaying the list.
+     */
     private void setupRecyclerView() {
         cancelledListUsers = new ArrayList<>();
         cancelledListAdapter = new OrganizerWaitingListAdapter(this, cancelledListUsers);
@@ -76,7 +106,9 @@ public class OrganiserCancelledListActivity extends AppCompatActivity {
         cancelledListRecyclerView.setAdapter(cancelledListAdapter);
     }
 
-
+    /**
+     * Loads the list of cancelled users for the event from Firestore and updates the UI.
+     */
     private void loadOrganiserSelectedList() {
         firebaseUtils = new FirebaseUtils(this);
         String listType = "cancelledList";
@@ -86,6 +118,9 @@ public class OrganiserCancelledListActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Updates the empty state view based on whether the cancelled user list is empty.
+     */
     private void updateEmptyState() {
         runOnUiThread(() -> {
             Log.d(TAG, "Updating empty state. Users count: " + cancelledListUsers.size());
@@ -99,6 +134,11 @@ public class OrganiserCancelledListActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Handles the action bar's back navigation button press.
+     *
+     * @return true if navigation is handled successfully.
+     */
     @Override
     public boolean onSupportNavigateUp() {
         super.onBackPressed(); // Navigate back to the previous activity

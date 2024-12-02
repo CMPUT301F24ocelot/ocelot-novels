@@ -1,3 +1,25 @@
+/**
+ * CancelledEntrantsActivity.java
+ *
+ * This activity is responsible for displaying a list of participants who have cancelled their
+ * registration for an event. It fetches data from a Firestore database collection named
+ * "CancelledParticipants" associated with a specific event document. The activity uses a
+ * RecyclerView to display the list and includes an adapter to bind the data to the view.
+ *
+ * Features:
+ * - Fetch cancelled entrants from Firestore and display them in a RecyclerView.
+ * - Provide a user-friendly view for organizers to review the list of cancellations.
+ *
+ * Dependencies:
+ * - Firebase Firestore
+ * - AndroidX RecyclerView
+ * - Entrant model class
+ *
+ * Layouts used:
+ * - activity_cancelled_entrants.xml (Main layout for the activity)
+ * - waiting_list_item.xml (Item layout for each entrant)
+ */
+
 package com.example.ocelotnovels;
 
 import android.os.Bundle;

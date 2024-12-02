@@ -1,3 +1,21 @@
+/**
+ * SelectedEventsActivity.java
+ *
+ * This activity displays a list of events that the user has been selected to join or invited to.
+ * It retrieves the events from Firebase, displays them in a RecyclerView, and allows the user to
+ * accept or decline invitations. If there are no selected events, an empty state message is shown.
+ *
+ * Key functionalities:
+ * - Fetch and display a list of selected events using Firebase.
+ * - Allow the user to accept or decline event invitations.
+ * - Update the UI dynamically to reflect changes in the list of events.
+ *
+ * This activity uses:
+ * - RecyclerView to display events.
+ * - FirebaseUtils for backend interaction.
+ * - A TextView to show an empty state when no events are available.
+ */
+
 package com.example.ocelotnovels.view.Entrant;
 
 import android.os.Bundle;
@@ -31,6 +49,12 @@ public class SelectedEventsActivity extends AppCompatActivity {
     private FirebaseUtils firebaseUtils;
     private TextView emptyStateText;
 
+    /**
+     * Called when the activity is created. Sets up the UI, initializes Firebase, and loads events.
+     *
+     * @param savedInstanceState The saved state of the activity.
+     */
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,6 +66,9 @@ public class SelectedEventsActivity extends AppCompatActivity {
         loadSelectedEvents();
     }
 
+    /**
+     * Initializes the views in the activity, including the RecyclerView and the empty state TextView.
+     */
     private void initializeViews() {
         selectedEventsRecyclerView = findViewById(R.id.selected_events_recycler_view);
         emptyStateText = findViewById(R.id.empty_state_text);
@@ -52,6 +79,9 @@ public class SelectedEventsActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Initializes the FirebaseUtils instance for interacting with Firebase.
+     */
     private void initializeFirebase() {
         try {
             firebaseUtils = FirebaseUtils.getInstance(this);
@@ -62,6 +92,9 @@ public class SelectedEventsActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Sets up the RecyclerView to display selected events using a custom adapter.
+     */
     private void setupRecyclerView() {
         selectedEventsList = new ArrayList<>();
         selectedEventsAdapter = new SelectedEventsAdapter(selectedEventsList,
@@ -75,6 +108,9 @@ public class SelectedEventsActivity extends AppCompatActivity {
         selectedEventsRecyclerView.setAdapter(selectedEventsAdapter);
     }
 
+    /**
+     * Loads the list of selected events from Firebase and updates the UI.
+     */
     private void loadSelectedEvents() {
         if (firebaseUtils != null) {
             firebaseUtils.fetchUserSelectedEvents(selectedEventsList, () -> {
@@ -86,6 +122,12 @@ public class SelectedEventsActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Handles the user's response to an event invitation. Accepts or declines the event and updates Firebase.
+     *
+     * @param event  The event the user is responding to.
+     * @param accept True if the user accepts the invitation, false otherwise.
+     */
     private void respondToInvitation(Event event, boolean accept) {
         if (firebaseUtils != null) {
             firebaseUtils.respondToEventInvitation(
@@ -121,6 +163,10 @@ public class SelectedEventsActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Updates the visibility of the empty state message based on the size of the event list.
+     */
+
     private void updateEmptyState() {
         runOnUiThread(() -> {
             if (selectedEventsList.isEmpty()) {
@@ -133,6 +179,11 @@ public class SelectedEventsActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Handles navigation up button clicks to return to the previous activity.
+     *
+     * @return True if the navigation up action is handled.
+     */
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();

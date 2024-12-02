@@ -1,3 +1,14 @@
+/**
+ * MapsActivity displays a Google Map populated with markers representing
+ * user event locations retrieved from Firebase Firestore. The map allows
+ * organizers to view the geographical locations of entrants for specific events.
+ *
+ * Key Features:
+ * - Displays user locations as markers on a map.
+ * - Dynamically fetches user data from Firestore.
+ * - Automatically adjusts the map view to include all markers.
+ * - Provides a back button for navigation.
+ */
 package com.example.ocelotnovels;
 
 import android.Manifest;
@@ -35,6 +46,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap mMap;
     private FirebaseFirestore db;
 
+    /**
+     * Initializes the activity, sets up the UI, and initializes the Firestore
+     * database and Google Map fragment.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after
+     *                           previously being shut down, this Bundle contains
+     *                           the most recent data supplied to onSaveInstanceState.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,6 +87,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(this);
     }
 
+    /**
+     * Callback triggered when the Google Map is ready to use.
+     *
+     * @param googleMap The Google Map instance.
+     */
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
@@ -82,6 +106,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         loadEntrantLocations();
     }
 
+    /**
+     * Fetches entrant locations from Firestore and displays them as markers on the map.
+     * Adjusts the map's camera to fit all markers. Displays a progress bar while loading data.
+     */
     private void loadEntrantLocations() {
         ProgressBar progressBar = findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);
@@ -137,6 +165,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 });
     }
 
+    /**
+     * Handles options item selection, including navigation back to the previous activity.
+     *
+     * @param item The selected menu item.
+     * @return true if the item was handled, false otherwise.
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle back button in the action bar

@@ -1,3 +1,24 @@
+/**
+ * FacilityProfileActivity
+ *
+ * This activity handles the creation, viewing, and updating of facility profiles
+ * for a community event management application. Users can:
+ * - View and edit facility details such as name, email, phone, location, and description.
+ * - Upload, view, and remove a profile picture for the facility.
+ * - Save changes to Firebase Firestore and Firebase Storage.
+ *
+ * Key Functionalities:
+ * 1. Load facility data from Firestore.
+ * 2. Allow users to update profile details.
+ * 3. Handle uploading and removing facility profile pictures.
+ * 4. Validate user inputs before saving data.
+ *
+ * Dependencies:
+ * - Firebase Firestore and Firebase Storage for backend data management.
+ * - Glide for image loading and caching.
+ * - Android standard libraries for UI and interaction.
+ */
+
 package com.example.ocelotnovels;
 
 import android.content.Intent;
