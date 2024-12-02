@@ -1,3 +1,23 @@
+/**
+ * ConfirmedEntrantsActivity.java
+ *
+ * This activity displays a list of confirmed entrants for a specific event retrieved
+ * from the Firestore database. It uses a RecyclerView to show the entrants' names
+ * in a scrollable list. The activity includes functionality to:
+ * - Fetch and display confirmed entrants from Firestore.
+ * - Use a custom RecyclerView adapter to handle the entrant data.
+ * - Provide navigation back to the previous activity using the toolbar.
+ *
+ * Features:
+ * - Integration with Firestore for data fetching.
+ * - Custom RecyclerView Adapter for dynamic list updates.
+ * - Error handling for data retrieval failures.
+ *
+ * Dependencies:
+ * - Firestore database with a collection for confirmed entrants.
+ * - XML layout resources for activity and list items.
+ */
+
 package com.example.ocelotnovels;
 
 import android.os.Bundle;

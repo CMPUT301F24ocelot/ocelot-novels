@@ -1,3 +1,17 @@
+/**
+ * This utility class handles Firebase Firestore and Firebase Storage operations for the application.
+ * It provides methods to manage user data, event data, and interactions between them, such as joining
+ * event waitlists, fetching user-related events, and managing profile pictures. The class is designed
+ * as a singleton to ensure a single instance handles all Firebase operations across the application.
+ *
+ * Key features:
+ * - Manage user-specific data such as device IDs and event participation.
+ * - Perform CRUD operations on Firestore collections for users and events.
+ * - Handle image upload and retrieval from Firebase Storage.
+ * - Support operations like polling event waitlists and updating user profiles.
+ * - Provide utility methods for developers to extend and modify behavior easily.
+ */
+
 package com.example.ocelotnovels.utils;
 
 import static android.content.ContentValues.TAG;

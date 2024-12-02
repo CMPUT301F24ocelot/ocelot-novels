@@ -1,3 +1,15 @@
+/**
+ * OrganiserConfirmedListActivity displays a list of users who are confirmed for an event.
+ * This activity retrieves data from Firebase Firestore and populates a RecyclerView with
+ * the confirmed entrants for a specific event. It handles UI initialization, Firebase setup,
+ * and updates the UI based on data fetched from the database.
+ *
+ * Features:
+ * - Displays a list of confirmed users for an event.
+ * - Shows an empty state message if no users are confirmed.
+ * - Fetches data dynamically using FirebaseUtils.
+ * - Supports navigation back to the previous activity.
+ */
 package com.example.ocelotnovels.view.Organizer;
 
 import android.os.Bundle;
@@ -50,7 +62,10 @@ public class OrganiserConfirmedListActivity extends AppCompatActivity {
     }
 
 
-
+    /**
+     * Initializes the views in the activity, such as the RecyclerView and empty state TextView.
+     * Sets up the action bar with a title and a back button.
+     */
     private void initializeViews() {
         confirmedListRecyclerView = findViewById(R.id.confirmed_list_recycler_view);
         emptyStateText = findViewById(R.id.confirmed_empty_state_text);
@@ -61,10 +76,16 @@ public class OrganiserConfirmedListActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Initializes the Firebase Firestore instance for database operations.
+     */
     private void initializeFirebase() {
         db = FirebaseFirestore.getInstance();
     }
 
+    /**
+     * Sets up the RecyclerView with a LinearLayoutManager and an adapter to display the list of confirmed users.
+     */
     private void setupRecyclerView() {
         confirmedListUsers = new ArrayList<>();
         confirmedListAdapter = new OrganizerWaitingListAdapter(this, confirmedListUsers);
@@ -73,7 +94,10 @@ public class OrganiserConfirmedListActivity extends AppCompatActivity {
         confirmedListRecyclerView.setAdapter(confirmedListAdapter);
     }
 
-
+    /**
+     * Loads the list of confirmed users for the event from Firebase Firestore.
+     * Uses FirebaseUtils to fetch the data and updates the UI once the data is retrieved.
+     */
     private void loadOrganiserConfirmedList() {
         firebaseUtils = new FirebaseUtils(this);
         String listType = "confirmedList";
@@ -83,6 +107,10 @@ public class OrganiserConfirmedListActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Updates the UI to show an empty state message if no confirmed users are found.
+     * Otherwise, displays the list of confirmed users.
+     */
     private void updateEmptyState() {
         runOnUiThread(() -> {
             Log.d(TAG, "Updating empty state. Users count: " + confirmedListUsers.size());
@@ -96,6 +124,12 @@ public class OrganiserConfirmedListActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Handles the navigation up (back button) functionality in the action bar.
+     * Returns the user to the previous activity.
+     *
+     * @return true if the navigation was successful.
+     */
     @Override
     public boolean onSupportNavigateUp() {
         super.onBackPressed(); // Navigate back to the previous activity

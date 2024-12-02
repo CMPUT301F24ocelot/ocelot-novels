@@ -1,3 +1,10 @@
+/**
+ * This class implements a custom RecyclerView adapter for displaying a list of selected events.
+ * Each event item provides details such as name, description, location, and date. The adapter
+ * supports user interaction through accept and reject buttons, triggering callback listeners
+ * for handling actions on individual events.
+ */
+
 package com.example.ocelotnovels.view.Entrant;
 
 import android.util.Log;
@@ -24,9 +31,20 @@ public class SelectedEventsAdapter extends RecyclerView.Adapter<SelectedEventsAd
 
     // Interface for event action callbacks
     public interface OnEventActionListener {
+        /**
+         * Called when an action (accept or reject) is performed on an event.
+         * @param event The event on which the action was performed.
+         */
         void onEventAction(Event event);
     }
 
+    /**
+     * Constructs a new adapter for the list of selected events.
+     *
+     * @param selectedEvents List of events to display.
+     * @param acceptListener Listener for the accept button actions.
+     * @param rejectListener Listener for the reject button actions.
+     */
     public SelectedEventsAdapter(List<Event> selectedEvents,
                                  OnEventActionListener acceptListener,
                                  OnEventActionListener rejectListener) {
@@ -78,7 +96,9 @@ public class SelectedEventsAdapter extends RecyclerView.Adapter<SelectedEventsAd
         return selectedEvents.size();
     }
 
-    // ViewHolder class
+    /**
+     * ViewHolder class for managing individual event items in the RecyclerView.
+     */
     static class SelectedEventViewHolder extends RecyclerView.ViewHolder {
         TextView eventNameTextView;
         TextView eventDescriptionTextView;
@@ -87,6 +107,11 @@ public class SelectedEventsAdapter extends RecyclerView.Adapter<SelectedEventsAd
         Button acceptButton;
         Button rejectButton;
 
+        /**
+         * Constructs a ViewHolder for an event item.
+         *
+         * @param itemView The view representing a single event item.
+         */
         public SelectedEventViewHolder(@NonNull View itemView) {
             super(itemView);
 

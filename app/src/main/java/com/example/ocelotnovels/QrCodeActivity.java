@@ -1,3 +1,9 @@
+/**
+ * QrCodeActivity displays the details of an event along with a QR code.
+ * The event data and QR code are passed as extras from the previous activity.
+ * Users can view the event details and navigate back to the OrganizerMainActivity.
+ */
+
 package com.example.ocelotnovels;
 
 import android.content.Intent;
@@ -14,6 +20,15 @@ import com.example.ocelotnovels.view.Organizer.OrganizerMainActivity;
 
 public class QrCodeActivity extends AppCompatActivity {
 
+    /**
+     * Initializes the activity, sets the layout, and populates the UI with event details
+     * and a QR code image. Also handles the back button functionality to navigate
+     * back to the OrganizerMainActivity.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously
+     *                           being shut down, this Bundle contains the data it most
+     *                           recently supplied. Otherwise, it is null.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -1,3 +1,19 @@
+/**
+ * WaitingListActivity.java
+ *
+ * This class represents the activity for managing the waiting list of events that a user has joined.
+ * It interacts with Firebase to fetch the list of events, display them in a RecyclerView, and
+ * allow users to leave the waitlist of specific events. The activity provides a clear and responsive UI
+ * to display the events and updates dynamically when a user leaves an event waitlist.
+ *
+ * Key Features:
+ * - Fetching and displaying user-joined events from Firebase.
+ * - Allowing users to leave the waitlist of a specific event.
+ * - Handling Firebase operations for managing event data and user locations.
+ * - Updating the UI to reflect changes in the event list dynamically.
+ * - Providing navigation back to the main activity.
+ */
+
 package com.example.ocelotnovels.view.Entrant;
 
 import android.content.Intent;
@@ -19,6 +35,10 @@ import com.example.ocelotnovels.utils.FirebaseUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The WaitingListActivity class displays a list of events the user has joined in a waiting list.
+ * Users can leave specific event waitlists, and the UI updates dynamically based on Firebase data.
+ */
 public class WaitingListActivity extends AppCompatActivity {
     private static final String TAG = "WaitingListActivity";
     private RecyclerView waitingListRecyclerView;
@@ -26,6 +46,14 @@ public class WaitingListActivity extends AppCompatActivity {
     private List<Event> eventList;
     private FirebaseUtils firebaseUtils;
     private TextView emptyStateText;
+
+    /**
+     * Called when the activity is first created. Sets up the UI, initializes Firebase,
+     * and loads the list of events the user has joined.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after being
+     *                           previously shut down, this Bundle contains the most recent data.
+     */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +66,9 @@ public class WaitingListActivity extends AppCompatActivity {
         loadUserEvents();
     }
 
+    /**
+     * Initializes the UI components of the activity.
+     */
     private void initializeViews() {
         waitingListRecyclerView = findViewById(R.id.waiting_list_recycler_view);
         emptyStateText = findViewById(R.id.empty_state_text);
@@ -48,6 +79,9 @@ public class WaitingListActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Initializes Firebase utilities for interacting with the database.
+     */
     private void initializeFirebase() {
         try {
             firebaseUtils = FirebaseUtils.getInstance(this);
@@ -58,6 +92,9 @@ public class WaitingListActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Sets up the RecyclerView to display the waiting list of events.
+     */
     private void setupRecyclerView() {
         eventList = new ArrayList<>();
         waitingListAdapter = new WaitingListAdapter(eventList, event -> {
@@ -70,6 +107,9 @@ public class WaitingListActivity extends AppCompatActivity {
         waitingListRecyclerView.setAdapter(waitingListAdapter);
     }
 
+    /**
+     * Loads the events the user has joined and updates the RecyclerView.
+     */
     private void loadUserEvents() {
         if (firebaseUtils != null) {
             firebaseUtils.fetchUserJoinedEvents(eventList, () -> {
@@ -79,6 +119,11 @@ public class WaitingListActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Removes the user from the waitlist of a specific event and updates Firebase.
+     *
+     * @param event The event to leave the waitlist for.
+     */
     private void leaveEventWaitlist(Event event) {
         if (firebaseUtils != null) {
             firebaseUtils.leaveEventWaitlist(
@@ -109,6 +154,11 @@ public class WaitingListActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Removes the user's location from the waitlist in Firebase.
+     *
+     * @param index The index of the event's location in the user's location list.
+     */
     private void removeUserLocation(int index) {
         firebaseUtils.getUserDocument().get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
@@ -125,7 +175,9 @@ public class WaitingListActivity extends AppCompatActivity {
     }
 
 
-
+    /**
+     * Updates the UI based on whether the event list is empty or not.
+     */
     private void updateEmptyState() {
         runOnUiThread(() -> {
             if (eventList.isEmpty()) {
@@ -138,7 +190,11 @@ public class WaitingListActivity extends AppCompatActivity {
         });
     }
 
-
+    /**
+     * Handles navigation back to the main activity when the back button is pressed.
+     *
+     * @return True if the navigation was handled successfully.
+     */
     @Override
     public boolean onSupportNavigateUp() {
         // Navigate back to MainActivity explicitly
@@ -149,6 +205,9 @@ public class WaitingListActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Handles the back button press and navigates to the main activity.
+     */
     @Override
     public void onBackPressed() {
         super.onBackPressed();
