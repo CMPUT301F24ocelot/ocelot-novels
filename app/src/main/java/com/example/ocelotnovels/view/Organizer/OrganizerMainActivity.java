@@ -47,6 +47,11 @@ public class OrganizerMainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.organizer_mainevents);
 
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Organiser Events");
+//            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
 
@@ -58,9 +63,10 @@ public class OrganizerMainActivity extends AppCompatActivity {
         organizerRecyclerView.setAdapter(eventAdapter);
 
         // Load events from Firestore
-        loadEventsFromFirestore();
 
         facilityId = FirebaseUtils.getInstance(this).getFacilityId(this);
+
+        loadEventsFromFirestore();
 
         // Add Event Button Click
         Button addEventButton = findViewById(R.id.add_events_button);
@@ -131,32 +137,48 @@ public class OrganizerMainActivity extends AppCompatActivity {
     }
 
     public void loadEventsFromFirestore() {
-        // Use the facilityId to filter events specific to this facility
+        Log.d("EventLoading", "Starting to load events");
+        Log.d("EventLoading", "Facility ID: " + facilityId);
+
+        if (facilityId == null) {
+            Log.e("EventLoading", "Facility ID is null!");
+            return;
+        }
+
         db.collection("events")
                 .whereEqualTo("organizerDeviceId", facilityId)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     eventDetails.clear();
+                    int documentsFound = queryDocumentSnapshots.size();
+                    Log.d("EventLoading", "Total documents found: " + documentsFound);
+
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        String eventName = document.getString("name");
-                        String eventDate = document.getString("eventDate");
-                        String eventLocation = document.getString("location");
+                        Map<String, Object> documentData = document.getData();
 
-                        // Log the event date
-                        Log.d("EVENTDATE", eventDate != null ? eventDate : "null");
+                        // Use safer null checks
+                        String eventName = documentData.containsKey("name") ?
+                                String.valueOf(documentData.get("name")) : "Unnamed Event";
+                        String eventDate = documentData.containsKey("eventDate") ?
+                                String.valueOf(documentData.get("eventDate")) : "No date";
+                        String eventLocation = documentData.containsKey("location") ?
+                                String.valueOf(documentData.get("location")) : "No location";
 
-                        // Handle null values for eventDate
-                        if (eventName != null && eventLocation != null) {
-                            Map<String, String> event = new HashMap<>();
-                            event.put("name", eventName);
-                            event.put("date", eventDate != null ? eventDate : "No date available");
-                            event.put("location", eventLocation);
-                            eventDetails.add(event);
-                        }
+                        Map<String, String> event = new HashMap<>();
+                        event.put("name", eventName);
+                        event.put("date", eventDate);
+                        event.put("location", eventLocation);
+
+                        eventDetails.add(event);
+
+                        Log.d("EventLoading", "Added event: " + eventName);
                     }
+
+                    Log.d("EventLoading", "Total events added: " + eventDetails.size());
                     eventAdapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e -> {
+                    Log.e("EventLoading", "Failed to load events", e);
                     Toast.makeText(this, "Failed to load events: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }

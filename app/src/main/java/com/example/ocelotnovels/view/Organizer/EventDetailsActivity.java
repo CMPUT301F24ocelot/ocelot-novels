@@ -46,6 +46,11 @@ public class EventDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.event_details);
 
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Event Details");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+
         // Get the event name passed from the adapter
         String eventName = getIntent().getStringExtra("eventName");
 

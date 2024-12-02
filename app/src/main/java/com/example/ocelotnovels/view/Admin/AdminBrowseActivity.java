@@ -136,11 +136,12 @@ public class AdminBrowseActivity extends AppCompatActivity {
                         }
                         String email = document.getString("email");
                         String phone = document.getString("phone");
+                        String deviceId = document.getId();
                         User user;
                         if (phone != null && !phone.equals("")) {
-                            user = new User(firstName, lastName, email, phone);
+                            user = new User(firstName, lastName, email, phone, deviceId);
                         } else {
-                            user = new User(firstName, lastName, email);
+                            user = new User(firstName, lastName, email, deviceId);
                         }
                         user.setDevice_ID(document.getId());
                         String profilePicUrl = document.getString("profilePicUrl");
