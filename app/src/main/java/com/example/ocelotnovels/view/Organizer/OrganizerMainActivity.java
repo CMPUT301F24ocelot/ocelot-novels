@@ -1,3 +1,8 @@
+/**
+ * OrganizerMainActivity is the main screen for organizers to view, manage, and create events.
+ * This activity interacts with Firestore to load event data and provides navigation to other
+ * activities like MapsActivity and CreateEventActivity.
+ */
 package com.example.ocelotnovels.view.Organizer;
 
 import android.content.Intent;
@@ -42,6 +47,12 @@ public class OrganizerMainActivity extends AppCompatActivity {
     public FirebaseFirestore db;
     public String facilityId;
 
+    /**
+     * Initializes the OrganizerMainActivity and sets up the RecyclerView,
+     * buttons, and Firebase Firestore connection. Also loads events specific to the organizer.
+     *
+     * @param savedInstanceState Saved state data from previous activity lifecycle (if any).
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,6 +113,13 @@ public class OrganizerMainActivity extends AppCompatActivity {
             finish(); // Optional: Call finish to close OrganizerMainActivity
         });*/
     }
+
+    /**
+     * Inflates the organizer's menu options.
+     *
+     * @param menu The menu to be inflated.
+     * @return true if the menu is successfully created.
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -109,6 +127,12 @@ public class OrganizerMainActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Handles the selection of menu items.
+     *
+     * @param item The selected menu item.
+     * @return true if the menu item is handled successfully.
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -130,6 +154,10 @@ public class OrganizerMainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Fetches events from Firestore specific to the organizer's facility
+     * and updates the RecyclerView with the event details.
+     */
     public void loadEventsFromFirestore() {
         // Use the facilityId to filter events specific to this facility
         db.collection("events")
@@ -161,7 +189,9 @@ public class OrganizerMainActivity extends AppCompatActivity {
                 });
     }
 
-
+    /**
+     * Reloads event data from Firestore whenever the activity resumes.
+     */
     @Override
     protected void onResume() {
         super.onResume();

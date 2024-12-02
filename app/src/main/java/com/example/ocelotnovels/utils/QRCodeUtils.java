@@ -1,3 +1,14 @@
+/**
+ * This utility class provides methods for generating QR codes.
+ * It includes functionality to:
+ * 1. Generate a QR code from a string and save it as a JPG file to a specified path.
+ * 2. Generate a QR code as a Bitmap image for use in Android applications.
+ *
+ * The utility leverages the ZXing library to create QR codes and handle various
+ * barcode formats. It also includes error handling for scenarios such as file writing
+ * and QR code generation issues.
+ */
+
 package com.example.ocelotnovels.utils;
 
 import android.graphics.Bitmap;

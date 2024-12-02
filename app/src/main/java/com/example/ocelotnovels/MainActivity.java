@@ -1,3 +1,17 @@
+/**
+ * The MainActivity class represents the main entry point of the application.
+ * It serves as the hub for user interactions and navigation to other parts of the app,
+ * such as organizer, admin, or entrant activities. The class handles:
+ *
+ * - Dynamic UI setup and user-specific features based on Firebase Firestore data.
+ * - QR code scanning functionality using Google ML Kit.
+ * - Permission handling for notifications and location access.
+ * - Navigation to different activities like profile, event details, or admin views.
+ * - Integration with Firebase for user authentication and database access.
+ *
+ * This class ensures that the app's main functionality is organized and accessible
+ * through a cohesive and user-friendly interface.
+ */
 package com.example.ocelotnovels;
 
 import android.Manifest;
@@ -70,6 +84,9 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String POST_NOTIFICATIONS = "android.permission.POST_NOTIFICATIONS";
 
+    /**
+     * A launcher for requesting runtime permissions, handling the results.
+     */
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted) {
@@ -369,6 +386,9 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Requests location permissions for the app.
+     */
     private void requestLocationPermission() {
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -378,6 +398,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Handles the result of permission requests.
+     *
+     * @param requestCode  the code for the permission request.
+     * @param permissions  the permissions requested.
+     * @param grantResults the results of the permission request.
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -391,6 +418,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Handles the back button press, ensuring proper navigation for organizers.
+     */
     @Override
     public void onBackPressed() {
         // If the current activity is MainActivity and user is an organizer, do nothing

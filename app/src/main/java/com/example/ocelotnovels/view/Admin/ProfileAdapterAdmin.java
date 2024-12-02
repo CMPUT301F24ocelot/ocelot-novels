@@ -1,3 +1,20 @@
+/**
+ * This class is responsible for providing an adapter to display user profiles in a ListView for administrators.
+ * The adapter inflates a custom layout for each profile in the list and binds profile data to the UI components.
+ * Administrators can view details of individual profiles by clicking a "Details" button.
+ *
+ * Key features:
+ * - Displays user profile pictures using Glide for image loading.
+ * - Shows the user's first and last name.
+ * - Provides a button to navigate to a detailed profile view of the selected user.
+ *
+ * Dependencies:
+ * - Glide library for image loading.
+ * - Firebase for profile picture URLs.
+ * - Custom layout resource `R.layout.waiting_list_item` for displaying each profile.
+ * - `EntrantProfileAdminView` activity for detailed profile view navigation.
+ */
+
 package com.example.ocelotnovels.view.Admin;
 
 import static androidx.core.content.ContextCompat.startActivity;
@@ -39,6 +56,14 @@ public class ProfileAdapterAdmin extends ArrayAdapter<User> {
         super(context, 0, profiles);
     }
 
+    /**
+     * Provides a View for an AdapterView (ListView) to display user profiles.
+     *
+     * @param position    The position of the item within the adapter's data set.
+     * @param convertView The recycled view to populate.
+     * @param parent      The parent ViewGroup that this view will be attached to.
+     * @return A View corresponding to the data at the specified position.
+     */
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {

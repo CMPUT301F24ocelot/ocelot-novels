@@ -1,3 +1,15 @@
+/**
+ * The SignUpActivity class provides the functionality for users to sign up for the application.
+ * This activity collects user inputs (name, email, phone number), validates the inputs,
+ * and stores the user data in Firebase Firestore. It also assigns default user roles and settings.
+ *
+ * Features:
+ * - Validates required user fields (name and email).
+ * - Stores user information, including optional phone numbers, in Firestore.
+ * - Assigns a default role of 'entrant' and enables notifications by default.
+ * - Navigates to the MainActivity upon successful sign-up.
+ */
+
 package com.example.ocelotnovels;
 
 import android.content.Intent;

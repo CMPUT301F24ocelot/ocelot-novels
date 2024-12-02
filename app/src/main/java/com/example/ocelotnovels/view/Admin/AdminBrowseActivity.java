@@ -1,3 +1,12 @@
+/**
+ * This class represents the activity for the Admin to browse various entities in the application,
+ * such as user profiles, events, facilities, and images. The Admin can select an option from a
+ * dropdown menu to view the desired data, and the activity dynamically updates the displayed
+ * information based on the selection. The data is fetched from the Firebase Firestore database,
+ * and the interface provides intuitive navigation for the Admin. The activity also includes error
+ * handling for Firebase initialization and ensures data is presented effectively through adapters.
+ */
+
 package com.example.ocelotnovels.view.Admin;
 
 import static android.content.ContentValues.TAG;
@@ -122,8 +131,9 @@ public class AdminBrowseActivity extends AppCompatActivity {
     }
 
     /**
-     * This goes makes it so that the user can go back to the previous activity
-     * @return
+     * Handles navigation back to the parent activity.
+     *
+     * @return true if navigation is successful.
      */
     @Override
     public boolean onSupportNavigateUp() {

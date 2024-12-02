@@ -1,135 +1,130 @@
 package com.example.ocelotnovels;
 
-import com.example.ocelotnovels.model.Event;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
+
+import com.example.ocelotnovels.model.Event;
 
 import java.util.ArrayList;
 import java.util.Date;
 
 public class EventTest {
 
-    private Event eventWithCapacity;
-    private Event eventWithoutCapacity;
-    private String mockEntrant = "user1@gmail.com";
+    private Event event;
+    private String eventId = "1";
+    private String eventName = "Annual Tech Conference";
+    private String eventDescription = "This is a description of the annual tech conference.";
     private Date eventDate;
     private Date registrationOpen;
-    private Date registrationClose;
+    private String registrationClose = "2025-12-10";
+    private long eventCapacity = 100;
+    private String eventPosterUrl = "http://example.com/poster.jpg";
+    private String organizerId = "organizer123";
+    private String eventLocation = "Conference Center, Silicon Valley";
+    private String qrHash = "12345ABCDE";
+    private Boolean geolocationEnabled = true;
+    private ArrayList<String> waitList;
+    private ArrayList<String> selectedParticipants;
+    private ArrayList<String> cancelledParticipants;
 
     @Before
     public void setUp() {
-        eventDate = new Date(2025 - 1900, 11, 12);
-        registrationOpen = new Date(2025 - 1900, 11, 5);
-        registrationClose = new Date(2025 - 1900, 11, 10);
+        eventDate = new Date();
+        registrationOpen = new Date();
 
-        ArrayList<String> waitList = new ArrayList<>();
-        ArrayList<String> selectedParticipants = new ArrayList<>();
-        ArrayList<String> cancelledParticipants = new ArrayList<>();
+        waitList = new ArrayList<>();
+        selectedParticipants = new ArrayList<>();
+        cancelledParticipants = new ArrayList<>();
 
-        eventWithCapacity = new Event(
-                "Conference",
-                "Annual Conference",
-                eventDate,
-                registrationOpen,
-                registrationClose,
-                30,
-                "http://example.com/poster.jpg",
-                "organizer123",
-                "New York",
-                waitList,
-                selectedParticipants,
-                cancelledParticipants);
-
-        eventWithoutCapacity = new Event(
-                "Conference",
-                "Annual Conference",
-                eventDate,
-                registrationOpen,
-                registrationClose,
-                "http://example.com/poster.jpg",
-                "organizer123",
-                "New York",
-                waitList,
-                selectedParticipants,
-                cancelledParticipants);
+        event = new Event(eventId, eventName, eventDescription, eventDate, registrationOpen, registrationClose,
+                eventCapacity, eventPosterUrl, organizerId, eventLocation, waitList,
+                selectedParticipants, cancelledParticipants, qrHash, geolocationEnabled);
     }
 
     @Test
-    public void testConstructorWithCapacity() {
-        assertEquals("Conference", eventWithCapacity.getEventName());
-        assertEquals("Annual Conference", eventWithCapacity.getEventDescription());
-        assertEquals(eventDate, eventWithCapacity.getEventDate());
-        assertEquals(registrationOpen, eventWithCapacity.getRegistrationOpen());
-        assertEquals(registrationClose, eventWithCapacity.getRegistrationClose());
-        assertEquals(30, eventWithCapacity.getEventCapacity());
-        assertEquals("http://example.com/poster.jpg", eventWithCapacity.getEventPosterUrl());
-        assertEquals("organizer123", eventWithCapacity.getOrganizerId());
-        assertEquals("New York", eventWithCapacity.getEventLocation());
+    public void constructor_initializesCorrectly() {
+        assertEquals(eventName, event.getEventName());
+        assertEquals(eventDescription, event.getEventDescription());
+        assertEquals(eventDate, event.getEventDate());
+        assertEquals(registrationOpen, event.getRegistrationOpen());
+        assertEquals(registrationClose, event.getRegistrationClose());
+        assertEquals(Long.valueOf(eventCapacity), event.getEventCapacity());
+        assertEquals(eventPosterUrl, event.getEventPosterUrl());
+        assertEquals(organizerId, event.getOrganizerId());
+        assertEquals(eventLocation, event.getEventLocation());
+        assertTrue(event.getWaitList().isEmpty());
+        assertTrue(event.getSelectedParticipants().isEmpty());
+        assertTrue(event.getCancelledParticipants().isEmpty());
+        assertEquals(qrHash, event.getQrHash());
+        assertEquals(geolocationEnabled, event.getGeolocationEnabled());
     }
 
     @Test
-    public void testConstructorWithoutCapacity() {
-        assertEquals("Conference", eventWithoutCapacity.getEventName());
-        assertEquals("Annual Conference", eventWithoutCapacity.getEventDescription());
-        assertEquals(eventDate, eventWithoutCapacity.getEventDate());
-        assertEquals(registrationOpen, eventWithoutCapacity.getRegistrationOpen());
-        assertEquals(registrationClose, eventWithoutCapacity.getRegistrationClose());
-        assertEquals(-1, eventWithoutCapacity.getEventCapacity()); // Default capacity
-        assertEquals("http://example.com/poster.jpg", eventWithoutCapacity.getEventPosterUrl());
-        assertEquals("organizer123", eventWithoutCapacity.getOrganizerId());
-        assertEquals("New York", eventWithoutCapacity.getEventLocation());
+    public void addEntrantToWaitList_whenCapacityIsAvailable() {
+        String mockEntrant = "user1@example.com";
+        assertTrue(event.addEntrantToWaitList(mockEntrant));
+        assertTrue(event.getWaitList().contains(mockEntrant));
+        assertEquals(Long.valueOf(eventCapacity - 1), event.getEventCapacity());
     }
 
     @Test
-    public void testAddEntrantToWaitList() {
-        assertTrue(eventWithCapacity.addEntrantToWaitList(mockEntrant));
-        assertTrue(eventWithCapacity.getWaitList().contains(mockEntrant));
-        assertEquals(29, eventWithCapacity.getEventCapacity());
+    public void addEntrantToWaitList_whenFull() {
+        // Set the capacity and fill it to the limit
+        event.setEventCapacity(30L);  // Assuming 30 is the full capacity
+        for (int i = 0; i < 30; i++) {
+            event.addEntrantToWaitList("user" + i + "@example.com");
+        }
+
+        String mockEntrant = "user31@example.com";
+        boolean result = event.addEntrantToWaitList(mockEntrant);
+
+        assertFalse("Should not add more entrants when full", result);
+        assertFalse("Waitlist should not contain the new entrant", event.getWaitList().contains(mockEntrant));
+    }
+
+
+    @Test
+    public void removeEntrantFromWaitList_whenPresent() {
+        String mockEntrant = "user3@example.com";
+        event.addEntrantToWaitList(mockEntrant);
+        assertTrue(event.removeEntrantFromWaitList(mockEntrant));
+        assertFalse(event.getWaitList().contains(mockEntrant));
+        assertEquals(Long.valueOf(eventCapacity), event.getEventCapacity());
     }
 
     @Test
-    public void testAddEntrantToFullWaitList() {
-        eventWithCapacity.setEventCapacity(0);
-        assertFalse(eventWithCapacity.addEntrantToWaitList(mockEntrant));
-        assertFalse(eventWithCapacity.getWaitList().contains(mockEntrant));
+    public void removeEntrantFromWaitList_whenAbsent() {
+        String mockEntrant = "user4@example.com";
+        assertFalse(event.removeEntrantFromWaitList(mockEntrant));
+        assertEquals(Long.valueOf(eventCapacity), event.getEventCapacity());
     }
 
     @Test
-    public void testRemoveEntrantFromWaitList() {
-        eventWithCapacity.addEntrantToWaitList(mockEntrant);
-        assertTrue(eventWithCapacity.removeEntrantFromWaitList(mockEntrant));
-        assertFalse(eventWithCapacity.getWaitList().contains(mockEntrant));
-        assertEquals(30, eventWithCapacity.getEventCapacity());
+    public void addSelectedParticipant_whenNotAlreadySelected() {
+        String participant = "participant@example.com";
+        assertTrue(event.addSelectedParticipant(participant));
+        assertTrue(event.getSelectedParticipants().contains(participant));
     }
 
     @Test
-    public void testRemoveNonExistentEntrantFromWaitList() {
-        assertFalse(eventWithCapacity.removeEntrantFromWaitList("nonexistent@gmail.com"));
-        assertEquals(30, eventWithCapacity.getEventCapacity());
+    public void addSelectedParticipant_whenAlreadySelected() {
+        String participant = "participant@example.com";
+        event.addSelectedParticipant(participant);
+        assertFalse(event.addSelectedParticipant(participant));
     }
 
     @Test
-    public void testAddSelectedParticipant() {
-        assertTrue(eventWithCapacity.addSelectedParticipant(mockEntrant));
-        assertTrue(eventWithCapacity.getSelectedParticipants().contains(mockEntrant));
+    public void removeSelectedParticipant_whenPresent() {
+        String participant = "participant@example.com";
+        event.addSelectedParticipant(participant);
+        assertTrue(event.removeSelectedParticipant(participant));
+        assertFalse(event.getSelectedParticipants().contains(participant));
     }
 
     @Test
-    public void testAddDuplicateSelectedParticipant() {
-        eventWithCapacity.addSelectedParticipant(mockEntrant);
-        assertFalse(eventWithCapacity.addSelectedParticipant(mockEntrant));
-    }
-
-    @Test
-    public void testRemoveSelectedParticipant() {
-        eventWithCapacity.addSelectedParticipant(mockEntrant);
-        assertTrue(eventWithCapacity.removeSelectedParticipant(mockEntrant));
-        assertFalse(eventWithCapacity.getSelectedParticipants().contains(mockEntrant));
-    }
-
-    @Test
-    public void testRemoveNonExistentSelectedParticipant() {
-        assertFalse(eventWithCapacity.removeSelectedParticipant("nonexistent@gmail.com"));
+    public void removeSelectedParticipant_whenAbsent() {
+        String participant = "unknown@example.com";
+        assertFalse(event.removeSelectedParticipant(participant));
     }
 }

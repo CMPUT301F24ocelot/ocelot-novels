@@ -1,3 +1,22 @@
+/**
+ * This class represents a Facility in the system. A Facility is an entity
+ * with a unique ID, associated owner, name, contact details, location, and a
+ * description. Each Facility also maintains a list of members (represented
+ * as member IDs). The class provides functionality to manage Facility details
+ * and its associated members, including adding, removing, and checking members.
+ *
+ * Key Features:
+ * - Unique facility ID generation.
+ * - Getter and setter methods for facility attributes.
+ * - Member management: add, remove, and check membership.
+ * - Default and parameterized constructors for flexibility.
+ * - A string representation of the facility for debugging and display.
+ *
+ * Usage:
+ * Use this class to represent facilities in applications where such entities
+ * are part of the system, e.g., event management, resource allocation, etc.
+ */
+
 package com.example.ocelotnovels.model;
 
 import java.io.Serializable;
