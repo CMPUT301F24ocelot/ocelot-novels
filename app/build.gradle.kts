@@ -66,6 +66,7 @@ dependencies {
     implementation(libs.firebase.storage)
     implementation(libs.recyclerview)
     implementation(libs.espresso.intents)
+    implementation(libs.fragment.testing)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -98,4 +99,9 @@ dependencies {
     implementation("com.google.protobuf:protobuf-javalite") // Ensure this is compatible with Firebase
 
     implementation("com.journeyapps:zxing-android-embedded:4.1.0")
+
+    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1") {
+        exclude(module = "protobuf-lite")
+    }
+    androidTestImplementation("androidx.test.espresso:espresso-intents:3.4.0")
 }
