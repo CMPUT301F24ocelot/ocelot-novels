@@ -354,7 +354,7 @@ public class FirebaseUtils {
 
     public void updateUserProfilePicUrl(String url) {
         db.collection("users").document(deviceId).update("profilePicUrl", url)
-                //.addOnCompleteListener(task -> Toast.makeText(this, "Profile picture updated!", Toast.LENGTH_SHORT).show())
+        //.addOnCompleteListener(task -> Toast.makeText(this, "Profile picture updated!", Toast.LENGTH_SHORT).show())
         ;
     }
 
@@ -390,10 +390,10 @@ public class FirebaseUtils {
                     }
                     return;
                 }
-
+                capacity = capacity == null || capacity<0? waitingList.size():capacity;
                 // Calculate the updated capacity
-                int newCapacity = newLimit != null
-                        ? newLimit==-2? 1:newLimit-selectedList.size() // Use the new limit if provided
+                int newCapacity = newLimit != null && newLimit+selectedList.size()<=capacity
+                        ?  newLimit// Use the new limit if provided
                         : (capacity == null || capacity < 0 ? waitingList.size() : Math.toIntExact(capacity))- selectedList.size();
 
                 if (newCapacity <= 0) {
@@ -697,7 +697,7 @@ public class FirebaseUtils {
             // Remove from selected list
             ArrayList<String> selectedList = (ArrayList<String>) eventSnapshot.get("selectedList");
 
-                    // Remove from user's selected events
+            // Remove from user's selected events
             ArrayList<String> selectedEventsJoined = (ArrayList<String>) userSnapshot.get("selectedEventsJoined");
 
             if (response) {
@@ -741,7 +741,7 @@ public class FirebaseUtils {
         }).addOnSuccessListener(result -> {
             if (!response){
                 // Perform polling to sample another user
-                performPolling(eventId, -2,
+                performPolling(eventId, 1,
                         () -> Log.i(TAG, "Another user sampled after rejection for event: " + eventId),
                         e -> Log.e(TAG, "Failed to sample another user: " + e.getMessage())
                 );
