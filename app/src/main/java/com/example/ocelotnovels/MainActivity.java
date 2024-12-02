@@ -53,8 +53,10 @@ import com.google.android.gms.common.moduleinstall.ModuleInstall;
 import com.google.android.gms.common.moduleinstall.ModuleInstallClient;
 import com.google.android.gms.common.moduleinstall.ModuleInstallRequest;
 import com.google.android.gms.common.moduleinstall.ModuleInstallResponse;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -81,7 +83,6 @@ public class MainActivity extends AppCompatActivity {
     private String deviceId;
     private String getUserEmail;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private boolean isAdmin;
 
     private static final String POST_NOTIFICATIONS = "android.permission.POST_NOTIFICATIONS";
 
@@ -297,8 +298,17 @@ public class MainActivity extends AppCompatActivity {
         });
 
         adminBtn.setOnClickListener(v -> {
-            Intent adminIntent = new Intent(MainActivity.this, AdminBrowseActivity.class);
-            startActivity(adminIntent);
+            db.collection("users").document(deviceId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if(task.isSuccessful()){
+                        if(task.getResult().contains("isAdmin") && task.getResult().getBoolean("isAdmin")){
+                            Intent adminIntent = new Intent(MainActivity.this, AdminBrowseActivity.class);
+                            startActivity(adminIntent);
+                        }
+                    }
+                }
+            });
         });
 
 
