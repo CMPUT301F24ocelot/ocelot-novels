@@ -52,7 +52,7 @@ public class FacilityAdapterAdmin extends ArrayAdapter<Facility> {
         detailsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent toProfile = new Intent(FacilityAdapterAdmin.this.getContext(), EventDetailsAdminView.class);
+                Intent toProfile = new Intent(FacilityAdapterAdmin.this.getContext(), FacilityProfileActivityAdmin.class);
                 toProfile.putExtra("Facility", facility);
                 startActivity(FacilityAdapterAdmin.this.getContext(),toProfile,null);
             }

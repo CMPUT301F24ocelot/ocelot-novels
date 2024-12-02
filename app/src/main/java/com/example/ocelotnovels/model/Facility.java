@@ -13,7 +13,8 @@ public class Facility implements Serializable {
     private String facilityLocation; // Physical location of the facility
     private String facilityDescription; // Description of the facility
     private ArrayList<String> members; // List of member IDs associated with the facility
-    private ArrayList<String> eventIds; // A list of all the events that a facility is hosting
+    private ArrayList<String> eventIds;// A list of all the events that a facility is hosting
+    private String facilityPicUrl;
 
     /**
      * Default constructor for Firebase or other ORM systems
@@ -118,6 +119,18 @@ public class Facility implements Serializable {
     public void setFacilityDescription(String facilityDescription) {
         this.facilityDescription = facilityDescription;
     }
+
+    /**
+     * This sets the Url for the facility picture so that the Admin can use it later
+     * @param facilityPicUrl A string representing the Url to the facility picture
+     */
+    public void setFacilityPicUrl(String facilityPicUrl){this.facilityPicUrl = facilityPicUrl;}
+
+    /**
+     * This returns the Url of the facility picture
+     * @return
+     */
+    public String getFacilityPicUrl(){return facilityPicUrl;}
 
     public ArrayList<String> getMembers() {
         return members;

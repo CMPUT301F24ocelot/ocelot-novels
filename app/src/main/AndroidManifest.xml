@@ -87,6 +87,7 @@
         <activity android:name=".view.Admin.AdminBrowseActivity"/>
         <activity android:name=".view.Admin.EntrantProfileAdminView"/>
         <activity android:name=".view.Admin.EventDetailsAdminView"/>
+        <activity android:name=".view.Admin.FacilityProfileActivityAdmin"/>
 
         <activity android:name=".view.Organizer.EventDetailsActivity"
             android:parentActivityName=".view.Organizer.OrganizerMainActivity"

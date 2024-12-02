@@ -12,6 +12,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.net.ParseException;
 
+import com.bumptech.glide.Glide;
+import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.model.Entrant;
 import com.example.ocelotnovels.model.Event;
 import com.example.ocelotnovels.model.Facility;
@@ -978,10 +980,12 @@ public class FirebaseUtils {
                         String facilityId = document.getId();
                         String name = document.getString("facilityName");
                         String description = document.getString("facilityDescription");
-                        ArrayList<String> events = (ArrayList<String>)document.get("events"); // This will be used when deleting facility
+                        ArrayList<String> events = (ArrayList<String>)document.get("events");// This will be used when deleting facility
+                        Log.d("Admin",events.toString());
                         String location = document.getString("facilityLocation");
                         String phone = document.getString("facilityPhone");
                         String email = document.getString("facilityEmail");
+                        String profilePicUrl = document.getString("facilityPicUrl");
                         final String[] owner = {document.getString("ownerId")};
                         db.collection("users").document(owner[0]).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                             @Override
@@ -989,6 +993,7 @@ public class FirebaseUtils {
                                 if(task.isSuccessful()){
                                     owner[0] = document.getString("name");
                                     Facility facility = new Facility(facilityId, owner[0], name, email, phone, location, description, events);
+                                    facility.setFacilityPicUrl(profilePicUrl);
                                     facilities.add(facility);
                                     facilitiesAdapter.notifyDataSetChanged();
                                 }
