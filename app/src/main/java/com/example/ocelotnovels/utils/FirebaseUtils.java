@@ -31,6 +31,7 @@ import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.model.Entrant;
 import com.example.ocelotnovels.model.Event;
 import com.example.ocelotnovels.model.Facility;
+import com.example.ocelotnovels.model.Image;
 import com.example.ocelotnovels.model.User;
 import com.example.ocelotnovels.view.Admin.AdminBrowseActivity;
 import com.example.ocelotnovels.view.Admin.ProfileAdapterAdmin;
@@ -849,7 +850,7 @@ public class FirebaseUtils {
         });
     }
 
-
+    
     public void fetchUserConfirmedEvents(String userId, String listType, List<Event> eventList, Runnable onComplete) {
         db.collection("users").document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -908,6 +909,60 @@ public class FirebaseUtils {
                         onComplete.run();
                     }
                 });
+    }
+
+    /**
+     * This gets all of the images from all of the collections so that they can be browsed by the admin
+     * @param context
+     * @param imageAdapter
+     * @param images
+     */
+    public void getAllImages(Context context, ArrayAdapter<Image> imageAdapter, ArrayList<Image> images){
+        //get all of the images from the users collection
+        db.collection("users").whereNotEqualTo("profilePicUrl",null).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if(task.isSuccessful()){
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        if (document.get("profilePicUrl") != ""){
+                            Image image = new Image("users",document.getId(),document.getString("profilePicUrl"));
+                            images.add(image);
+                            imageAdapter.notifyDataSetChanged();
+                        }
+                    }
+                }
+            }
+        });
+        //get all of the images from the events collection
+        db.collection("events").whereNotEqualTo("posterUrl",null).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if(task.isSuccessful()){
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        if (document.get("posterUrl") != ""){
+                            Image image = new Image("events",document.getId(),document.getString("posterUrl"));
+                            images.add(image);
+                            imageAdapter.notifyDataSetChanged();
+                        }
+                    }
+                }
+            }
+        });
+        //get all of the images from the facilities collection
+        db.collection("facilities").whereNotEqualTo("facilityPicUrl",null).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if(task.isSuccessful()){
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        if (document.get("facilityPicUrl") != ""){
+                            Image image = new Image("facilities",document.getId(),document.getString("facilityPicUrl"));
+                            images.add(image);
+                            imageAdapter.notifyDataSetChanged();
+                        }
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -1056,6 +1111,11 @@ public class FirebaseUtils {
         });
     }
 
+    /**
+     * This deletes the Qr hash from the event document
+     * @param context
+     * @param eventId
+     */
     public void deleteEventQRHash(Context context, String eventId){
         Log.d("Admin","runningDelete");
         db.collection("events").document(eventId).update("qrHash","").addOnCompleteListener(task -> {
@@ -1102,6 +1162,11 @@ public class FirebaseUtils {
         });
     }
 
+    /**
+     * This method deletes a facility from the database
+     * @param context where the toast is meant to appear
+     * @param facility the id of the event that is being deleted
+     */
     public void deleteFacility(Context context, Facility facility){
         for (int i = 0; i < facility.getEventIds().size(); i++){
             db.collection("events").document(facility.getEventIds().get(i)).delete();
@@ -1116,6 +1181,24 @@ public class FirebaseUtils {
                 }
             }
         });
+    }
+
+    /**
+     * This method deletes an image from the database
+     * @param context where the toast is meant to appear
+     * @param image the id of the event that is being deleted
+     */
+    public void deleteImage(Context context, Image image){
+        if(image.getCollection() == "users"){
+            db.collection(image.getCollection()).document(image.getDocument()).update("profilePicUrl",null);
+            Toast.makeText(context,"Image deleted",Toast.LENGTH_SHORT).show();
+        }else if(image.getCollection() == "events"){
+            db.collection(image.getCollection()).document(image.getDocument()).update("posterUrl",null);
+            Toast.makeText(context,"Image deleted",Toast.LENGTH_SHORT).show();
+        }else if (image.getCollection() == "facilities"){
+            db.collection(image.getCollection()).document(image.getDocument()).update("facilityPicUrl",null);
+            Toast.makeText(context,"Image deleted",Toast.LENGTH_SHORT).show();
+        }
     }
 }
 

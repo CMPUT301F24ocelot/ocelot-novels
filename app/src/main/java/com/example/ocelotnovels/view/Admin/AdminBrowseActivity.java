@@ -30,6 +30,7 @@ import com.bumptech.glide.Glide;
 import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.model.Event;
 import com.example.ocelotnovels.model.Facility;
+import com.example.ocelotnovels.model.Image;
 import com.example.ocelotnovels.model.User;
 import com.example.ocelotnovels.utils.FirebaseUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -59,6 +60,9 @@ public class AdminBrowseActivity extends AppCompatActivity {
     ArrayAdapter<Facility> facilitiesAdapter;//Will only be used if the admin wants to browse the facilities
     ArrayList<Facility> facilities = new ArrayList<Facility>();
 
+    ArrayAdapter<Image> imageAdapter;//Will only be used if the admin wants to browse the facilities
+    ArrayList<Image> images = new ArrayList<Image>();
+
     String[] options = {"Profiles", "Events", "Facilities", "Images"};
     ArrayAdapter<String> dropDownAdapter;
 
@@ -82,6 +86,8 @@ public class AdminBrowseActivity extends AppCompatActivity {
                 loadProfiles();
             } else if (from.equals("Events")) {
                 loadEvents();
+            } else if (from.equals("Facilities")){
+                loadFacilities();
             }
         }
 
@@ -112,6 +118,8 @@ public class AdminBrowseActivity extends AppCompatActivity {
                     loadEvents();
                 } else if (item.equals("Facilities")) {
                     loadFacilities();
+                } else if (item.equals("Images")){
+                    loadAllImages();
                 }
             }
         });
@@ -172,5 +180,16 @@ public class AdminBrowseActivity extends AppCompatActivity {
         facilities.clear();
         firebaseUtils.getAllFacilities(this,facilitiesAdapter,facilities);
         resultsList.setAdapter(facilitiesAdapter);
+    }
+
+    /**
+     * This is a method that will load and show all the images for the admin to browse
+     */
+    private void loadAllImages(){
+        results.setText("Results: Images");
+        imageAdapter = new ImageAdapterAdmin(this, images);
+        images.clear();
+        firebaseUtils.getAllImages(this,imageAdapter, images);
+        resultsList.setAdapter(imageAdapter);
     }
 }
