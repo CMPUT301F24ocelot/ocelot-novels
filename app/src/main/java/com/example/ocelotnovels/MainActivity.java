@@ -437,6 +437,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         // If the current activity is MainActivity and user is an organizer, do nothing
+        super.onBackPressed();
         if (isFinishing()) {
             return;
         }
