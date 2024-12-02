@@ -10,8 +10,8 @@ public class Admin extends Entrant{
      * @param lastName  the entrant's last name
      * @param email     the entrant's email
      */
-    public Admin(String firstName, String lastName, String email) {
-        super(firstName, lastName, email);
+    public Admin(String firstName, String lastName, String email, String deviceId) {
+        super(firstName, lastName, email, deviceId);
     }
 
     /**
@@ -21,7 +21,7 @@ public class Admin extends Entrant{
      * @param email       the entrant's email
      * @param phoneNumber the entrant's phone number
      */
-    public Admin(String firstName, String lastName, String email, String phoneNumber) {
-        super(firstName, lastName, email, phoneNumber);
+    public Admin(String firstName, String lastName, String email, String phoneNumber, String deviceId) {
+        super(firstName, lastName, email, phoneNumber, deviceId);
     }
 }

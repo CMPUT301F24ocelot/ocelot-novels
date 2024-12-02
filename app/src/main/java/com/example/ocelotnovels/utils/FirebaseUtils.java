@@ -1,3 +1,17 @@
+/**
+ * This utility class handles Firebase Firestore and Firebase Storage operations for the application.
+ * It provides methods to manage user data, event data, and interactions between them, such as joining
+ * event waitlists, fetching user-related events, and managing profile pictures. The class is designed
+ * as a singleton to ensure a single instance handles all Firebase operations across the application.
+ *
+ * Key features:
+ * - Manage user-specific data such as device IDs and event participation.
+ * - Perform CRUD operations on Firestore collections for users and events.
+ * - Handle image upload and retrieval from Firebase Storage.
+ * - Support operations like polling event waitlists and updating user profiles.
+ * - Provide utility methods for developers to extend and modify behavior easily.
+ */
+
 package com.example.ocelotnovels.utils;
 
 import static android.content.ContentValues.TAG;
@@ -38,6 +52,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.security.auth.callback.Callback;
 
 /**
  * Utility class to manage Firebase Firestore operations for the application.
@@ -554,7 +570,8 @@ public class FirebaseUtils {
                                                         Entrant user = new Entrant(
                                                                 firstName,
                                                                 lastName,
-                                                                doc.getString("email")
+                                                                doc.getString("email"),
+                                                                doc.getId()
                                                         );
                                                         userList.add(user);
                                                     } else {
@@ -907,11 +924,12 @@ public class FirebaseUtils {
                         String lastName = nameParts[1];
                         String email = document.getString("email");
                         String phone = document.getString("phone");
+                        String deviceId = document.getId();
                         User user;
                         if (phone != null && !phone.equals("")) {
-                            user = new User(firstName, lastName, email, phone);
+                            user = new User(firstName, lastName, email, phone, deviceId);
                         } else {
-                            user = new User(firstName, lastName, email);
+                            user = new User(firstName, lastName, email, deviceId);
                         }
                         Log.d("Admin", user.toString());
                         userArray.add(user);
@@ -936,5 +954,48 @@ public class FirebaseUtils {
             }
         });
     }
+
+    public void removeEntrantFromEvent(String eventId, String userId,
+                                       OnSuccessListener<Void> onSuccess,
+                                       OnFailureListener onFailure) {
+        DocumentReference eventRef = db.collection("events").document(eventId);
+        DocumentReference userRef = db.collection("users").document(userId);
+        Log.d("DEVIDEIDSEL", userId);
+        db.runTransaction(transaction -> {
+            // Fetch event document
+            DocumentSnapshot eventSnapshot = transaction.get(eventRef);
+            List<String> selectedList = (List<String>) eventSnapshot.get("selectedList");
+            List<String> cancelledList = (List<String>) eventSnapshot.get("cancelledList");
+
+            // Fetch user document
+            DocumentSnapshot userSnapshot = transaction.get(userRef);
+            List<String> selectedEventsJoined = (List<String>) userSnapshot.get("selectedEventsJoined");
+
+            // Ensure lists are initialized
+            if (selectedList == null) selectedList = new ArrayList<>();
+            if (cancelledList == null) cancelledList = new ArrayList<>();
+            if (selectedEventsJoined == null) selectedEventsJoined = new ArrayList<>();
+
+            // Remove user from selected list and add to cancelled list
+            selectedList.remove(userId);
+            if (!cancelledList.contains(userId)) cancelledList.add(userId);
+
+            // Remove event from user's selected events
+            selectedEventsJoined.remove(eventId);
+
+            // Update Firestore
+            transaction.update(eventRef, "selectedList", selectedList);
+            transaction.update(eventRef, "cancelledList", cancelledList);
+            transaction.update(userRef, "selectedEventsJoined", selectedEventsJoined);
+
+            return null;
+        }).addOnSuccessListener(result -> {
+            if (onSuccess != null) onSuccess.onSuccess(null);
+        }).addOnFailureListener(e -> {
+            if (onFailure != null) onFailure.onFailure(e);
+        });
+    }
+
+
 }
 

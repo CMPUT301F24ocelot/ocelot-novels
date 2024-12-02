@@ -1,3 +1,11 @@
+/**
+ * This activity class represents the admin view of an entrant's profile.
+ * It displays the entrant's profile details, including their name, email,
+ * phone number, and profile picture. The admin can view this information and
+ * navigate back to the previous screen. The profile data is passed as a
+ * serialized `User` object through the intent extras.
+ */
+
 package com.example.ocelotnovels.view.Admin;
 
 import android.os.Bundle;
@@ -11,6 +19,10 @@ import com.bumptech.glide.Glide;
 import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.model.User;
 
+/**
+ * EntrantProfileAdminView is an activity that displays an entrant's profile
+ * to the admin, including their name, email, phone number, and profile picture.
+ */
 public class EntrantProfileAdminView extends AppCompatActivity {
 
     private ImageView profilePicture;
@@ -18,6 +30,12 @@ public class EntrantProfileAdminView extends AppCompatActivity {
     private Button deleteButton;
     private User profile;
 
+    /**
+     * Called when the activity is created. Initializes the view and retrieves
+     * the entrant's profile data from the intent extras.
+     *
+     * @param savedInstance the previously saved instance state, if any.
+     */
     @Override
     protected void onCreate(Bundle savedInstance){
         Bundle item = getIntent().getExtras();
@@ -29,6 +47,9 @@ public class EntrantProfileAdminView extends AppCompatActivity {
         initializeView();
     }
 
+    /**
+     * Initializes the UI elements and populates them with the entrant's data.
+     */
     private void initializeView() {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Admin");

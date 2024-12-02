@@ -24,15 +24,19 @@
             android:exported="false" />
         <activity
             android:name=".view.Organizer.OrganiserConfirmedListActivity"
+            android:parentActivityName=".view.Organizer.EventDetailsActivity"
             android:exported="false" />
         <activity
             android:name=".view.Organizer.OrganiserCancelledListActivity"
+            android:parentActivityName=".view.Organizer.EventDetailsActivity"
             android:exported="false" />
         <activity
             android:name=".view.Organizer.OrganiserSelectedListActivity"
+            android:parentActivityName=".view.Organizer.EventDetailsActivity"
             android:exported="false" />
         <activity
             android:name=".view.Organizer.OrganizerWaitingListActivity"
+            android:parentActivityName=".view.Organizer.EventDetailsActivity"
             android:exported="true" />
         <activity
             android:name=".view.Entrant.WaitingListActivity"
@@ -52,8 +56,7 @@
             android:exported="false" />
         <activity
             android:name=".view.Organizer.OrganizerMainActivity"
-            android:exported="true"
-            android:parentActivityName=".MainActivity"/>
+            android:exported="false" />
         <activity
             android:name=".CreateEventActivity"
             android:parentActivityName=".view.Organizer.OrganizerMainActivity" />
@@ -80,7 +83,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".WaitingListActivity" />
-        <activity android:name=".SelectedEntrantsActivity" />
+        <activity android:name=".SelectedEntrantsActivity"  />
         <activity android:name=".InvitedEntrantsActivity" />
         <activity android:name=".CancelledEntrantsActivity" />
         <activity android:name=".ConfirmedEntrantsActivity" />

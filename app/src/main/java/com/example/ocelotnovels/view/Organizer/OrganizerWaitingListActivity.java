@@ -1,3 +1,18 @@
+/**
+ * OrganizerWaitingListActivity
+ *
+ * This activity displays and manages the waiting list for an event.
+ * It retrieves the waiting list of users from Firebase, displays it
+ * in a RecyclerView, and provides functionality for organizers to
+ * sample users from the list using event capacity or a custom capacity.
+ *
+ * Key features:
+ * - Fetch and display a waiting list of users.
+ * - Sampling users based on event capacity or custom capacity.
+ * - Handles UI updates for an empty state or populated list.
+ * - Integrates with Firebase for data retrieval and updates.
+ */
+
 package com.example.ocelotnovels.view.Organizer;
 
 import android.os.Bundle;
@@ -32,6 +47,12 @@ public class OrganizerWaitingListActivity extends AppCompatActivity {
     private Button sampleButton;
     private String eventId;
 
+    /**
+     * Initializes the activity and its views, retrieves event ID,
+     * and sets up the RecyclerView and other UI elements.
+     *
+     * @param savedInstanceState Saved instance state from a previous run.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,6 +75,9 @@ public class OrganizerWaitingListActivity extends AppCompatActivity {
         setupSampleButton();
     }
 
+    /**
+     * Initializes views used in the activity.
+     */
     private void initializeViews() {
         waitingListRecyclerView = findViewById(R.id.waiting_list_recycler_view);
         emptyStateText = findViewById(R.id.empty_state_text);
@@ -65,10 +89,16 @@ public class OrganizerWaitingListActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Initializes Firebase utilities for database interactions.
+     */
     private void initializeFirebase() {
         firebaseUtils = FirebaseUtils.getInstance(this);
     }
 
+    /**
+     * Sets up the RecyclerView to display the waiting list of users.
+     */
     private void setupRecyclerView() {
         waitingListUsers = new ArrayList<>();
         waitingListAdapter = new OrganizerWaitingListAdapter(this, waitingListUsers);
@@ -77,6 +107,9 @@ public class OrganizerWaitingListActivity extends AppCompatActivity {
         waitingListRecyclerView.setAdapter(waitingListAdapter);
     }
 
+    /**
+     * Loads the waiting list from Firebase and updates the UI accordingly.
+     */
     private void loadOrganiserWaitingList() {
         String listType = "waitingList";
         firebaseUtils.fetchOrganiserListEntrants(eventId, listType, waitingListUsers, () -> {
@@ -85,6 +118,9 @@ public class OrganizerWaitingListActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Sets up the button to handle sampling options for the waiting list.
+     */
     private void setupSampleButton() {
         sampleButton.setOnClickListener(v -> {
             // Show options for sampling (use capacity or set custom capacity)
@@ -92,6 +128,10 @@ public class OrganizerWaitingListActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Displays polling options for the user to choose event capacity
+     * or custom capacity for sampling.
+     */
     private void showPollingOptions() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Sampling Options");
@@ -111,6 +151,10 @@ public class OrganizerWaitingListActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    /**
+     * Displays an input dialog for the user to enter a custom capacity
+     * for sampling.
+     */
     private void showCustomCapacityInput() {
         AlertDialog.Builder inputDialog = new AlertDialog.Builder(this);
         inputDialog.setTitle("Set Custom Capacity");
@@ -140,6 +184,12 @@ public class OrganizerWaitingListActivity extends AppCompatActivity {
         inputDialog.show();
     }
 
+    /**
+     * Performs sampling of users from the waiting list using the specified
+     * capacity or event capacity if no custom capacity is provided.
+     *
+     * @param customCapacity The custom capacity for sampling, or null for event capacity.
+     */
     private void performSamplingWithCapacity(Integer customCapacity) {
         firebaseUtils.performPolling(
                 eventId,
@@ -155,7 +205,9 @@ public class OrganizerWaitingListActivity extends AppCompatActivity {
         );
     }
 
-
+    /**
+     * Updates the UI to reflect whether the waiting list is empty or populated.
+     */
     private void updateEmptyState() {
         runOnUiThread(() -> {
             Log.d(TAG, "Updating empty state. Users count: " + waitingListUsers.size());
@@ -169,6 +221,11 @@ public class OrganizerWaitingListActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Handles navigation back to the previous activity.
+     *
+     * @return True if navigation is handled, false otherwise.
+     */
     @Override
     public boolean onSupportNavigateUp() {
         super.onBackPressed(); // Navigate back to the previous activity

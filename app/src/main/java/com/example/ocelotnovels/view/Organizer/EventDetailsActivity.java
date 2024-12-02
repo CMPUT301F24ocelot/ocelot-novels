@@ -1,3 +1,24 @@
+/**
+ * EventDetailsActivity is responsible for displaying and managing the details of a specific event.
+ * This activity fetches event details such as name, date, location, description, and poster from Firestore,
+ * and allows the user to:
+ * - Edit the event poster by selecting a new image from the device.
+ * - Delete the event from Firestore.
+ * - Navigate to other screens like waiting lists, selected lists, cancelled lists, and confirmed lists for the event.
+ *
+ * Key features:
+ * - Firebase Firestore integration for retrieving and updating event details.
+ * - Firebase Storage for uploading and displaying event posters.
+ * - Glide library for image loading.
+ * - Menu options for navigating to different event-related lists.
+ * - Error handling and user feedback using Toast messages and logs.
+ *
+ * Dependencies:
+ * - Firebase Firestore
+ * - Firebase Storage
+ * - Glide
+ */
+
 package com.example.ocelotnovels.view.Organizer;
 
 import android.content.Intent;
@@ -41,10 +62,20 @@ public class EventDetailsActivity extends AppCompatActivity {
 
     private ImageView posterImageView;
 
+    /**
+     * Initializes the activity and sets up event details, buttons, and Firebase references.
+     *
+     * @param savedInstanceState Saved instance state bundle.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.event_details);
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Event Details");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
 
         // Get the event name passed from the adapter
         String eventName = getIntent().getStringExtra("eventName");
@@ -67,6 +98,12 @@ public class EventDetailsActivity extends AppCompatActivity {
         editPosterButton.setOnClickListener(v -> selectNewPoster());
     }
 
+    /**
+     * Inflates the menu and adds items to the action bar.
+     *
+     * @param menu The menu to be created.
+     * @return true if the menu is successfully created.
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -74,6 +111,12 @@ public class EventDetailsActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Handles menu item selections for navigating to different event-related lists.
+     *
+     * @param item The selected menu item.
+     * @return true if the menu item is successfully handled.
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -116,6 +159,11 @@ public class EventDetailsActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Fetches event details from Firestore based on the event name and updates the UI.
+     *
+     * @param eventName The name of the event to fetch details for.
+     */
     private void fetchEventDetails(String eventName) {
         db.collection("events")
                 .whereEqualTo("name", eventName) // Replace "name" with your Firestore field for event names
@@ -160,12 +208,22 @@ public class EventDetailsActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> Log.e(TAG, "Error fetching event details", e));
     }
 
+    /**
+     * Allows the user to select a new event poster image from their device.
+     */
     private void selectNewPoster() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         intent.setType("image/*");
         startActivityForResult(intent, PICK_POSTER_REQUEST);
     }
 
+    /**
+     * Handles the result of the activity started for selecting an image.
+     *
+     * @param requestCode The request code used to start the activity.
+     * @param resultCode  The result code returned by the activity.
+     * @param data        The data returned by the activity, containing the selected image.
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -182,6 +240,11 @@ public class EventDetailsActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Uploads a new event poster image to Firebase Storage and updates the Firestore document.
+     *
+     * @param bitmap The bitmap of the new poster image to upload.
+     */
     private void uploadNewPoster(Bitmap bitmap) {
         String newPosterId = UUID.randomUUID().toString(); // Generate a unique ID for the new poster
         StorageReference posterRef = storageRef.child("images/events/" + newPosterId + ".jpg");
@@ -203,6 +266,11 @@ public class EventDetailsActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Updates the Firestore document with the URL of the new poster image.
+     *
+     * @param newPosterUrl The URL of the new poster image.
+     */
     private void updatePosterInFirestore(String newPosterUrl) {
         if (eventId != null) {
             db.collection("events").document(eventId)
@@ -225,6 +293,9 @@ public class EventDetailsActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Deletes the event from Firestore and provides feedback to the user.
+     */
     private void deleteEvent() {
         if (eventId != null) {
             db.collection("events").document(eventId)

@@ -1,3 +1,17 @@
+/**
+ * The MainActivity class represents the main entry point of the application.
+ * It serves as the hub for user interactions and navigation to other parts of the app,
+ * such as organizer, admin, or entrant activities. The class handles:
+ *
+ * - Dynamic UI setup and user-specific features based on Firebase Firestore data.
+ * - QR code scanning functionality using Google ML Kit.
+ * - Permission handling for notifications and location access.
+ * - Navigation to different activities like profile, event details, or admin views.
+ * - Integration with Firebase for user authentication and database access.
+ *
+ * This class ensures that the app's main functionality is organized and accessible
+ * through a cohesive and user-friendly interface.
+ */
 package com.example.ocelotnovels;
 
 import android.Manifest;
@@ -70,6 +84,9 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String POST_NOTIFICATIONS = "android.permission.POST_NOTIFICATIONS";
 
+    /**
+     * A launcher for requesting runtime permissions, handling the results.
+     */
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted) {
@@ -322,34 +339,56 @@ public class MainActivity extends AppCompatActivity {
      * Fetches user data from Firestore and updates the UI.
      */
     private void fetchUserData() {
-        db.collection("users").document(deviceId).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists() && documentSnapshot.contains("email")) {
-                        getUserEmail = documentSnapshot.getString("email");
-                        isUserSignedUp = true;
-                        signUpButton.setVisibility(View.GONE);
-                        eventViewBtn.setOnClickListener(v -> {
-                            Intent intent = new Intent(getApplicationContext(), WaitingListActivity.class);
-                            startActivity(intent);
-                        });
-                    } else {
-                        isUserSignedUp = false;
-                        signUpButton.setVisibility(View.VISIBLE);
-                        signUpButton.setOnClickListener(view -> {
-                            Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
-                            startActivity(intent);
-                            finish();
-                        });
+        db.collection("facilities")
+                .whereEqualTo("ownerId", deviceId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        // This device is an organizer, directly go to OrganizerMainActivity
+                        Intent intent = new Intent(MainActivity.this, OrganizerMainActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                        finish(); // Finish MainActivity so it can't be accessed
+                        return;
                     }
-                    invalidateOptionsMenu();
+
+                    // If not an organizer, proceed with normal user data fetch
+                    db.collection("users").document(deviceId).get()
+                            .addOnSuccessListener(documentSnapshot -> {
+                                if (documentSnapshot.exists() && documentSnapshot.contains("email")) {
+                                    getUserEmail = documentSnapshot.getString("email");
+                                    isUserSignedUp = true;
+                                    signUpButton.setVisibility(View.GONE);
+                                    eventViewBtn.setOnClickListener(v -> {
+                                        Intent intent = new Intent(getApplicationContext(), WaitingListActivity.class);
+                                        startActivity(intent);
+                                    });
+                                } else {
+                                    isUserSignedUp = false;
+                                    signUpButton.setVisibility(View.VISIBLE);
+                                    signUpButton.setOnClickListener(view -> {
+                                        Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
+                                        startActivity(intent);
+                                        finish();
+                                    });
+                                }
+                                invalidateOptionsMenu();
+                            })
+                            .addOnFailureListener(e -> {
+                                isUserSignedUp = false;
+                                Toast.makeText(MainActivity.this, "Error fetching user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                invalidateOptionsMenu();
+                            });
                 })
                 .addOnFailureListener(e -> {
-                    isUserSignedUp = false; // Default to not signed up in case of error
-                    Toast.makeText(MainActivity.this, "Error fetching user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    invalidateOptionsMenu(); // Refresh the menu
+                    // Handle failure in checking facilities
+                    Toast.makeText(MainActivity.this, "Error checking facilities: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 
+    /**
+     * Requests location permissions for the app.
+     */
     private void requestLocationPermission() {
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -359,6 +398,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Handles the result of permission requests.
+     *
+     * @param requestCode  the code for the permission request.
+     * @param permissions  the permissions requested.
+     * @param grantResults the results of the permission request.
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -370,5 +416,36 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "Location permission denied. Some features may be limited.", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    /**
+     * Handles the back button press, ensuring proper navigation for organizers.
+     */
+    @Override
+    public void onBackPressed() {
+        // If the current activity is MainActivity and user is an organizer, do nothing
+        if (isFinishing()) {
+            return;
+        }
+
+        db.collection("facilities")
+                .whereEqualTo("ownerId", deviceId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        // Organizer trying to go back, redirect to OrganizerMainActivity
+                        Intent intent = new Intent(MainActivity.this, OrganizerMainActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        // Normal user, allow default back button behavior
+                        super.onBackPressed();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    // If there's an error, default to normal back button behavior
+                    super.onBackPressed();
+                });
     }
 }

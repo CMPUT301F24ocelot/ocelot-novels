@@ -1,3 +1,11 @@
+/**
+ * This class represents the EventDetailsFragment, a dialog fragment that displays the details of an event
+ * and provides functionality for a user to join the event. It fetches event details from Firebase Firestore
+ * and verifies user information before allowing them to register for the event. If geolocation is enabled
+ * for the event, it ensures location data is collected. The fragment also handles updating user and event
+ * details in Firestore, such as adding the user to the event's waiting list and updating their event location.
+ */
+
 package com.example.ocelotnovels.view.Entrant;
 
 import android.Manifest;
@@ -55,6 +63,13 @@ public class EventDetailsFragment extends DialogFragment {
 
     private GoogleMap mMap;
 
+    /**
+     * Creates a new instance of EventDetailsFragment with the specified event and user IDs.
+     *
+     * @param eventId the ID of the event to display details for.
+     * @param userId  the ID of the user interacting with the fragment.
+     * @return a new instance of EventDetailsFragment.
+     */
     public static EventDetailsFragment newInstance(String eventId, String userId) {
         EventDetailsFragment fragment = new EventDetailsFragment();
         Bundle args = new Bundle();
@@ -64,6 +79,12 @@ public class EventDetailsFragment extends DialogFragment {
         return fragment;
     }
 
+    /**
+     * Creates the dialog for displaying event details.
+     *
+     * @param savedInstanceState the saved state of the fragment.
+     * @return the created dialog.
+     */
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
@@ -94,6 +115,9 @@ public class EventDetailsFragment extends DialogFragment {
                 .create();
     }
 
+    /**
+     * Resumes the fragment and sets up the positive button's click listener to verify the user and join the event.
+     */
     @Override
     public void onResume() {
         super.onResume();
@@ -105,6 +129,9 @@ public class EventDetailsFragment extends DialogFragment {
         }
     }
 
+    /**
+     * Loads event details from Firebase Firestore and updates the UI with the retrieved data.
+     */
     private void loadEventDetails() {
         FirebaseFirestore.getInstance()
                 .collection("events")
@@ -151,6 +178,9 @@ public class EventDetailsFragment extends DialogFragment {
     }
 
 
+    /**
+     * Verifies the user by checking their Firestore document and proceeds with joining the event.
+     */
     private void verifyUserAndJoinEvent() {
         if (!isAdded()) return;
 
@@ -177,6 +207,9 @@ public class EventDetailsFragment extends DialogFragment {
                 });
     }
 
+    /**
+     * Fetches the user's location and attempts to join the event.
+     */
     private void fetchUserLocationAndJoinEvent() {
         // Check if location permission is granted
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
@@ -204,6 +237,12 @@ public class EventDetailsFragment extends DialogFragment {
                 });
     }
 
+    /**
+     * Updates the user's location in Firestore and attempts to join the event if the user is eligible.
+     *
+     * @param latitude  the latitude of the user's location.
+     * @param longitude the longitude of the user's location.
+     */
     private void updateUserEventLocations(double latitude, double longitude) {
         // Create a GeoPoint object to be added
         GeoPoint geoPoint = new GeoPoint(latitude, longitude);
@@ -278,6 +317,10 @@ public class EventDetailsFragment extends DialogFragment {
                 });
     }*/
 
+
+    /**
+     * Checks if the event has capacity and adds the user to the waiting list if possible.
+     */
     private void checkEventCapacityAndJoin() {
         eventDocument.get()
                 .addOnSuccessListener(eventDoc -> {
@@ -285,6 +328,8 @@ public class EventDetailsFragment extends DialogFragment {
                         Toast.makeText(getContext(), "Event not found", Toast.LENGTH_SHORT).show();
                         return;
                     }
+
+                    Long capacityLong = (eventDoc.get("capacityWaitingList") == null ? -1 : (long) eventDoc.get("capacityWaitingList"));
 
                     List<String> waitingList = (List<String>) eventDoc.get("waitingList");
                     List<String> cancelledList = (List<String>) eventDoc.get("cancelledList");
@@ -299,15 +344,30 @@ public class EventDetailsFragment extends DialogFragment {
                         return;
                     }
 
-                    // Add the user to the waiting list
-                    addUserToEvent();
+                    // Check event capacity and join
+                    if (capacityLong >= 0 && waitingList.size() < capacityLong || capacityLong == -1) {
+                        // Add the user to the waiting list
+                        addUserToEvent();
 
-                    // Remove user from cancelled list if present
-                    if (cancelledList.contains(userId)) {
-                        cancelledList.remove(userId);
-                        eventDocument.update("cancelledList", cancelledList)
-                                .addOnFailureListener(e -> Log.e("JoinEventFragment", "Failed to update cancelled list", e));
+                        // Remove user from cancelled list if present
+                        if (cancelledList.contains(userId)) {
+                            cancelledList.remove(userId);
+                            eventDocument.update("cancelledList", cancelledList)
+                                    .addOnFailureListener(e -> Log.e("JoinEventFragment", "Failed to update cancelled list", e));
+                        }
+                    } else {
+                        Toast.makeText(getContext(), "Event is at full capacity", Toast.LENGTH_SHORT).show();
                     }
+
+//                    // Add the user to the waiting list
+//                    addUserToEvent();
+//
+//                    // Remove user from cancelled list if present
+//                    if (cancelledList.contains(userId)) {
+//                        cancelledList.remove(userId);
+//                        eventDocument.update("cancelledList", cancelledList)
+//                                .addOnFailureListener(e -> Log.e("JoinEventFragment", "Failed to update cancelled list", e));
+//                    }
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(getContext(), "Error checking event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -316,7 +376,9 @@ public class EventDetailsFragment extends DialogFragment {
     }
 
 
-
+    /**
+     * Adds the user to the event's waiting list and updates their joined events in Firestore.
+     */
     private void addUserToEvent() {
         // Add event to user's joined events
         userDocument.update("eventsJoined", FieldValue.arrayUnion(eventId))
@@ -338,6 +400,9 @@ public class EventDetailsFragment extends DialogFragment {
                 });
     }
 
+    /**
+     * Handles cases where the user document does not exist, redirecting to the MainActivity.
+     */
     private void handleNoUser() {
         if (getActivity() != null) {
             Toast.makeText(getActivity(), "Please sign up first", Toast.LENGTH_SHORT).show();
@@ -350,6 +415,9 @@ public class EventDetailsFragment extends DialogFragment {
         }
     }
 
+    /**
+     * Navigates the user to the WaitingListActivity after successfully joining the event.
+     */
     private void navigateToWaitingList() {
         if (getActivity() != null) {
             Intent intent = new Intent(getActivity(), WaitingListActivity.class);

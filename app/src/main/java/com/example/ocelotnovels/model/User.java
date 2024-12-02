@@ -1,3 +1,23 @@
+/**
+ * This class represents a generic user with essential attributes such as first name, last name,
+ * email, and optional attributes like phone number, device ID, and profile picture.
+ *
+ * It provides methods to manage and validate user details, ensuring proper formatting for
+ * fields like email and phone number. This class is designed to be extended for specific
+ * user roles such as Entrant, Organizer, or Admin in the context of an event management
+ * application.
+ *
+ * The class also includes utility methods for representing user information as a string or
+ * as a map, which can be utilized for database storage or logging purposes. Additionally,
+ * methods are provided to set and get optional attributes like device ID and profile picture,
+ * facilitating operations such as user deletion or profile viewing by an admin.
+ *
+ * Validation rules are implemented to maintain data integrity, including checks for name
+ * length, email format, and phone number format.
+ *
+ * Implements `Serializable` to allow instances to be easily persisted or transferred.
+ */
+
 package com.example.ocelotnovels.model;
 
 import java.io.Serializable;
@@ -27,11 +47,12 @@ public class User implements Serializable {
      * @param lastName  the user's last name
      * @param email     the user's email
      */
-    public User(String firstName, String lastName, String email) {
+    public User(String firstName, String lastName, String email, String device_ID) {
         setFirstName(firstName);
         setLastName(lastName);
         setEmail(email);
         this.phoneNumber=null;
+        setDevice_ID(device_ID);
     }
 
     /**
@@ -41,11 +62,19 @@ public class User implements Serializable {
      * @param email       the user's email
      * @param phoneNumber the user's phone number (optional)
      */
-    public User(String firstName, String lastName, String email, String phoneNumber) {
+//    public User(String firstName, String lastName, String email, String phoneNumber) {
+//        setFirstName(firstName);
+//        setLastName(lastName);
+//        setEmail(email);
+//        setPhoneNumber(phoneNumber);
+//    }
+
+    public User(String firstName, String lastName, String email, String phoneNumber, String device_ID) {
         setFirstName(firstName);
         setLastName(lastName);
         setEmail(email);
         setPhoneNumber(phoneNumber);
+        setDevice_ID(device_ID);
     }
 
     /**

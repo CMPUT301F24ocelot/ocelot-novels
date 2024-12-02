@@ -1,3 +1,14 @@
+/**
+ * The WaitingListActivity class displays a list of entrants who are in the waiting list for a specific event.
+ * The data is fetched from a Firestore collection and displayed in a RecyclerView.
+ *
+ * Features:
+ * - Fetches the waiting list data from Firestore.
+ * - Populates a RecyclerView with the data.
+ * - Handles success and error cases for Firestore data fetching.
+ * - Implements a custom RecyclerView.Adapter for displaying entrants.
+ */
+
 package com.example.ocelotnovels;
 
 import android.os.Bundle;
