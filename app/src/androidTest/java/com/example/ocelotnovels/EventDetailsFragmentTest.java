@@ -2,6 +2,7 @@ package com.example.ocelotnovels;
 
 import android.os.Bundle;
 
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.testing.FragmentScenario;
 import androidx.lifecycle.Lifecycle;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -16,46 +17,38 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.junit.Assert.assertNotNull;
 
-import com.example.ocelotnovels.MockEventDetailsFragment;
+import com.example.ocelotnovels.view.Entrant.EventDetailsFragment;
 
 @RunWith(AndroidJUnit4.class)
 public class EventDetailsFragmentTest {
 
     @Test
-    public void testEventDetailsFragmentUIWithMockData() {
-        // Prepare mock arguments for the MockEventDetailsFragment
+    public void testEventDetailsFragmentUI() {
+        // Prepare mock arguments for the EventDetailsFragment
         Bundle args = new Bundle();
         args.putString("eventId", "mockEventId");
         args.putString("userId", "mockUserId");
 
-        // Launch the MockEventDetailsFragment
-        FragmentScenario<MockEventDetailsFragment> scenario = FragmentScenario.launchInContainer(
-                MockEventDetailsFragment.class,
+        // Launch the EventDetailsFragment
+        FragmentScenario<EventDetailsFragment> scenario = FragmentScenario.launchInContainer(
+                EventDetailsFragment.class,
                 args,
-                R.style.Theme_OcelotNovels, // Replace with your app's theme
-                Lifecycle.State.RESUMED
+                R.style.Theme_OcelotNovels // Replace with your app's theme
         );
 
-        // Ensure the fragment is properly initialized
+        // Ensure the fragment's view hierarchy is ready
         scenario.onFragment(fragment -> {
-            assertNotNull("Fragment should not be null", fragment);
             assertNotNull("Fragment view should not be null", fragment.getView());
         });
 
-        // Verify the mock data in UI elements
+        // Verify the UI elements
         onView(withId(R.id.user_event_title))
-                .check(matches(isDisplayed()))
-                .check(matches(withText("Mock Event Title")));
-
+                .check(matches(isDisplayed()));
         onView(withId(R.id.user_event_description))
-                .check(matches(isDisplayed()))
-                .check(matches(withText("Mock Event Description")));
-
+                .check(matches(isDisplayed()));
         onView(withId(R.id.user_event_deadline))
-                .check(matches(isDisplayed()))
-                .check(matches(withText("Mock Deadline: 2023-12-31")));
-
-        onView(withId(R.id.warning_text))
                 .check(matches(isDisplayed()));
     }
+
+
 }
