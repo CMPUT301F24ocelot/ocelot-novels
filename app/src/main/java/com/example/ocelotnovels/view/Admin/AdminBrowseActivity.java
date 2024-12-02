@@ -48,7 +48,6 @@ import java.util.ArrayList;
 public class AdminBrowseActivity extends AppCompatActivity {
     private TextView results;
     private ListView resultsList;
-    private Button detailsButton;
     private AutoCompleteTextView dropDownMenu;
     private FirebaseUtils firebaseUtils;
 
@@ -147,6 +146,7 @@ public class AdminBrowseActivity extends AppCompatActivity {
     @Override
     public boolean onSupportNavigateUp() {
         Intent homePage = new Intent(AdminBrowseActivity.this, MainActivity.class);
+        startActivity(homePage);
         return true;
     }
 
