@@ -60,6 +60,12 @@ public class WaitingListActivity extends AppCompatActivity {
         loadWaitingList();
     }
 
+    public void setMockData(List<Entrant> mockData) {
+        entrantsList.clear();
+        entrantsList.addAll(mockData);
+        updateRecyclerView();
+    }
+
     /**
      * Fetches the list of entrants from the "WaitingList" collection in Firestore.
      * On success, it populates the entrants list and updates the RecyclerView.
