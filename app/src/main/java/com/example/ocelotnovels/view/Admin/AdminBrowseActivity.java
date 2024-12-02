@@ -27,6 +27,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
+import com.example.ocelotnovels.MainActivity;
 import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.model.Event;
 import com.example.ocelotnovels.model.Facility;
@@ -145,7 +146,7 @@ public class AdminBrowseActivity extends AppCompatActivity {
      */
     @Override
     public boolean onSupportNavigateUp() {
-        super.onBackPressed(); // This navigates back to the parent activity.
+        Intent homePage = new Intent(AdminBrowseActivity.this, MainActivity.class);
         return true;
     }
 
