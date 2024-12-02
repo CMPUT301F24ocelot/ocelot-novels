@@ -12,8 +12,8 @@ public class Entrant extends User implements Comparable<Entrant> {
      * @param lastName  the entrant's last name
      * @param email     the entrant's email
      */
-    public Entrant(String firstName, String lastName, String email) {
-        super(firstName, lastName, email);
+    public Entrant(String firstName, String lastName, String email, String deviceId) {
+        super(firstName, lastName, email, deviceId);
         this.role="Entrant";
     }
 
@@ -24,8 +24,8 @@ public class Entrant extends User implements Comparable<Entrant> {
      * @param email       the entrant's email
      * @param phoneNumber the entrant's phone number
      */
-    public Entrant(String firstName, String lastName, String email, String phoneNumber) {
-        super(firstName, lastName, email, phoneNumber);
+    public Entrant(String firstName, String lastName, String email, String phoneNumber, String deviceId) {
+        super(firstName, lastName, email, phoneNumber, deviceId);
         this.role="Entrant";
     }
 

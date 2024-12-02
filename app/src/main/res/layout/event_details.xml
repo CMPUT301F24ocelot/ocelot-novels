@@ -40,7 +40,7 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:padding="16dp">
 
             <TextView
@@ -95,26 +95,16 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/delete_event_button"
+                style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="8dp"
                 android:text="Delete Event"
-                style="@style/Widget.Material3.Button.TonalButton"
-                app:layout_constraintTop_toBottomOf="@id/edit_poster_button"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/send_notifications_button" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/send_notifications_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="Send Notifications"
-                style="@style/Widget.Material3.Button.TonalButton"
-                app:layout_constraintTop_toTopOf="@id/delete_event_button"
-                app:layout_constraintStart_toEndOf="@id/delete_event_button"
-                app:layout_constraintEnd_toEndOf="parent" />
+                app:layout_constraintTop_toBottomOf="@id/edit_poster_button" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
