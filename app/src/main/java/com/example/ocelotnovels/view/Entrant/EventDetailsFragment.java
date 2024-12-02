@@ -88,31 +88,38 @@ public class EventDetailsFragment extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
 
-        // Inflate custom layout
+        // Inflate the layout
         View view = LayoutInflater.from(getContext()).inflate(R.layout.user_scan_qr_event_details, null);
 
         // Initialize UI elements
         eventTitle = view.findViewById(R.id.user_event_title);
         eventDescription = view.findViewById(R.id.user_event_description);
-//        eventStatus = view.findViewById(R.id.user_event_status);
         registrationDeadline = view.findViewById(R.id.user_event_deadline);
         geolocationWarning = view.findViewById(R.id.warning_text);
         eventImage = view.findViewById(R.id.event_details_poster_image);
-        // Get event and user IDs from arguments
+
+        // Set default visibility for geolocation warning
+        geolocationWarning.setVisibility(View.GONE);
+
+        // Get arguments
         if (getArguments() != null) {
             eventId = getArguments().getString(ARG_EVENT_ID);
             userId = getArguments().getString(ARG_USER_ID);
+
+            // Load event details
             loadEventDetails();
+        } else {
+            Log.e("EventDetailsFragment", "Arguments not passed to fragment");
+            Toast.makeText(getContext(), "Failed to load event details", Toast.LENGTH_SHORT).show();
         }
 
-        return builder
-                .setView(view)
+        builder.setView(view)
                 .setTitle("Join Event")
-                .setPositiveButton("Join", null) // We'll override this later
-                .setNegativeButton("Cancel", (dialog, which) -> dismiss())
-                .create();
+                .setPositiveButton("Join", null) // Overridden in onResume
+                .setNegativeButton("Cancel", (dialog, which) -> dismiss());
+        return builder.create();
     }
 
     /**
