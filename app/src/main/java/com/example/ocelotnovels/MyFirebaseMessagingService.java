@@ -1,3 +1,11 @@
+/**
+ * MyFirebaseMessagingService is a service class that extends FirebaseMessagingService
+ * to handle Firebase Cloud Messaging (FCM) functionality. It provides the following features:
+ * - Handles the receipt of new FCM tokens and sends them to the server or Firestore.
+ * - Processes incoming FCM notifications and data messages.
+ * - Displays notifications to the user.
+ * - Handles custom data payload logic.
+ */
 package com.example.ocelotnovels;
 
 import android.app.NotificationChannel;
@@ -23,6 +31,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     private static final String CHANNEL_ID = "notification_channel";
 
+    /**
+     * Called when a new FCM token is generated. This method sends the token to the server or Firestore.
+     *
+     * @param token The new FCM token.
+     */
     @Override
     public void onNewToken(@NonNull String token) {
         Log.d("FCM TOKEN", "Refreshed token: " + token);
@@ -31,6 +44,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         sendTokenToServer(token);
     }
 
+    /**
+     * Called when an FCM message is received. Handles both notification and data payloads.
+     *
+     * @param remoteMessage The message received from FCM.
+     */
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
@@ -50,6 +68,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
     }
 
+    /**
+     * Displays a notification to the user with the specified title and message.
+     *
+     * @param title   The title of the notification.
+     * @param message The message body of the notification.
+     */
     private void showNotification(String title, String message) {
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -83,6 +107,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         notificationManager.notify(0, notificationBuilder.build());
     }
 
+    /**
+     * Handles custom data payload received from the FCM message.
+     *
+     * @param data A map of key-value pairs representing the data payload.
+     */
     private void handleDataPayload(Map<String, String> data) {
         // Process custom data payload
         String eventId = data.get("eventId");
@@ -90,6 +119,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // Add your logic here, e.g., update Firestore or notify the user in-app
     }
 
+    /**
+     * Sends the FCM token to Firestore or your server for later use.
+     *
+     * @param token The FCM token to send.
+     */
     private void sendTokenToServer(String token) {
         // Send the FCM token to Firestore or your server
         FirebaseFirestore db = FirebaseFirestore.getInstance();

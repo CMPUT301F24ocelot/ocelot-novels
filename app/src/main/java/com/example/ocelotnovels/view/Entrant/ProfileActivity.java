@@ -1,3 +1,17 @@
+/**
+ * ProfileActivity.java
+ *
+ * This class represents a user profile management activity in an Android application.
+ * It provides features to view, edit, and save user information, manage profile pictures,
+ * and toggle notification preferences. The user's data is stored and retrieved using
+ * Firebase Firestore, and profile pictures are managed via Firebase Storage.
+ * The class includes methods to:
+ * - Load user data from Firestore and display it in the UI.
+ * - Update user profile information in Firestore.
+ * - Upload, display, and remove profile pictures using Firebase Storage.
+ * - Toggle notification preferences for the user.
+ * - Provide an intuitive UI for editing and managing user profiles.
+ */
 package com.example.ocelotnovels.view.Entrant;
 
 import android.os.Bundle;
@@ -68,6 +82,9 @@ public class ProfileActivity extends AppCompatActivity {
         saveButton.setOnClickListener(v -> saveChanges());
     }
 
+    /**
+     * Loads user data from Firebase Firestore and populates the UI fields with the data.
+     */
     private void loadUserData() {
         db.collection("users").document(deviceId).get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -113,7 +130,11 @@ public class ProfileActivity extends AppCompatActivity {
                 });
     }
 
-
+    /**
+     * Toggles the user's notification preference in Firebase Firestore.
+     *
+     * @param isEnabled true if notifications should be enabled; false otherwise.
+     */
     private void toggleNotifications(boolean isEnabled) {
         db.collection("users").document(deviceId)
                 .update("notificationsEnabled", isEnabled)
@@ -127,7 +148,9 @@ public class ProfileActivity extends AppCompatActivity {
                 });
     }
 
-
+    /**
+     * Opens the device's gallery to select a profile picture.
+     */
     private void selectProfilePicture() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent, PICK_IMAGE_REQUEST);
@@ -148,10 +171,9 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
-
-
-
-
+    /**
+     * Removes the user's profile picture from Firebase Storage and updates Firestore.
+     */
     private void removeProfilePicture() {
         firebaseUtils.getUserDocument().get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -188,7 +210,9 @@ public class ProfileActivity extends AppCompatActivity {
                 });
     }
 
-
+    /**
+     * Saves changes made to the user's profile information to Firebase Firestore.
+     */
     private void saveChanges() {
         Map<String, Object> updates = new HashMap<>();
         updates.put("name", nameEditText.getText().toString().trim());

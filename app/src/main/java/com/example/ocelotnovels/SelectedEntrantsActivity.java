@@ -1,3 +1,29 @@
+/**
+ * SelectedEntrantsActivity.java
+ *
+ * This activity displays a list of selected entrants for a specific event in a RecyclerView.
+ * It fetches data from a Firestore database and populates the UI with the entrant details.
+ * The activity includes a nested RecyclerView adapter for managing the display of entrant data.
+ *
+ * Features:
+ * - Integration with Firebase Firestore to load selected entrants.
+ * - A RecyclerView for listing entrant details.
+ * - Modular design with an adapter and ViewHolder pattern for efficient list management.
+ *
+ * Classes:
+ * - SelectedEntrantsActivity: Main activity class for displaying entrants.
+ * - EntrantsAdapter: RecyclerView adapter for managing entrant views.
+ * - ViewHolder: Helper class for caching views within the RecyclerView.
+ *
+ * Dependencies:
+ * - Firebase Firestore for data fetching.
+ * - AndroidX RecyclerView for displaying the list.
+ *
+ * XML Layout Files:
+ * - activity_selected_entrants.xml: Layout for the activity.
+ * - waiting_list_item.xml: Layout for individual list items.
+ */
+
 package com.example.ocelotnovels;
 
 import android.os.Bundle;
