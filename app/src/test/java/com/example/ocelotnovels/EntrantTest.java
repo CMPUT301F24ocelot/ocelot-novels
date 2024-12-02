@@ -8,21 +8,22 @@ import java.util.Map;
 public class EntrantTest {
     @Test
     public void testConstructor(){
-        Entrant entrant = new Entrant("John","Doe","johndoe@example.com");
+        Entrant entrant = new Entrant("John","Doe","johndoe@example.com","5556667777","device123");
+        assertEquals("John", entrant.getFirstName());
+        assertEquals("Doe", entrant.getLastName());
+        assertEquals("johndoe@example.com", entrant.getEmail());
+        assertEquals("5556667777", entrant.getPhoneNumber());
+        assertEquals("device123", entrant.getDevice_ID());
+    }
+
+    @Test
+    public void testConstructorWithoutPhone() {
+        Entrant entrant = new Entrant("John", "Doe", "johndoe@example.com", "device123");
         assertEquals("John", entrant.getFirstName());
         assertEquals("Doe", entrant.getLastName());
         assertEquals("johndoe@example.com", entrant.getEmail());
         assertNull(entrant.getPhoneNumber());
-    }
-
-    @Test
-    public void testConstructorWithPhone(){
-        Entrant entrant = new Entrant("John","Doe","johndoe@example.com","1234567890");
-        assertEquals("John", entrant.getFirstName());
-        assertEquals("Doe", entrant.getLastName());
-        assertEquals("johndoe@example.com", entrant.getEmail());
-        assertNotNull(entrant.getPhoneNumber());
-        assertEquals("1234567890",entrant.getPhoneNumber());
+        assertEquals("Entrant", entrant.getRole());
     }
 
     @Test
@@ -42,14 +43,14 @@ public class EntrantTest {
 
     @Test
     public void testToString(){
-        Entrant entrant = new Entrant("Mark", "Twain", "mark.twain@example.com");
+        Entrant entrant = new Entrant("Mark", "Twain", "mark.twain@example.com","312");
         String expectedOutput = "Entrant{firstName='Mark', lastName='Twain', email='mark.twain@example.com'}";
 
         assertEquals(expectedOutput, entrant.toString());
     }
     @Test
     public void testToStringWithPhoneNumber() {
-        Entrant entrant = new Entrant("Abra", "Cadabra", "abra.Cadabra@example.com", "2223334444");
+        Entrant entrant = new Entrant("Abra", "Cadabra", "abra.Cadabra@example.com", "2223334444","device123");
         String expectedOutput = "Entrant{firstName='Abra', lastName='Cadabra', phoneNumber='2223334444', email='abra.Cadabra@example.com'}";
 
         assertEquals(expectedOutput, entrant.toString());
@@ -57,7 +58,7 @@ public class EntrantTest {
 
     @Test
     public void testToMapWithoutPhoneNumber() {
-        Entrant entrant = new Entrant("Charles", "Dickens", "charles.dickens@example.com");
+        Entrant entrant = new Entrant("Charles", "Dickens", "charles.dickens@example.com","3232");
         Map<String, Object> entrantMap = entrant.toMap();
 
         assertEquals("Charles", entrantMap.get("firstName"));
@@ -68,7 +69,7 @@ public class EntrantTest {
 
     @Test
     public void testToMapWithPhoneNumber() {
-        Entrant entrant = new Entrant("Herman", "Melville", "herman.melville@example.com", "5556667777");
+        Entrant entrant = new Entrant("Herman", "Melville", "herman.melville@example.com", "5556667777","device123");
         Map<String, Object> entrantMap = entrant.toMap();
 
         assertEquals("Herman", entrantMap.get("firstName"));
@@ -79,7 +80,7 @@ public class EntrantTest {
 
     @Test
     public void testSetFirstNameInvalid() {
-        Entrant entrant = new Entrant("John", "Doe", "johndoe@example.com");
+        Entrant entrant = new Entrant("John", "Doe", "johndoe@example.com","13123");
         try {
             entrant.setFirstName(""); // Empty first name
             fail("Expected IllegalArgumentException for empty first name");
@@ -104,7 +105,7 @@ public class EntrantTest {
 
     @Test
     public void testSetLastNameInvalid() {
-        Entrant entrant = new Entrant("John", "Doe", "johndoe@example.com");
+        Entrant entrant = new Entrant("John", "Doe", "johndoe@example.com","323");
         try {
             entrant.setLastName(""); // Empty last name
             fail("Expected IllegalArgumentException for empty last name");
@@ -129,7 +130,7 @@ public class EntrantTest {
 
     @Test
     public void testSetEmailInvalid() {
-        Entrant entrant = new Entrant("John", "Doe", "johndoe@example.com");
+        Entrant entrant = new Entrant("John", "Doe", "johndoe@example.com","34333");
         try {
             entrant.setEmail("invalid-email"); // Invalid email format
             fail("Expected IllegalArgumentException for invalid email");
@@ -147,7 +148,7 @@ public class EntrantTest {
 
     @Test
     public void testSetPhoneNumberInvalid() {
-        Entrant entrant = new Entrant("John", "Doe", "johndoe@example.com");
+        Entrant entrant = new Entrant("John", "Doe", "johndoe@example.com","23");
         try {
             entrant.setPhoneNumber("12345"); // Too short phone number
             fail("Expected IllegalArgumentException for invalid phone number");

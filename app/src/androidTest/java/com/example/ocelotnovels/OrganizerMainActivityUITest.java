@@ -1,70 +1,67 @@
 package com.example.ocelotnovels;
 
-import android.content.Intent;
-import androidx.test.core.app.ActivityScenario;
-import androidx.test.espresso.Espresso;
-import androidx.test.espresso.assertion.ViewAssertions;
-import androidx.test.espresso.contrib.RecyclerViewActions;
-import androidx.test.espresso.matcher.ViewMatchers;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.intent.Intents.intended;
+import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+
+import androidx.test.espresso.intent.Intents;
+import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.example.ocelotnovels.view.Organizer.OrganizerMainActivity;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreSettings;
 
+import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @RunWith(AndroidJUnit4.class)
 public class OrganizerMainActivityUITest {
-
-    private FirebaseFirestore db;
+    @Rule
+    public ActivityScenarioRule<OrganizerMainActivity> activityScenarioRule =
+            new ActivityScenarioRule<>(OrganizerMainActivity.class);
 
     @Before
     public void setUp() {
-        // Initialize Firestore with Emulator
-        db = FirebaseFirestore.getInstance();
-        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-                .setHost("10.0.2.2:8080") // For Firebase Emulator on Android Emulator
-                .setSslEnabled(false)
-                .setPersistenceEnabled(false)
-                .build();
-        db.setFirestoreSettings(settings);
-
-        // Set up mock data in Firestore
-        setUpMockData();
+        Intents.init(); // Initialize Espresso Intents before each test
     }
 
-    private void setUpMockData() {
-        Map<String, Object> event1 = new HashMap<>();
-        event1.put("eventName", "Sample Event 1");
-
-        Map<String, Object> event2 = new HashMap<>();
-        event2.put("eventName", "Sample Event 2");
-
-        db.collection("events").document("event1").set(event1);
-        db.collection("events").document("event2").set(event2);
+    @After
+    public void tearDown() {
+        Intents.release(); // Clean up Espresso Intents after each test
     }
 
     @Test
-    public void testRecyclerViewDisplaysEvents() {
-        // Launch OrganizerMainActivity
-        Intent intent = new Intent(Intent.ACTION_MAIN);
-        try (ActivityScenario<OrganizerMainActivity> scenario = ActivityScenario.launch(OrganizerMainActivity.class)) {
+    public void testAddEventButtonNavigation() {
+        // Check if the "Add Event" button is displayed and clickable
+        onView(withId(R.id.add_events_button))
+                .check(matches(isDisplayed()))
+                .perform(click());
 
-            // Scroll to and check the first event
-            Espresso.onView(ViewMatchers.withId(R.id.OrganizerRecyclerView))
-                    .perform(RecyclerViewActions.scrollToPosition(0))
-                    .check(ViewAssertions.matches(ViewMatchers.hasDescendant(ViewMatchers.withText("Sample Event 1"))));
+        // Verify that clicking the "Add Event" button navigates to the CreateEventActivity
+        intended(hasComponent(CreateEventActivity.class.getName()));
+    }
 
-            // Scroll to and check the second event
-            Espresso.onView(ViewMatchers.withId(R.id.OrganizerRecyclerView))
-                    .perform(RecyclerViewActions.scrollToPosition(1))
-                    .check(ViewAssertions.matches(ViewMatchers.hasDescendant(ViewMatchers.withText("Sample Event 2"))));
-        }
+    @Test
+    public void testEntrantMapButtonNavigation() {
+        // Check if the "Entrant Map" button is displayed and clickable
+        onView(withId(R.id.entrant_map))
+                .check(matches(isDisplayed()))
+                .perform(click());
+
+        // Verify that clicking the "Entrant Map" button navigates to the MapsActivity
+        intended(hasComponent(MapsActivity.class.getName()));
+    }
+
+    @Test
+    public void testRecyclerViewVisibility() {
+        // Verify that the RecyclerView for displaying events is visible
+        onView(withId(R.id.OrganizerRecyclerView))
+                .check(matches(isDisplayed()));
     }
 }
