@@ -40,6 +40,7 @@ public class User implements Serializable {
 
     private String device_ID;
     private String profilePicture;
+    private Facility facility; // this will be used when the admin is deleting a user so that their facility is deleted as well
 
     /**
      * Constructs a User with the specified first name, last name, and email.
@@ -47,11 +48,12 @@ public class User implements Serializable {
      * @param lastName  the user's last name
      * @param email     the user's email
      */
-    public User(String firstName, String lastName, String email) {
+    public User(String firstName, String lastName, String email, String device_ID) {
         setFirstName(firstName);
         setLastName(lastName);
         setEmail(email);
         this.phoneNumber=null;
+        setDevice_ID(device_ID);
     }
 
     /**
@@ -61,11 +63,19 @@ public class User implements Serializable {
      * @param email       the user's email
      * @param phoneNumber the user's phone number (optional)
      */
-    public User(String firstName, String lastName, String email, String phoneNumber) {
+//    public User(String firstName, String lastName, String email, String phoneNumber) {
+//        setFirstName(firstName);
+//        setLastName(lastName);
+//        setEmail(email);
+//        setPhoneNumber(phoneNumber);
+//    }
+
+    public User(String firstName, String lastName, String email, String phoneNumber, String device_ID) {
         setFirstName(firstName);
         setLastName(lastName);
         setEmail(email);
         setPhoneNumber(phoneNumber);
+        setDevice_ID(device_ID);
     }
 
     /**
@@ -190,6 +200,22 @@ public class User implements Serializable {
      */
     public String getProfilePicture(){
         return profilePicture;
+    }
+
+    /**
+     * this sets the id of the facility if the user has a facility linked to them
+     * @param facility
+     */
+    public void setFacility(Facility facility){
+        this.facility = facility;
+    }
+
+    /**
+     * this returns the facility Id associated with the user
+     * @return
+     */
+    public Facility getFacility(){
+        return facility;
     }
 
     /**
