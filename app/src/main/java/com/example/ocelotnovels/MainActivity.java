@@ -305,6 +305,8 @@ public class MainActivity extends AppCompatActivity {
                         if(task.getResult().contains("isAdmin") && task.getResult().getBoolean("isAdmin")){
                             Intent adminIntent = new Intent(MainActivity.this, AdminBrowseActivity.class);
                             startActivity(adminIntent);
+                        } else {
+                            Toast.makeText(MainActivity.this,"You don't have the required permissions!",Toast.LENGTH_SHORT).show();
                         }
                     }
                 }
