@@ -17,6 +17,16 @@ public class Facility implements Serializable {
     private String facilityPicUrl;
 
     /**
+     * This is a constructor that can be used to simplify the data that is needed to delete a facility fully
+     * @param facilityId
+     * @param eventIds
+     */
+    public Facility(String facilityId, ArrayList<String> eventIds){
+        this.facilityId = facilityId;
+        this.eventIds = eventIds;
+    }
+
+    /**
      * Default constructor for Firebase or other ORM systems
      */
     public Facility() {
@@ -131,6 +141,12 @@ public class Facility implements Serializable {
      * @return
      */
     public String getFacilityPicUrl(){return facilityPicUrl;}
+
+    /**
+     * This return the list of events that this facility has organized
+     * @return
+     */
+    public ArrayList<String> getEventIds() {return eventIds;}
 
     public ArrayList<String> getMembers() {
         return members;

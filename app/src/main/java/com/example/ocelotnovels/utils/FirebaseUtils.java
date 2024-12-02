@@ -33,6 +33,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firestore.v1.Document;
 
 import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
@@ -895,6 +896,12 @@ public class FirebaseUtils {
                 });
     }
 
+    /**
+     * This will get all of the users from the firestore database to be viewed by the admin
+     * @param context
+     * @param profilesAdapter
+     * @param profiles
+     */
     public void getAllUsers(Context context, ArrayAdapter<User> profilesAdapter, ArrayList<User> profiles){
         db.collection("users").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -929,6 +936,21 @@ public class FirebaseUtils {
                             // Use default profile picture logic
                             StorageReference defaultPicRef = getDefaultPics().child(firstName.charAt(0) + ".jpg");
                         }
+                        db.collection("facilities").whereEqualTo("ownerId", user.getDevice_ID()).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                if (task.isSuccessful()) {
+                                    for (QueryDocumentSnapshot document : task.getResult()) {
+                                        Facility facility = new Facility(document.getId(),(ArrayList<String>) document.get("events"));
+                                        user.setFacility(facility);
+                                        Log.d("Admin", document.getId() + " => " + document.getData());
+                                    }
+                                } else {
+                                    Log.d("Admin", "Error getting documents: ", task.getException());
+                                }
+                            }
+                        });
+
                         profiles.add(user);
                         profilesAdapter.notifyDataSetChanged();
                     }
@@ -941,6 +963,12 @@ public class FirebaseUtils {
 
     }
 
+    /**
+     * This will get all of the events from the firestore database to be viewed by the admin
+     * @param context
+     * @param eventsAdapter
+     * @param events
+     */
     public void getAllEvents(Context context, ArrayAdapter<Event> eventsAdapter, ArrayList<Event> events){
         db.collection("events").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -970,6 +998,12 @@ public class FirebaseUtils {
         });
     }
 
+    /**
+     * This will get all of the facilities from the firestore database to be viewed by the admin
+     * @param context
+     * @param facilitiesAdapter
+     * @param facilities
+     */
     public void getAllFacilities(Context context, ArrayAdapter<Facility> facilitiesAdapter,ArrayList<Facility> facilities){
         db.collection("facilities").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -999,9 +1033,6 @@ public class FirebaseUtils {
                                 }
                             }
                         });
-                        /*Facility facility = new Facility(facilityId, owner[0], name, email, phone, location, description, events);
-                        facilities.add(facility);
-                        facilitiesAdapter.notifyDataSetChanged();*/
                     }
                 } else {
                     Toast.makeText(context,"failed to load events",Toast.LENGTH_SHORT).show();
@@ -1016,6 +1047,59 @@ public class FirebaseUtils {
         db.collection("events").document(eventId).update("qrHash","").addOnCompleteListener(task -> {
             if(task.isSuccessful()){
                 Toast.makeText(context,"The QR has been removed",Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    /**
+     * This method deletes a user from the database
+     * @param context where the toast is meant to appear
+     * @param user the user that is being deleted
+     */
+    public void deleteUser(Context context, User user){
+        deleteFacility(context, user.getFacility());
+        db.collection("users").document(user.getDevice_ID()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isSuccessful()){
+                    Toast.makeText(context,"The user has succesfully been deleted",Toast.LENGTH_SHORT).show();
+                }else{
+                    Toast.makeText(context,"Failed to delete user",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    /**
+     * This method deletes an event from the database
+     * @param context where the toast is meant to appear
+     * @param eventId the id of the event that is being deleted
+     */
+    public void deleteEvent(Context context, String eventId){
+        db.collection("events").document(eventId).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isSuccessful()){
+                    Toast.makeText(context,"The event has succesfully been deleted",Toast.LENGTH_SHORT).show();
+                }else{
+                    Toast.makeText(context,"Failed to delete event",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    public void deleteFacility(Context context, Facility facility){
+        for (int i = 0; i < facility.getEventIds().size(); i++){
+            db.collection("events").document(facility.getEventIds().get(i)).delete();
+        }
+        db.collection("facilities").document(facility.getFacilityId()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isSuccessful()){
+                    Toast.makeText(context,"The facility has successfully been deleted",Toast.LENGTH_SHORT).show();
+                }else{
+                    Toast.makeText(context,"Failed to delete event",Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }

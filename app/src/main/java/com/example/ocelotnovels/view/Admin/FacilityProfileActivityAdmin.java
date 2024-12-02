@@ -1,5 +1,6 @@
 package com.example.ocelotnovels.view.Admin;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -12,6 +13,7 @@ import com.bumptech.glide.Glide;
 import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.model.Facility;
 import com.example.ocelotnovels.model.User;
+import com.example.ocelotnovels.utils.FirebaseUtils;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class FacilityProfileActivityAdmin extends AppCompatActivity {
@@ -78,7 +80,11 @@ public class FacilityProfileActivityAdmin extends AppCompatActivity {
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                FirebaseUtils firebaseutils = FirebaseUtils.getInstance(getApplicationContext());
+                firebaseutils.deleteFacility(getApplicationContext(),facility);
+                Intent toBrowser = new Intent(FacilityProfileActivityAdmin.this, AdminBrowseActivity.class);
+                toBrowser.putExtra("from", "Facilities");
+                startActivity(toBrowser);
             }
         });
     }
@@ -89,7 +95,9 @@ public class FacilityProfileActivityAdmin extends AppCompatActivity {
      */
     @Override
     public boolean onSupportNavigateUp() {
-        super.onBackPressed(); // This navigates back to the parent activity.
+        Intent toBrowser = new Intent(FacilityProfileActivityAdmin.this, AdminBrowseActivity.class);
+        toBrowser.putExtra("from", "Facilities");
+        startActivity(toBrowser); // This navigates back to the parent activity.
         return true;
     }
 

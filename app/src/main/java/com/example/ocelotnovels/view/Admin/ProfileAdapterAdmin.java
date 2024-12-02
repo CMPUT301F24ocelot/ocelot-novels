@@ -29,7 +29,7 @@ import java.util.ArrayList;
  * This is the class that is used to display the profiles in a ListView for the admin to browse
  */
 public class ProfileAdapterAdmin extends ArrayAdapter<User> {
-
+    private ArrayAdapter<User> profileAdapter;
     /**
      * This will be called when the ProfileAdapterAdmin
      * @param context

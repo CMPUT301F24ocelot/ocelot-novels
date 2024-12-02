@@ -20,6 +20,7 @@ public class User implements Serializable {
 
     private String device_ID;
     private String profilePicture;
+    private Facility facility; // this will be used when the admin is deleting a user so that their facility is deleted as well
 
     /**
      * Constructs a User with the specified first name, last name, and email.
@@ -170,6 +171,22 @@ public class User implements Serializable {
      */
     public String getProfilePicture(){
         return profilePicture;
+    }
+
+    /**
+     * this sets the id of the facility if the user has a facility linked to them
+     * @param facility
+     */
+    public void setFacility(Facility facility){
+        this.facility = facility;
+    }
+
+    /**
+     * this returns the facility Id associated with the user
+     * @return
+     */
+    public Facility getFacility(){
+        return facility;
     }
 
     /**

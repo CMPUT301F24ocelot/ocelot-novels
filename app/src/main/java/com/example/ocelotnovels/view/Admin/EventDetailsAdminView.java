@@ -2,6 +2,7 @@ package com.example.ocelotnovels.view.Admin;
 
 import static android.content.ContentValues.TAG;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -62,6 +63,19 @@ public class EventDetailsAdminView extends AppCompatActivity {
         TextView eventDescription = findViewById(R.id.description);
         eventDescription.setText(event.getEventDescription());
 
+        Button deleteButton = findViewById(R.id.delete_button);
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FirebaseUtils firebaseutils = FirebaseUtils.getInstance(getApplicationContext());
+                firebaseutils.deleteEvent(getApplicationContext(),event.getEventId());
+                Intent toBrowser = new Intent(EventDetailsAdminView.this, AdminBrowseActivity.class);
+                toBrowser.putExtra("from", "Events");
+                startActivity(toBrowser);
+            }
+        });
+
+        //This will remove the QR hash from the database
         Button deleteQRButton = findViewById(R.id.delete_qr_button);
         deleteQRButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -91,7 +105,9 @@ public class EventDetailsAdminView extends AppCompatActivity {
      */
     @Override
     public boolean onSupportNavigateUp() {
-        super.onBackPressed(); // This navigates back to the parent activity.
+        Intent toBrowser = new Intent(EventDetailsAdminView.this, AdminBrowseActivity.class);
+        toBrowser.putExtra("from", "Events");
+        startActivity(toBrowser); // This navigates back to the parent activity.
         return true;
     }
 }

@@ -61,10 +61,20 @@ public class AdminBrowseActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstance){
         super.onCreate(savedInstance);
         setContentView(R.layout.admin_browse_layout);
+        Bundle item = getIntent().getExtras();
 
         initializeView();
 
         initializeFirebase();
+
+        if(item != null){
+            String from = item.getString("from");
+            if(from.equals("Profiles")){
+                loadProfiles();
+            } else if (from.equals("Events")) {
+                loadEvents();
+            }
+        }
 
     }
 
@@ -111,6 +121,10 @@ public class AdminBrowseActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * This goes makes it so that the user can go back to the previous activity
+     * @return
+     */
     @Override
     public boolean onSupportNavigateUp() {
         super.onBackPressed(); // This navigates back to the parent activity.
@@ -136,7 +150,6 @@ public class AdminBrowseActivity extends AppCompatActivity {
         eventsAdapter = new EventAdapterAdmin(this, events);
         events.clear();
         firebaseUtils.getAllEvents(this,eventsAdapter,events);
-        //Log.d("Admin",profiles.get(1).toString());
         resultsList.setAdapter(eventsAdapter);
     }
 
@@ -148,7 +161,6 @@ public class AdminBrowseActivity extends AppCompatActivity {
         facilitiesAdapter = new FacilityAdapterAdmin(this, facilities);
         facilities.clear();
         firebaseUtils.getAllFacilities(this,facilitiesAdapter,facilities);
-        //Log.d("Admin",profiles.get(1).toString());
         resultsList.setAdapter(facilitiesAdapter);
     }
 }

@@ -1,7 +1,9 @@
 package com.example.ocelotnovels.view.Admin;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -11,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.example.ocelotnovels.R;
 import com.example.ocelotnovels.model.User;
+import com.example.ocelotnovels.utils.FirebaseUtils;
 
 public class EntrantProfileAdminView extends AppCompatActivity {
 
@@ -21,12 +24,12 @@ public class EntrantProfileAdminView extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstance){
+        super.onCreate(savedInstance);
         Bundle item = getIntent().getExtras();
+        setContentView(R.layout.entrant_profile_admin_view);
         if(item != null){
             profile = (User)item.getSerializable("User");
         }
-        super.onCreate(savedInstance);
-        setContentView(R.layout.entrant_profile_admin_view);
         initializeView();
     }
 
@@ -61,7 +64,11 @@ public class EntrantProfileAdminView extends AppCompatActivity {
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                FirebaseUtils firebaseutils = FirebaseUtils.getInstance(getApplicationContext());
+                firebaseutils.deleteUser(getApplicationContext(),profile);
+                Intent toBrowser = new Intent(EntrantProfileAdminView.this, AdminBrowseActivity.class);
+                toBrowser.putExtra("from", "Profiles");
+                startActivity(toBrowser);
             }
         });
     }
@@ -72,7 +79,9 @@ public class EntrantProfileAdminView extends AppCompatActivity {
      */
     @Override
     public boolean onSupportNavigateUp() {
-        super.onBackPressed(); // This navigates back to the parent activity.
+        Intent toBrowser = new Intent(EntrantProfileAdminView.this, AdminBrowseActivity.class);
+        toBrowser.putExtra("from", "Profiles");
+        startActivity(toBrowser);
         return true;
     }
 }
