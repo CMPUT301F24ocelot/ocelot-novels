@@ -93,8 +93,12 @@ dependencies {
     testImplementation("androidx.test:core:1.4.0")
     implementation ("com.github.bumptech.glide:glide:4.15.1")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.15.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
-    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.4.0") // For RecyclerView actions
+    implementation("com.google.android.gms:play-services-maps:18.1.0")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1") // For RecyclerView actions
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.44")
+    androidTestImplementation("androidx.test:rules:1.5.0")
+    androidTestImplementation("androidx.test:runner:1.5.0")
     // Firebase Firestore and related libraries
     implementation("com.google.protobuf:protobuf-javalite") // Ensure this is compatible with Firebase
 

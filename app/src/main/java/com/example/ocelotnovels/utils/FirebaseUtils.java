@@ -829,6 +829,16 @@ public class FirebaseUtils {
     }
 
 
+    /**
+     * Adds an event to the user's confirmed events list in Firestore if it is not already present.
+     * Executes a Firestore transaction to safely update the user's document.
+     *
+     * @param eventId   The ID of the event to be added to the confirmed events list.
+     * @param onSuccess Callback executed when the transaction is successfully completed.
+     *                  Passes a {@code Void} result.
+     * @param onFailure Callback executed when the transaction fails.
+     *                  Passes the exception that caused the failure.
+     */
     public void addConfirmedEvent(String eventId, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
         DocumentReference userRef = getUserDocument();
 
@@ -854,6 +864,15 @@ public class FirebaseUtils {
     }
 
 
+    /**
+     * Fetches the list of events the user has joined, confirmed, or participated in based on the specified list type.
+     * Retrieves the user's list of event IDs, fetches event details for each ID, and populates the provided event list.
+     *
+     * @param userId      The ID of the user whose events are to be fetched.
+     * @param listType    The type of event list to retrieve (e.g., "confirmedEventsJoined").
+     * @param eventList   The list to be populated with {@link Event} objects representing the fetched events.
+     * @param onComplete  Callback executed when the operation is complete, regardless of success or failure.
+     */
     public void fetchUserConfirmedEvents(String userId, String listType, List<Event> eventList, Runnable onComplete) {
         db.collection("users").document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -1209,6 +1228,23 @@ public class FirebaseUtils {
         }
     }
 
+    /**
+     * Removes an entrant (user) from an event's selected list and adds them to the cancelled list.
+     * Also removes the event from the user's list of selected events in Firestore.
+     *
+     * This method performs the following:
+     * - Fetches the event and user documents from Firestore.
+     * - Updates the "selectedList" and "cancelledList" fields of the event document.
+     * - Removes the event from the user's "selectedEventsJoined" list.
+     * - Ensures Firestore updates are performed within a transaction for consistency.
+     *
+     * @param eventId   The ID of the event from which the entrant is to be removed.
+     * @param userId    The ID of the user (entrant) to be removed from the event.
+     * @param onSuccess A callback executed when the operation is successfully completed.
+     *                  Passes a {@code Void} result.
+     * @param onFailure A callback executed when the operation fails.
+     *                  Passes the exception that caused the failure.
+     */
     public void removeEntrantFromEvent(String eventId, String userId,
                                        OnSuccessListener<Void> onSuccess,
                                        OnFailureListener onFailure) {
