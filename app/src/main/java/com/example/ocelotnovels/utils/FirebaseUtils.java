@@ -1033,9 +1033,17 @@ public class FirebaseUtils {
                             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                 if (task.isSuccessful()) {
                                     for (QueryDocumentSnapshot document : task.getResult()) {
-                                        Facility facility = new Facility(document.getId(),(ArrayList<String>) document.get("events"));
-                                        user.setFacility(facility);
-                                        Log.d("Admin", document.getId() + " => " + document.getData());
+                                        if(document.exists()){
+                                            ArrayList<String> events;
+                                            if(document.contains("events")){
+                                                events = (ArrayList<String>)document.get("events");
+                                            }else{
+                                                events = new ArrayList<String>();
+                                            }
+                                            Facility facility = new Facility(document.getId(),events);
+                                            user.setFacility(facility);
+                                            Log.d("Admin", document.getId() + " => " + document.getData());
+                                        }
                                     }
                                 } else {
                                     Log.d("Admin", "Error getting documents: ", task.getException());
@@ -1158,7 +1166,9 @@ public class FirebaseUtils {
      * @param user the user that is being deleted
      */
     public void deleteUser(Context context, User user){
-        deleteFacility(context, user.getFacility());
+        if(user.getFacility()!=null){
+            deleteFacility(context, user.getFacility());
+        }
         db.collection("users").document(user.getDevice_ID()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
@@ -1195,8 +1205,10 @@ public class FirebaseUtils {
      * @param facility the id of the event that is being deleted
      */
     public void deleteFacility(Context context, Facility facility){
-        for (int i = 0; i < facility.getEventIds().size(); i++){
-            db.collection("events").document(facility.getEventIds().get(i)).delete();
+        if (facility.getEventIds() != null){
+            for (int i = 0; i < facility.getEventIds().size(); i++){
+                db.collection("events").document(facility.getEventIds().get(i)).delete();
+            }
         }
         db.collection("facilities").document(facility.getFacilityId()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
