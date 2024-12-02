@@ -48,7 +48,6 @@ import java.util.ArrayList;
 public class AdminBrowseActivity extends AppCompatActivity {
     private TextView results;
     private ListView resultsList;
-    private Button detailsButton;
     private AutoCompleteTextView dropDownMenu;
     private FirebaseUtils firebaseUtils;
 

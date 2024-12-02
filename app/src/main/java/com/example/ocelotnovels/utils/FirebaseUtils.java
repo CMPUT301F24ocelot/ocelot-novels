@@ -1087,8 +1087,12 @@ public class FirebaseUtils {
                         String facilityId = document.getId();
                         String name = document.getString("facilityName");
                         String description = document.getString("facilityDescription");
-                        ArrayList<String> events = (ArrayList<String>)document.get("events");// This will be used when deleting facility
-                        Log.d("Admin",events.toString());
+                        ArrayList<String> events;
+                        if(document.contains("events")){
+                            events = (ArrayList<String>)document.get("events");
+                        }else{
+                            events = new ArrayList<String>();
+                        }
                         String location = document.getString("facilityLocation");
                         String phone = document.getString("facilityPhone");
                         String email = document.getString("facilityEmail");
