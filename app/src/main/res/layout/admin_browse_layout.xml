@@ -3,39 +3,57 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    android:padding="16dp">
 
     <TextView
         android:id="@+id/welcome_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Hello!"
-        android:textSize="30sp"
+        android:textSize="34sp"
         android:textStyle="bold"
-        android:textColor="@android:color/black"
-        android:layout_marginTop="24dp" />
+        android:textColor="@android:color/darker_gray"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:textAlignment="center"
+        android:fontFamily="sans-serif-medium"/>
+
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:layout_marginBottom="16dp"
         android:hint="Select"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        app:boxStrokeColor="@color/primary_color"
+        app:hintTextColor="@color/primary_color">
         <AutoCompleteTextView
             android:id="@+id/drop_down"
-            android:layout_height="match_parent"
-            android:layout_width="match_parent"/>
+            android:layout_height="56dp"
+            android:layout_width="match_parent"
+            android:background="@android:color/white"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"/>
     </com.google.android.material.textfield.TextInputLayout>
-
 
     <TextView
         android:id="@+id/current_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="20sp"
-        android:text="Results:" />
+        android:textSize="22sp"
+        android:text="Results:"
+        android:textColor="@android:color/black"
+        android:layout_marginBottom="8dp"
+        android:textStyle="bold"/>
+
     <ListView
         android:id="@+id/list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        />
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="@android:color/darker_gray"
+        android:dividerHeight="1dp"
+        android:padding="8dp"
+        android:clipToPadding="false"/>
 </LinearLayout>
