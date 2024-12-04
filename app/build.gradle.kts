@@ -72,10 +72,24 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
     implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-firestore")
-    implementation("com.google.firebase:firebase-storage")
-    implementation("com.firebaseui:firebase-ui-storage:7.2.0")
-    implementation("com.google.firebase:firebase-messaging:24.1.0")
+    // implementation("com.google.firebase:firebase-firestore")
+    // implementation("com.google.firebase:firebase-storage")
+    // implementation("com.firebaseui:firebase-ui-storage:7.2.0")
+    // implementation("com.google.firebase:firebase-messaging:24.1.0")
+
+    implementation("com.google.firebase:firebase-firestore") {
+        exclude(group = "com.google.protobuf", module = "protobuf-lite")
+    }
+    implementation("com.google.firebase:firebase-storage") {
+        exclude(group = "com.google.protobuf", module = "protobuf-lite")
+    }
+    implementation("com.firebaseui:firebase-ui-storage:7.2.0") {
+        exclude(group = "com.google.protobuf", module = "protobuf-lite")
+    }
+    implementation("com.google.firebase:firebase-messaging:24.1.0") {
+        exclude(group = "com.google.protobuf", module = "protobuf-lite")
+    }
+
     // https://mvnrepository.com/artifact/com.google.zxing/javase
     implementation("com.google.zxing:javase:3.5.3")
     // https://mvnrepository.com/artifact/com.google.zxing/core
@@ -93,19 +107,29 @@ dependencies {
     testImplementation("androidx.test:core:1.4.0")
     implementation ("com.github.bumptech.glide:glide:4.15.1")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.15.1")
-    implementation("com.google.android.gms:play-services-maps:18.1.0")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1") // For RecyclerView actions
-    androidTestImplementation("com.google.dagger:hilt-android-testing:2.44")
-    androidTestImplementation("androidx.test:rules:1.5.0")
-    androidTestImplementation("androidx.test:runner:1.5.0")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0"){
+        exclude(group = "com.google.protobuf", module = "protobuf-lite")
+    }
+    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.4.0"){
+        exclude(group = "com.google.protobuf", module = "protobuf-lite")
+    } // For RecyclerView actions
+
+
     // Firebase Firestore and related libraries
-    implementation("com.google.protobuf:protobuf-javalite") // Ensure this is compatible with Firebase
+    implementation("com.google.protobuf:protobuf-javalite:3.21.12")
+
 
     implementation("com.journeyapps:zxing-android-embedded:4.1.0")
 
+    // androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1") {
+        // exclude(module = "protobuf-lite") }
     androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1") {
-        exclude(module = "protobuf-lite")
+        exclude(group = "com.google.protobuf", module = "protobuf-lite")
     }
-    androidTestImplementation("androidx.test.espresso:espresso-intents:3.4.0")
+}
+
+configurations.all {
+    resolutionStrategy {
+        force("com.google.protobuf:protobuf-javalite:3.21.12")
+    }
 }
