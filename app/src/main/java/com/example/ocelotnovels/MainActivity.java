@@ -60,6 +60,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanner;
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions;
@@ -82,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
     private Button signUpButton, eventViewBtn;
     private String deviceId;
     private String getUserEmail;
+    private String getFcmToken;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     private static final String POST_NOTIFICATIONS = "android.permission.POST_NOTIFICATIONS";
@@ -370,6 +372,29 @@ public class MainActivity extends AppCompatActivity {
                         .addOnSuccessListener(documentSnapshot -> {
                             if (documentSnapshot.exists() && documentSnapshot.contains("email")) {
                                 getUserEmail = documentSnapshot.getString("email");
+                                getFcmToken = documentSnapshot.getString("fcmToken");
+
+                                if (getFcmToken==null){
+                                    FirebaseMessaging.getInstance().getToken()
+                                            .addOnCompleteListener(new OnCompleteListener<String>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<String> task) {
+                                                    if (!task.isSuccessful()) {
+                                                        Log.w("FCM STATUS", "Fetching FCM registration token failed", task.getException());
+                                                        return;
+                                                    }
+
+                                                    // Get new FCM registration token
+                                                    String token = task.getResult();
+                                                    db.collection("users").document(deviceId).update("fcmToken",token);
+                                                    // Log and toast
+
+                                                    Log.d("FCM STATUS", "Push successfull");
+
+                                                }
+                                            });
+
+                                }
                                 isUserSignedUp = true;
                                 signUpButton.setVisibility(View.GONE);
                                 eventViewBtn.setOnClickListener(v -> {
